@@ -1,0 +1,24 @@
+{
+  "name": "schema-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/**/*.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^5.2.2",
+    "io-ts": "^0.6.1"
+  },
+  "devDependencies": {
+    "@types/ajv": "^1.0.0",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2",
+    "ts-node": "^3.3.0",
+    "typescript": "2.4"
+  }
+}
