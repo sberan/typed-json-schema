@@ -1,3 +1,5 @@
+import Ajv = require('ajv')
+import { ErrorObject } from 'ajv'
 
 export type JSONPrimitive = string | number | boolean | null
 export interface JSONArray extends Array<JSONPrimitive | JSONObject | JSONArray> {}
@@ -115,6 +117,17 @@ export class Schema<T> {
   not(schema: Schema<any>) {
     return this.setProps({ not: schema.props })
   }
+
+  validate (obj: any, options: Ajv.Options = {}): { errors: Array<ErrorObject>, result: null } | { errors: null, result: T }  {
+    const validate = new Ajv(options).compile(this.props)
+    const coercedValue: { result?: T } = { }
+    const isValid = validate(obj, undefined, coercedValue, 'result')
+    if (isValid) {
+      return { errors: null, result: coercedValue.result || obj }
+    } else {
+      return { errors: validate.errors!, result: null }
+    }
+  }
 }
 
 import { StringSchema } from "./string";
@@ -139,7 +152,7 @@ const
   integer = schema.type('integer'),
   string = schema.type('string'),
   boolean = schema.type('boolean'),
-  array = callableInstance(schema.type('array'), 'items'),
+  array = callableInstance(schema.type('array'), 'items'), //todo: this populates all array types, it should only be on the base type
   object = callableInstance(schema.type('object'), 'properties')
 
 export {

@@ -1,7 +1,7 @@
 
 import { Schema, JSONObject } from "./schema"
 
-export class ArraySchema<T> extends Schema<T[]>  {
+export class ArraySchema<T> extends Schema<T>  {
   constructor (props: JSONObject = { type: 'array' }) {
     super(props)
   }
