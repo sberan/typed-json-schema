@@ -1,8 +1,8 @@
 
-import { Schema } from "./schema";
+import { Schema, JSONObject } from "./schema";
 
 export class NumberSchema extends Schema<number> {
-  constructor (props = { type: 'number' }) {
+  constructor (props: JSONObject = { type: 'number' }) {
     super(props)
   }
 
