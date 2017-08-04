@@ -21,6 +21,7 @@ export class Schema<T> {
   }
 
   type(type: 'number'): NumberSchema
+  type(type: 'integer'): NumberSchema
   type(type: 'string'): StringSchema
   type(type: 'boolean'): BooleanSchema
   type(type: 'null'): NullSchema
@@ -38,6 +39,9 @@ export class Schema<T> {
     }
     if (type === 'number') {
       return new NumberSchema()
+    }
+    if (type === 'integer') {
+      return new NumberSchema({ type: 'integer' })
     }
     if (type === 'array') {
       return new ArraySchema<any[]>()
@@ -120,4 +124,30 @@ import { NumberSchema } from "./number";
 import { ArraySchema } from "./array";
 import { ObjectSchema } from "./object";
 
-export const schema = new Schema<any>({})
+function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T[K] & T {
+  const
+    boundMethod: T[K] = obj[key].bind(obj),
+    merged = Object.assign(boundMethod, obj)
+
+  ;(boundMethod as any).__proto__ = (obj as any).__proto__
+  return merged
+}
+
+const
+  schema = new Schema<any>({}),
+  number = schema.type('number'),
+  integer = schema.type('integer'),
+  string = schema.type('string'),
+  boolean = schema.type('boolean'),
+  array = callableInstance(schema.type('array'), 'items'),
+  object = callableInstance(schema.type('object'), 'properties')
+
+export {
+  schema,
+  number,
+  integer,
+  string,
+  boolean,
+  array,
+  object
+}
