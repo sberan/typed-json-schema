@@ -18,19 +18,17 @@ export class ArraySchema<T> extends Schema<T[]>  {
     return this.setProps({ uniqueItems })
   }
 
-  items <A> (items: [Schema<A>]): TupleSchema<[A], A> 
-  items <A, B> (items: [Schema<A>, Schema<B>]): TupleSchema<[A, B], (A | B)> 
-  items <A, B, C> (items: [Schema<A>, Schema<B>, Schema<C>]): TupleSchema<[A, B, C], (A | B | C)>
-  items <A, B, C, D> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>]): TupleSchema<[A, B, C, D], (A | B | C | D)>
-  items <A, B, C, D, E> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>]): TupleSchema<[A, B, C, D, E], (A | B | C | D | E)>
-  items <A, B, C, D, E, F> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>]): TupleSchema<[A, B, C, D, E, F], (A | B | C | D | E | F)>
-  items <A, B, C, D, E, F, G> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>]): TupleSchema<[A, B, C, D, E, F, G], (A | B | C | D | E | F | G)>
-  items <A, B, C, D, E, F, G, H> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>, Schema<H>]): TupleSchema<[A, B, C, D, E, F, G, H], (A | B | C | D | E | F | G | H)>
-  items <A, B, C, D, E, F, G, H, I> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>, Schema<H>, Schema<I>]): TupleSchema<[A, B, C, D, E, F, G, H, I], (A | B | C | D | E | F | G | H | I)>
-  items <A, B, C, D, E, F, G, H, I, J> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>, Schema<H>, Schema<I>, Schema<J>]): TupleSchema<[A, B, C, D, E, F, G, H, I, J], (A | B | C | D | E | F | G | H | I | J)>
-  items <A, B, C, D, E, F, G, H, I, J, K> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>, Schema<H>, Schema<I>, Schema<J>, Schema<K>]): TupleSchema<[A, B, C, D, E, F, G, H, I, J, K], (A | B | C | D | E | F | G | H | I | J | K )>
-  items <A, B, C, D, E, F, G, H, I, J, K, L> (items: [Schema<A>, Schema<B>, Schema<C>, Schema<D>, Schema<E>, Schema<F>, Schema<G>, Schema<H>, Schema<I>, Schema<J>, Schema<K>, Schema<L>]): TupleSchema<[A, B, C, D, E, F, G, H, I, J, K, L], (A | B | C | D | E | F | G | H | I | J | K | L)>
   items <I> (items: Schema<I>): ArraySchema<I[]> 
+  items <A0> (items: [Schema<A0>]): TupleSchema<[A0], A0> 
+  items <A0, A1> (items: [Schema<A0>, Schema<A1>]): TupleSchema<[A0, A1], (A0 | A1)> 
+  items <A0, A1, A2> (items: [Schema<A0>, Schema<A1>, Schema<A2>]): TupleSchema<[A0, A1, A2], (A0 | A1 | A2)>
+  items <A0, A1, A2, A3> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>]): TupleSchema<[A0, A1, A2, A3], (A0 | A1 | A2 | A3)>
+  items <A0, A1, A2, A3, A4> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>]): TupleSchema<[A0, A1, A2, A3, A4], (A0 | A1 | A2 | A3 | A4)>
+  items <A0, A1, A2, A3, A4, A5> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>]): TupleSchema<[A0, A1, A2, A3, A4, A5], (A0 | A1 | A2 | A3 | A4 | A5)>
+  items <A0, A1, A2, A3, A4, A5, A6> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6], (A0 | A1 | A2 | A3 | A4 | A5 | A6)>
+  items <A0, A1, A2, A3, A4, A5, A6, A7> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7)>
+  items <A0, A1, A2, A3, A4, A5, A6, A7, A8> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8)>
+  items <A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>, Schema<A9>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8, A9], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9)>
   items <I> (items: Schema<I> | Schema<any>[]) {
     if (Array.isArray(items)) {
       const tupleProps = this.setProps({ items: items.map(i => i.props)}).props
