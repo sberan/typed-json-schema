@@ -1,12 +1,13 @@
 
-export interface Props {
-  [key: string]: string | number | boolean | string[] | Props | Props[]
-}
+export type JSONPrimitive = string | number | boolean | null
+export interface JSONArray extends Array<JSONPrimitive | JSONObject | JSONArray> {}
+export interface JSONObject { [key: string]: JSONObject | JSONPrimitive | JSONArray }
+export type AnyJSON = JSONPrimitive | JSONArray | JSONObject
 
 export class Schema<T> {
-  constructor (public props: Props = {}) { } //TODO: make props private
+  constructor (public props: JSONObject = {}) { } //TODO: make props private
 
-  setProps (props: Props): this {
+  setProps (props: JSONObject): this {
     var clone = Object.create(this)
     clone.props = Object.assign({}, this.props, props)
     return clone
@@ -59,13 +60,12 @@ export class Schema<T> {
     return this.setProps({ description })
   }
 
-  default (defaultValue: any) {
+  default (defaultValue: AnyJSON) {
     return this.setProps({ default: defaultValue })
   }
 
-  enum <V>(values: V[]) {
+  enum <V extends AnyJSON>(values: V[]) {
     //todo: use arrays instead of varargs everywhere because type inference works better
-    //todo: properly type values array
     //todo: combine enum type with parent type
     return this.setProps({ enum: values as any }) as any as Schema<V>
   }
@@ -124,7 +124,7 @@ import { NumberSchema } from "./number";
 import { ArraySchema } from "./array";
 import { ObjectSchema } from "./object";
 
-function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T[K] & T {
+function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
   const
     boundMethod: T[K] = obj[key].bind(obj),
     merged = Object.assign(boundMethod, obj)

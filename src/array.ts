@@ -1,8 +1,8 @@
 
-import { Schema, Props } from "./schema"
+import { Schema, JSONObject } from "./schema"
 
 export class ArraySchema<T> extends Schema<T[]>  {
-  constructor (props: Props = { type: 'array' }) {
+  constructor (props: JSONObject = { type: 'array' }) {
     super(props)
   }
 
@@ -44,7 +44,7 @@ export class ArraySchema<T> extends Schema<T[]>  {
 }
 
 export class TupleSchema<T, A> extends ArraySchema<T> {
-  constructor (props: Props) {
+  constructor (props: JSONObject) {
     super(props)
   }
 
