@@ -125,10 +125,6 @@ fast-deep-equal@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.0.0.tgz#96256a3bc975595eb36d82e9929d060d893439ff"
 
-fp-ts@^0.4.0:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-0.4.3.tgz#03877fb7e5aa3c04d0694e9371543e9dbfe3ef6f"
-
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
@@ -174,12 +170,6 @@ inflight@^1.0.4:
 inherits@2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
-
-io-ts@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-0.6.1.tgz#dcde35600bca783296554cc9041aa56f332ed33a"
-  dependencies:
-    fp-ts "^0.4.0"
 
 json-schema-traverse@^0.3.0:
   version "0.3.1"

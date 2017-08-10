@@ -1,7 +1,7 @@
 
-import { Schema, JSONObject } from "./schema"
+import { Schema, JSONObject, AnyJSON } from "./schema"
 
-export class ArraySchema<T> extends Schema<T>  {
+export class ArraySchema<T extends AnyJSON> extends Schema<T>  {
   constructor (props: JSONObject = { type: 'array' }) {
     super(props)
   }
@@ -18,18 +18,18 @@ export class ArraySchema<T> extends Schema<T>  {
     return this.setProps({ uniqueItems })
   }
 
-  items <I> (items: Schema<I>): ArraySchema<I[]> 
-  items <A0> (items: [Schema<A0>]): TupleSchema<[A0], A0> 
-  items <A0, A1> (items: [Schema<A0>, Schema<A1>]): TupleSchema<[A0, A1], (A0 | A1)> 
-  items <A0, A1, A2> (items: [Schema<A0>, Schema<A1>, Schema<A2>]): TupleSchema<[A0, A1, A2], (A0 | A1 | A2)>
-  items <A0, A1, A2, A3> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>]): TupleSchema<[A0, A1, A2, A3], (A0 | A1 | A2 | A3)>
-  items <A0, A1, A2, A3, A4> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>]): TupleSchema<[A0, A1, A2, A3, A4], (A0 | A1 | A2 | A3 | A4)>
-  items <A0, A1, A2, A3, A4, A5> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>]): TupleSchema<[A0, A1, A2, A3, A4, A5], (A0 | A1 | A2 | A3 | A4 | A5)>
-  items <A0, A1, A2, A3, A4, A5, A6> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6], (A0 | A1 | A2 | A3 | A4 | A5 | A6)>
-  items <A0, A1, A2, A3, A4, A5, A6, A7> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7)>
-  items <A0, A1, A2, A3, A4, A5, A6, A7, A8> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8)>
-  items <A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>, Schema<A9>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8, A9], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9)>
-  items <I> (items: Schema<I> | Schema<any>[]) {
+  items <I extends AnyJSON> (items: Schema<I>): ArraySchema<I[]> 
+  items <A0 extends AnyJSON> (items: [Schema<A0>]): TupleSchema<[A0], A0> 
+  items <A0 extends AnyJSON, A1 extends AnyJSON> (items: [Schema<A0>, Schema<A1>]): TupleSchema<[A0, A1], (A0 | A1)> 
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>]): TupleSchema<[A0, A1, A2], (A0 | A1 | A2)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>]): TupleSchema<[A0, A1, A2, A3], (A0 | A1 | A2 | A3)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>]): TupleSchema<[A0, A1, A2, A3, A4], (A0 | A1 | A2 | A3 | A4)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>]): TupleSchema<[A0, A1, A2, A3, A4, A5], (A0 | A1 | A2 | A3 | A4 | A5)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6], (A0 | A1 | A2 | A3 | A4 | A5 | A6)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8)>
+  items <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON, A9 extends AnyJSON> (items: [Schema<A0>, Schema<A1>, Schema<A2>, Schema<A3>, Schema<A4>, Schema<A5>, Schema<A6>, Schema<A7>, Schema<A8>, Schema<A9>]): TupleSchema<[A0, A1, A2, A3, A4, A5, A6, A7, A8, A9], (A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9)>
+  items <I extends AnyJSON> (items: Schema<I> | Schema<AnyJSON>[]) {
     if (Array.isArray(items)) {
       const tupleProps = this.setProps({ items: items.map(i => i.props)}).props
       return new TupleSchema(tupleProps) as any
@@ -43,15 +43,15 @@ export class ArraySchema<T> extends Schema<T>  {
   }
 }
 
-export class TupleSchema<T, A> extends ArraySchema<T> {
+export class TupleSchema<T extends AnyJSON[], A extends AnyJSON> extends ArraySchema<T> {
   constructor (props: JSONObject) {
     super(props)
   }
 
-  additionalItems (additionalItems: true) : ArraySchema<any[]>
-  additionalItems (additionalItems: false) : TupleSchema<T, A>
-  additionalItems <N> (additionalItems: Schema<N>) : ArraySchema<(A| N)[]>
-  additionalItems <N> (additionalItems: boolean | Schema<N> ) : ArraySchema<A[]> | TupleSchema<T, A> | ArraySchema<(A| N)[]> {
+  additionalItems (additionalItems: true) : ArraySchema<AnyJSON[]>
+  additionalItems (additionalItems: false) : this
+  additionalItems <N extends AnyJSON> (additionalItems: Schema<N>) : ArraySchema<(A| N)[]>
+  additionalItems <N extends AnyJSON> (additionalItems: boolean | Schema<N> ) : ArraySchema<A[]> | TupleSchema<T, A> | ArraySchema<(A| N)[]> {
     if (additionalItems === true) {
       return this.setProps({ additionalItems: true }) as any as ArraySchema<any[]>
     } else if (additionalItems === false) {
