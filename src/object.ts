@@ -1,9 +1,9 @@
-import { Schema, JSONObject } from "./schema";
+import { Schema, JSONObject, AnyJSON } from "./schema";
 
 type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
-type AnyRequired<K extends string> = {[P in K]: any }
+type AnyRequired<K extends string> = {[P in K]: AnyJSON }
 
-export class ObjectSchema<P, K extends string, A, PatternProperties, Dependencies>
+export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A extends JSONObject, PatternProperties, Dependencies>
     extends Schema<AnyRequired<Diff<K, keyof P>> //additional required properties typed with any
                    & Partial<Pick<P, Diff<keyof P, K>>> // properties not specified by requiredProperties
                    & Pick<P, Diff<keyof P, Diff<keyof P, K>>> // required properties
@@ -23,7 +23,7 @@ export class ObjectSchema<P, K extends string, A, PatternProperties, Dependencie
     return this.setProps({ minProperties })
   }
 
-  properties <O> (properties: {[ P in keyof O ]: Schema<O[P]>}) {
+  properties <K extends keyof O, O extends {[ P in K ]: AnyJSON}> (properties: {[ P in keyof O ]: Schema<O[P]>}) {
     const props = Object.keys(properties).reduce<JSONObject>((acc, key) => {
       acc[key] = properties[key].props
       return acc
@@ -41,15 +41,15 @@ export class ObjectSchema<P, K extends string, A, PatternProperties, Dependencie
     return this.setProps({ additionalProperties })
   }
 
-  patternProperties <T> (patternProperties: {[key: string]: Schema<T>}) {
+  patternProperties (patternProperties: {[key: string]: Schema<AnyJSON>}) {
     const props = Object.keys(patternProperties).reduce<JSONObject>((acc, key) => {
       acc[key] = patternProperties[key].props
       return acc
     }, {})
-    return this.setProps({ patternProperties: props }) as any as ObjectSchema<P, K, A, {[key: string]: T}, Dependencies>
+    return this.setProps({ patternProperties: props }) as any as ObjectSchema<P, K, A, {[key: string]: AnyJSON }, Dependencies>
   }
 
-  dependencies (dependencies: {[key: string]: Schema<any> | string[]}) {
+  dependencies (dependencies: {[key: string]: Schema<AnyJSON> | string[]}) {
     const props = Object.keys(dependencies).reduce<JSONObject>((acc, key) => {
       const value = dependencies[key]
       if (Array.isArray(value)) {
@@ -59,7 +59,7 @@ export class ObjectSchema<P, K extends string, A, PatternProperties, Dependencie
       }
       return acc
     }, {})
-    return this.setProps({ dependencies: props }) as any as ObjectSchema<P, K, A, PatternProperties, {[key: string]: any}>
+    return this.setProps({ dependencies: props }) as any as ObjectSchema<P, K, A, PatternProperties, {[key: string]: AnyJSON}>
   }
 
 }

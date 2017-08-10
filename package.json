@@ -4,13 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/**/*.ts"
+    "test": "TS_NODE_CACHE=false mocha test/**/*.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ajv": "^5.2.2",
-    "io-ts": "^0.6.1"
+    "ajv": "^5.2.2"
   },
   "devDependencies": {
     "@types/ajv": "^1.0.0",
