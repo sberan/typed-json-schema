@@ -1,13 +1,16 @@
 {
-  "name": "schema-ts",
+  "name": "typed-json-schema",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "TS_NODE_CACHE=false mocha test/**/*.ts"
   },
+  "files": [
+    "lib"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "ajv": "^5.2.2"
   },
