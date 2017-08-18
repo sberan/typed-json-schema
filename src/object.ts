@@ -1,7 +1,7 @@
 import { Schema, JSONObject, AnyJSON } from "./schema";
 
-type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
-type AnyRequired<K extends string> = {[P in K]: AnyJSON }
+export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
+export type AnyRequired<K extends string> = {[P in K]: AnyJSON }
 
 export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A extends JSONObject, PatternProperties, Dependencies>
     extends Schema<AnyRequired<Diff<K, keyof P>> //additional required properties typed with any
