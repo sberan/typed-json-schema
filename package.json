@@ -1,8 +1,8 @@
 {
   "name": "typed-json-schema",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "lib/schema.js",
   "scripts": {
     "test": "cross-env TS_NODE_CACHE=false mocha test/**/*.ts",
     "prepublish": "npm test && tsc --declaration"
