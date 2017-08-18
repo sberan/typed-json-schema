@@ -470,7 +470,7 @@ describe('JSON schema', () => {
        argument 0: value \`42\` did not match schema {"type":"string"}`)
   })
 
-  describe('custom validation annotations', () => {
+  describe.skip('custom validation annotations', () => {
     const someDecorator = (target: Object, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value = () => 'nope'
     }

@@ -1,10 +1,11 @@
 {
   "name": "typed-json-schema",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "TS_NODE_CACHE=false mocha test/**/*.ts"
+    "test": "cross-env TS_NODE_CACHE=false mocha test/**/*.ts",
+    "prepublish": "npm test && tsc --declaration"
   },
   "files": [
     "lib"
@@ -19,8 +20,13 @@
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
     "chai": "^4.1.0",
+    "cross-env": "^5.0.5",
     "mocha": "^3.4.2",
+    "reflect-metadata": "^0.1.10",
     "ts-node": "^3.3.0",
     "typescript": "2.4"
+  },
+  "peerDependencies": {
+    "reflect-metadata": "^0.1.10"
   }
 }

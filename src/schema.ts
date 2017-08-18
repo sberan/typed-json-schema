@@ -131,7 +131,7 @@ import { StringSchema } from "./string";
 import { BooleanSchema } from "./boolean";
 import { NullSchema } from "./null";
 import { NumberSchema } from "./number";
-import { ArraySchema } from "./array";
+import { ArraySchema, TupleSchema } from "./array";
 import { ObjectSchema } from "./object";
 
 function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
@@ -222,5 +222,6 @@ export {
   array,
   object,
   createValidationDecorator,
-  ValidateArgs
+  ValidateArgs,
+  TupleSchema
 }
