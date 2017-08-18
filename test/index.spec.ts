@@ -1,6 +1,21 @@
 import { expect } from 'chai'
-import { schema, Schema, number, integer, string, array, boolean, object, AnyJSON, JSONObject, JSONPrimitive, JSONArray, ValidateArgs, createValidationDecorator } from '../src/schema'
-import { Validator } from "../src/schema";
+import {
+  schema,
+  Schema,
+  number,
+  integer,
+  string,
+  array,
+  boolean,
+  object,
+  AnyJSON,
+  JSONObject,
+  JSONPrimitive,
+  JSONArray,
+  ValidateArgs,
+  createValidationDecorator,
+  Validator
+} from '../src/schema'
 
 function expectSchema <ExpectedType extends AnyJSON> (schema: Schema<ExpectedType>) {
   return expect(schema.toJSON())
