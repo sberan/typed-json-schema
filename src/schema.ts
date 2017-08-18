@@ -123,7 +123,7 @@ export class Schema<T extends AnyJSON> {
 declare module './schema' {
   //make schema instances newable so that they can be validated using decorators
   export interface Schema<T extends AnyJSON> {
-    new (value: T): T
+    new (...args: any[]): never
   }
 }
 
