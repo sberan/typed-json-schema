@@ -2,7 +2,8 @@
   "name": "typed-json-schema",
   "version": "1.0.2",
   "description": "",
-  "main": "lib/schema.js",
+  "main": "lib/src/schema",
+  "typings": "lib/src/schema",
   "scripts": {
     "test": "cross-env TS_NODE_CACHE=false mocha test/**/*.ts",
     "prepublish": "npm test && tsc --declaration"
@@ -10,7 +11,7 @@
   "files": [
     "lib"
   ],
-  "author": "",
+  "author": "Sam Beran (sberan@gmail.com)",
   "license": "MIT",
   "dependencies": {
     "ajv": "^5.2.2"
