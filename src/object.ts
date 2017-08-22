@@ -3,14 +3,21 @@ import { Schema, JSONObject, AnyJSON } from "./schema";
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
 export type AnyRequired<K extends string> = {[P in K]: AnyJSON }
 
-export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A extends JSONObject, PatternProperties, Dependencies>
-    extends Schema<AnyRequired<Diff<K, keyof P>> //additional required properties typed with any
-                   & Partial<Pick<P, Diff<keyof P, K>>> // properties not specified by requiredProperties
-                   & Pick<P, Diff<keyof P, Diff<keyof P, K>>> // required properties
-                   & A // additional properties
-                   & PatternProperties
-                   & Dependencies
-                  >  {
+export class ObjectSchema<
+      PropertyDefinitions extends AnyRequired<keyof PropertyDefinitions>,
+      RequiredProperties extends string,
+      AdditionalProperties extends JSONObject,
+      PatternProperties,
+      Dependencies
+    >
+    extends Schema<
+      AnyRequired<Diff<RequiredProperties, keyof PropertyDefinitions>> //additional required properties typed with any
+      & Partial<Pick<PropertyDefinitions, Diff<keyof PropertyDefinitions, RequiredProperties>>> // properties not specified by requiredProperties
+      & Pick<PropertyDefinitions, Diff<keyof PropertyDefinitions, Diff<keyof PropertyDefinitions, RequiredProperties>>> // required properties
+      & AdditionalProperties // additional properties
+      & PatternProperties
+      & Dependencies
+    >  {
   constructor () {
     super({ type: 'object' })
   }
@@ -28,15 +35,15 @@ export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A ex
       acc[key] = properties[key].props
       return acc
     }, {})
-    return this.setProps({ properties: props }) as any as ObjectSchema<O, never, A, PatternProperties, Dependencies>
+    return this.setProps({ properties: props }) as any as ObjectSchema<O, RequiredProperties, AdditionalProperties, PatternProperties, Dependencies>
   }
 
   required <K extends string> (...required: K[]) {
-    return this.setProps({ required }) as any as ObjectSchema<P, K, A, PatternProperties, Dependencies>
+    return this.setProps({ required }) as any as ObjectSchema<PropertyDefinitions, K, AdditionalProperties, PatternProperties, Dependencies>
   }
 
   additionalProperties (additionalProperties: true): this
-  additionalProperties (additionalProperties: false): ObjectSchema<P, K, {}, PatternProperties, Dependencies>
+  additionalProperties (additionalProperties: false): ObjectSchema<PropertyDefinitions, RequiredProperties, {}, PatternProperties, Dependencies>
   additionalProperties (additionalProperties: boolean) {
     return this.setProps({ additionalProperties })
   }
@@ -46,7 +53,7 @@ export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A ex
       acc[key] = patternProperties[key].props
       return acc
     }, {})
-    return this.setProps({ patternProperties: props }) as any as ObjectSchema<P, K, A, {[key: string]: AnyJSON }, Dependencies>
+    return this.setProps({ patternProperties: props }) as any as ObjectSchema<PropertyDefinitions, RequiredProperties, AdditionalProperties, {[key: string]: AnyJSON }, Dependencies>
   }
 
   dependencies (dependencies: {[key: string]: Schema<AnyJSON> | string[]}) {
@@ -59,7 +66,7 @@ export class ObjectSchema<P extends AnyRequired<keyof P>, K extends string, A ex
       }
       return acc
     }, {})
-    return this.setProps({ dependencies: props }) as any as ObjectSchema<P, K, A, PatternProperties, {[key: string]: AnyJSON}>
+    return this.setProps({ dependencies: props }) as any as ObjectSchema<PropertyDefinitions, RequiredProperties, AdditionalProperties, PatternProperties, {[key: string]: AnyJSON}>
   }
 
 }

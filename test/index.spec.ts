@@ -243,11 +243,10 @@ describe('JSON schema', () => {
       required: ['a', 'b', 'c']
     })
     
-    const schemaWithNoAdditionalProperties = object({
+    const schemaWithNoAdditionalProperties = object.required('a', 'b', 'c').properties({
         a: string,
         b: array(number)
       })
-      .required('a', 'b', 'c')
       .additionalProperties(false)
 
     expectSchema<{ a: string, b: number[], c: AnyJSON }>(schemaWithNoAdditionalProperties).to.eql({
