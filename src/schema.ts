@@ -30,7 +30,7 @@ export class Schema<T extends AnyJSON> {
   type(type: 'boolean'): BooleanSchema
   type(type: 'null'): NullSchema
   type(type: 'array'): ArraySchema<any>
-  type(type: 'object'): ObjectSchema<JSONObject, never, JSONObject, {}, {}>
+  type(type: 'object'): ObjectSchema<{}, never, JSONObject, JSONObject, {}, {}>
   type (type: string) {
     if (type === 'string') {
       return new StringSchema()
@@ -51,7 +51,7 @@ export class Schema<T extends AnyJSON> {
       return new ArraySchema<any[]>()
     }
     if (type === 'object') {
-      return new ObjectSchema<{[x: string]: any}, never, {[x: string]: any}, {}, {}>()
+      return new ObjectSchema<{}, never, JSONObject, JSONObject, {}, {}>()
     }
   }
 
