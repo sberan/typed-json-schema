@@ -20,6 +20,7 @@ import {
 function expectSchema <ExpectedType extends AnyJSON> (schema: Schema<ExpectedType>) {
   return expect(schema.toJSON())
 }
+function expectSchemaProperty<Z extends Schema<any>, K extends keyof Z['_T'], ExpectedType extends Z['_T'][K]> () {}
 
 describe('JSON schema', () => {
   it('should create a number schema', () => {
@@ -202,39 +203,46 @@ describe('JSON schema', () => {
 
   it('should create an object schema', () => {
     const objectSchema = schema.type('object')
-  
-    expectSchema<{}>(objectSchema).to.eql({
+    
+    expectSchemaProperty<typeof objectSchema, 'foo', AnyJSON>()
+    expectSchema(objectSchema).to.eql({
       type: 'object'
     })
   
     const minMaxProperties = object.maxProperties(3).minProperties(1)
 
-    expectSchema<{}>(minMaxProperties).to.eql({
+    expectSchema(minMaxProperties).to.eql({
       type: 'object',
       maxProperties: 3,
       minProperties: 1
     })
 
     const schemaWithProperties = object({
-        a: string,
-        b: array(number)
-      })
+      a: string,
+      b: array(number)
+    })
 
-    expectSchema<{ a?: string, b?: number[] }>(schemaWithProperties).to.eql({
+    expectSchemaProperty<typeof schemaWithProperties, 'a', string | undefined>()
+    expectSchemaProperty<typeof schemaWithProperties, 'b', number[] | undefined>()
+    expectSchema(schemaWithProperties).to.eql({
       type: 'object',
       properties: {
         a: { type: 'string' },
         b: { type: 'array', items: { type: 'number' }}
       }
     })
-    
+
     const schemaWithRequiredProperties = object({
         a: string,
         b: array(number)
       })
       .required('a', 'b', 'c')
 
-    expectSchema<{ a: string, b: number[], c: AnyJSON, someOtherProperty?: string }>(schemaWithRequiredProperties).to.eql({
+    expectSchemaProperty<typeof schemaWithRequiredProperties, 'a', string>()
+    expectSchemaProperty<typeof schemaWithRequiredProperties, 'b', number[]>()
+    expectSchemaProperty<typeof schemaWithRequiredProperties, 'c', AnyJSON>()
+    expectSchemaProperty<typeof schemaWithRequiredProperties, 'someOtherProperty', AnyJSON>()
+    expectSchema(schemaWithRequiredProperties).to.eql({
       type: 'object',
       properties: {
         a: { type: 'string' },
@@ -243,38 +251,58 @@ describe('JSON schema', () => {
       required: ['a', 'b', 'c']
     })
     
-    const schemaWithNoAdditionalProperties = object({
+    const schemaWithNoAdditionalProperties = object.required('a', 'b', 'c').properties({
         a: string,
-        b: array(number)
+        b: array(number),
+        d: boolean
       })
-      .required('a', 'b', 'c')
       .additionalProperties(false)
 
-    expectSchema<{ a: string, b: number[], c: AnyJSON }>(schemaWithNoAdditionalProperties).to.eql({
+    expectSchemaProperty<typeof schemaWithNoAdditionalProperties, 'a', string >()
+    expectSchemaProperty<typeof schemaWithNoAdditionalProperties, 'b', number[] >()
+    expectSchemaProperty<typeof schemaWithNoAdditionalProperties, 'c', AnyJSON >()
+    expectSchemaProperty<typeof schemaWithNoAdditionalProperties, 'd', boolean | undefined>()
+    expectSchema(schemaWithNoAdditionalProperties).to.eql({
       type: 'object',
       properties: {
         a: { type: 'string' },
-        b: { type: 'array', items: { type: 'number' }}
+        b: { type: 'array', items: { type: 'number' }},
+        d: { type: 'boolean' }
       },
       required: ['a', 'b', 'c'],
       additionalProperties: false
     })
 
-    const objectWithPatternProperties = object({
-        a: string
-      })
-      .patternProperties({
-        "$foo^": string,
-        "$bar^": number
-      })
-      .additionalProperties(false)
-      
+    const objectWithPatternProperties = object
+    .patternProperties(
+      /$foo^/, string,
+      /$bar^/, number
+    )
+    .additionalProperties(false)
 
+    expectSchemaProperty<typeof objectWithPatternProperties, 'a', string | number | undefined>()
     expectSchema(objectWithPatternProperties).to.eql({
       type: 'object',
-      properties: {
-        a: { type: 'string' },
-      },
+      additionalProperties: false,
+      patternProperties: {
+        "$foo^": { type: 'string' },
+        "$bar^": { type: 'number' }
+      }
+    })
+    const objectWithRequiredPatternProperties = object
+      .patternProperties(
+        /$foo^/, string,
+        /$bar^/, number
+      )
+      .required('a')
+      .additionalProperties(false)
+    
+
+    expectSchemaProperty<typeof objectWithRequiredPatternProperties, 'a', string | number>()
+    expectSchemaProperty<typeof objectWithRequiredPatternProperties, 'b', string | number | undefined>()
+    expectSchema(objectWithRequiredPatternProperties).to.eql({
+      type: 'object',
+      required: ['a'],
       additionalProperties: false,
       patternProperties: {
         "$foo^": { type: 'string' },
