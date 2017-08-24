@@ -29,8 +29,8 @@ export class Schema<T extends AnyJSON> {
   type(type: 'string'): StringSchema
   type(type: 'boolean'): BooleanSchema
   type(type: 'null'): NullSchema
-  type(type: 'array'): ArraySchema<any>
-  type(type: 'object'): ObjectSchema<{}, never, JSONObject, JSONObject, {}, {}>
+  type(type: 'array'): ArraySchema<any[]>
+  type(type: 'object'): ObjectSchema<{}, never, never, string, AnyJSON, never, never, {}>
   type (type: string) {
     if (type === 'string') {
       return new StringSchema()
@@ -48,10 +48,10 @@ export class Schema<T extends AnyJSON> {
       return new NumberSchema({ type: 'integer' })
     }
     if (type === 'array') {
-      return new ArraySchema<any[]>()
+      return new ArraySchema()
     }
     if (type === 'object') {
-      return new ObjectSchema<{}, never, JSONObject, JSONObject, {}, {}>()
+      return new ObjectSchema()
     }
   }
 
@@ -136,7 +136,7 @@ import { ObjectSchema } from "./object";
 
 function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
   const
-    boundMethod: T[K] = obj[key].bind(obj),
+    boundMethod: T[K] = (obj[key] as Function).bind(obj),
     merged = Object.assign(boundMethod, obj)
 
   ;(boundMethod as any).__proto__ = (obj as any).__proto__
