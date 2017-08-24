@@ -16,11 +16,7 @@ import {
   createValidationDecorator,
   Validator
 } from '../src/schema'
-
-function expectSchema <ExpectedType extends AnyJSON> (schema: Schema<ExpectedType>) {
-  return expect(schema.toJSON())
-}
-function expectSchemaProperty<Z extends Schema<any>, K extends keyof Z['_T'], ExpectedType extends Z['_T'][K]> () {}
+import { expectSchema, expectSchemaProperty, testSchema } from "./utils";
 
 describe('JSON schema', () => {
   it('should create a number schema', () => {
@@ -273,6 +269,23 @@ describe('JSON schema', () => {
       additionalProperties: false
     })
 
+    const schemaWithAdditionalProperties = object
+      .properties({ a: string })
+      .required('b')
+      .additionalProperties(number)
+
+    expectSchemaProperty<typeof schemaWithAdditionalProperties, 'a', string | undefined>()
+    expectSchemaProperty<typeof schemaWithAdditionalProperties, 'b', number>()
+    expectSchemaProperty<typeof schemaWithAdditionalProperties, 'c', number | undefined>()
+    expectSchema(schemaWithAdditionalProperties).to.eql({
+      type: 'object',
+      properties: {
+        a: { type: 'string' }
+      },
+      required: ['b'],
+      additionalProperties: { type: 'number' }
+    })
+
     const objectWithPatternProperties = object
     .patternProperties(
       /$foo^/, string,
@@ -289,6 +302,7 @@ describe('JSON schema', () => {
         "$bar^": { type: 'number' }
       }
     })
+
     const objectWithRequiredPatternProperties = object
       .patternProperties(
         /$foo^/, string,
@@ -297,10 +311,8 @@ describe('JSON schema', () => {
       .required('a')
       .additionalProperties(false)
     
-
-    expectSchemaProperty<typeof objectWithRequiredPatternProperties, 'a', string | number>()
     expectSchemaProperty<typeof objectWithRequiredPatternProperties, 'b', string | number | undefined>()
-    expectSchema(objectWithRequiredPatternProperties).to.eql({
+    expectSchema/* TODO: <{ a: string | number }>*/(objectWithRequiredPatternProperties).to.eql({
       type: 'object',
       required: ['a'],
       additionalProperties: false,
@@ -308,6 +320,15 @@ describe('JSON schema', () => {
         "$foo^": { type: 'string' },
         "$bar^": { type: 'number' }
       }
+    })
+
+    const schemaWithEmbeddedObject = object.properties({c: number, e: number}).additionalProperties(string).required('c', 'd')
+
+    testSchema(schemaWithEmbeddedObject, x => {
+      x.c // number
+      x.d // string
+      x.e // number | undefined
+      x.f // string | undefined
     })
     
     const objectWithDependencies = object.additionalProperties(false)
