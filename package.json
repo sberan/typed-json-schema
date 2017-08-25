@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "lib/src/schema",
   "typings": "lib/src/schema",

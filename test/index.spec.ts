@@ -95,6 +95,12 @@ describe('JSON schema', () => {
       type: 'string', 
       pattern: "\\w+"
     })
+    const stringFormat = string.format('email')
+  
+    expectSchema<string>(stringFormat).to.eql({
+      type: 'string', 
+      format: 'email'
+    })
   })
 
   it('should create a boolean schema', () => {
