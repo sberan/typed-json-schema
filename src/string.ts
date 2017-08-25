@@ -16,4 +16,8 @@ export class StringSchema extends Schema<string> {
   pattern (pattern: RegExp) {
     return this.setProps({ pattern: pattern.source })
   }
+
+  format (format: string) {
+    return this.setProps({ format })
+  }
 }
