@@ -83,3 +83,11 @@ oneOf.a
 
 // $ExpectType string
 oneOf.b
+
+const ASchema = schema.type(['string', 'null'])
+type ASchema = schema<typeof ASchema>
+
+function foo (value: ASchema) {
+  // $ExpectType string | null
+  value
+}
