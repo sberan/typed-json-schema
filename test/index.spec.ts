@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import {
   schema,
-  Schema,
   number,
   integer,
   string,

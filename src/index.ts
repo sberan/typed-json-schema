@@ -1,8 +1,9 @@
 import { Schema } from './schema'
 import { callableInstance } from './util/lang'
 
-export { Schema } from './schema'
 export { Validator } from './validator'
+
+export type schema<T extends Schema<any>> = T['TypeOf']
 
 export const
   schema = new Schema(),

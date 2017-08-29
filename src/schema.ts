@@ -281,5 +281,3 @@ declare module './schema' {
     new (...args: any[]): never
   }
 }
-
-export type schema<T extends Schema<any>> = T['TypeOf']
