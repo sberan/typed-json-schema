@@ -1,20 +1,59 @@
-import 'reflect-metadata'
+import { AnyJSON, callableInstance, JSONObject } from "./util/lang";
 
-import Ajv = require('ajv')
-import { ErrorObject } from 'ajv'
+export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T];
+export type Overwrite<T, U> = { [P in Diff<keyof T, keyof U>]: T[P] } & U;
+export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
 
-export type JSONPrimitive = string | number | boolean | null | undefined
-export interface JSONArray extends Array<AnyJSON> {}
-export interface JSONObject { [key: string]: AnyJSON }
-export type AnyJSON = JSONPrimitive | JSONArray | JSONObject
+export type SchemaUpdate<State extends SchemaState, K extends keyof SchemaState, V extends SchemaState[K]> = Schema<Omit<State, K> & {[P in K]: V}>
+export type SchemaMultiUpdate<State extends SchemaState, K extends keyof SchemaState, U extends {[P in K]: SchemaState[P]}> = Schema<Overwrite<State, U>>
 
+export type Types<State extends SchemaState = DefaultSchemaState> = {
+  string: string
+  number: number
+  integer: number
+  boolean: boolean
+  null: null
+  array: (State['items'] | State['additionalItems'])[]
+  object: State['anyOf'] & State['oneOf'] & State['allOf'] &{[P in State['required']]: State['properties'][P]['TypeOf']}
+        & {[P in Diff<keyof State['properties'], State['required']>]?: State['properties'][P]['TypeOf'] }
+        & {[P in State['additionalProperties']['key'] | State['patternProperties']['key']]?: State['additionalProperties']['type'] | State['patternProperties']['type'] },
+  enum: State['enum']
+}
 
-export class Schema<T extends AnyJSON> {
-  constructor (public props: JSONObject = {}) { } //TODO: make props private
+export type SchemaState = {
+  type: keyof Types
+  items: any
+  additionalItems: any
+  properties: any
+  required: string
+  additionalProperties: {key: string, type: any}
+  patternProperties: {key: string, type: any}
+  enum: any
+  anyOf: any
+  oneOf: any
+  allOf: any
+}
 
-  _T: T
+export type DefaultSchemaState = {
+  type: keyof Types
+  items: any
+  additionalItems: never
+  properties: any
+  required: never
+  additionalProperties: {key: string, type: any}
+  patternProperties: {key: never, type: never}
+  enum: any
+  anyOf: {}
+  oneOf: {}
+  allOf: {}
+}
 
-  setProps (props: JSONObject): this {
+export class Schema<State extends SchemaState = DefaultSchemaState> {
+  TypeOf: Types<State>[State['type']]
+
+  private props: JSONObject = {}
+
+  setProps (props: JSONObject): any {
     var clone = Object.create(this)
     clone.props = Object.assign({}, this.props, props)
     return clone
@@ -24,204 +63,223 @@ export class Schema<T extends AnyJSON> {
     return this.props
   }
 
-  type(type: 'number'): NumberSchema
-  type(type: 'integer'): NumberSchema
-  type(type: 'string'): StringSchema
-  type(type: 'boolean'): BooleanSchema
-  type(type: 'null'): NullSchema
-  type(type: 'array'): ArraySchema<any[]>
-  type(type: 'object'): ObjectSchema<{}, never, never, string, AnyJSON, never, never, {}>
-  type (type: string) {
-    if (type === 'string') {
-      return new StringSchema()
-    }
-    if (type === 'boolean') {
-      return new BooleanSchema()
-    }
-    if (type === 'null') {
-      return new NullSchema()
-    }
-    if (type === 'number') {
-      return new NumberSchema()
-    }
-    if (type === 'integer') {
-      return new NumberSchema({ type: 'integer' })
-    }
-    if (type === 'array') {
-      return new ArraySchema()
-    }
-    if (type === 'object') {
-      return new ObjectSchema()
-    }
+  /*======================
+  GLOBAL
+  ========================*/
+  type<TypeKeys extends keyof Types>(type: TypeKeys[]): SchemaUpdate<State, 'type', TypeKeys> 
+  type<TypeKeys extends keyof Types>(type: TypeKeys): SchemaUpdate<State, 'type', TypeKeys>
+  type<TypeKeys extends keyof Types>(type: string | string[]) {
+    return this.setProps({ type })
+  }
+  
+  enum<T extends AnyJSON>(values: T[]): SchemaMultiUpdate<State, 'enum' | 'type', { type: 'enum', enum: T }> {
+    return this.setProps({ enum: values })
   }
 
-  title (title: string) {
+  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
+  anyOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'anyOf', T1['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']>
+  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']| T9['TypeOf']>
+  anyOf (schemas: any[]) {
+    return this.setProps({ anyOf: schemas.map(s => s.props) })
+  }
+
+  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
+  oneOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'oneOf', T1['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']>
+  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']| T9['TypeOf']>
+  oneOf (schemas: any[]) {
+    return this.setProps({ oneOf: schemas.map(s => s.props) })
+  }
+
+  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
+  // TODO: these should be intersection types but that doesn't work :(
+  allOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'allOf', T1['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf'] | T8['TypeOf']>
+  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf'] | T8['TypeOf'] | T9['TypeOf']>
+  allOf (schemas: any[])  {
+    return this.setProps({ allOf: schemas.map(s => s.props) })
+  }
+
+  title (title: string): this {
     return this.setProps({ title })
   }
 
-  description (description: string) {
+  description (description: string): this {
     return this.setProps({ description })
   }
 
-  default (defaultValue: AnyJSON) {
+  default (defaultValue: AnyJSON): this {
     return this.setProps({ default: defaultValue })
   }
 
-  enum <V extends AnyJSON>(values: V[]) {
-    //todo: use arrays instead of varargs everywhere because type inference works better
-    //todo: combine incoming enum type with parent type
-    return this.setProps({ enum: values as any }) as any as Schema<V>
+  not <X extends SchemaState> (schema: Schema<X>): this {
+    return this.setProps({ not: schema.props })
   }
 
-  allOf <A0 extends AnyJSON>  (a0: Schema<A0>): Schema<A0>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>): Schema<A0 | A1>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>): Schema<A0 | A1 | A2>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>): Schema<A0 | A1 | A2 | A3>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>): Schema<A0 | A1 | A2 | A3 | A4>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>): Schema<A0 | A1 | A2 | A3 | A4 | A5>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8>
-  allOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON, A9 extends AnyJSON>  (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>, a9: Schema<A9>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9>
-  allOf(...values: Schema<any>[]): Schema<any> {
-    return this.setProps({ allOf: values.map(v => v.props) })
+  /*============
+  Array
+  =============*/
+  items<ItemsSchema extends Schema<any>> (items: ItemsSchema[]): SchemaUpdate<State, 'items', ItemsSchema['TypeOf']>
+  items<ItemsSchema extends Schema<any>> (items: ItemsSchema): SchemaUpdate<State, 'items', ItemsSchema['TypeOf']>
+  items<ItemsSchema extends Schema<any>> (items: ItemsSchema | ItemsSchema[]) {
+    if (Array.isArray(items)) {
+      return this.setProps({ items: items.map(i => i.props)})
+    } else {
+      return this.setProps({ items: items.props })
+    }
   }
   
-  anyOf <A0 extends AnyJSON> (a0: Schema<A0>): Schema<A0>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>): Schema<A0 | A1>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>): Schema<A0 | A1 | A2>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>): Schema<A0 | A1 | A2 | A3>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>): Schema<A0 | A1 | A2 | A3 | A4>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>): Schema<A0 | A1 | A2 | A3 | A4 | A5>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8>
-  anyOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON, A9 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>, a9: Schema<A9>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9>
-  anyOf(...values: Schema<any>[]) {
-    return this.setProps({ anyOf: values.map(v => v.props) })
+  additionalItems (additionalItems: true): SchemaUpdate<State, 'additionalItems', any > 
+  additionalItems (additionalItems: false): this
+  additionalItems<ItemsSchema extends Schema<any>> (additionalItems: ItemsSchema): SchemaUpdate<State, 'additionalItems', ItemsSchema['TypeOf'] >  
+  additionalItems<ItemsSchema extends Schema<any>> (additionalItems: boolean | ItemsSchema) {
+    if (additionalItems === true) {
+      return this.setProps({ additionalItems: true })
+    } else if (additionalItems === false) {
+      return this
+    } else {
+      return this.setProps({ additionalItems: additionalItems.props })
+    }
   }
 
-  oneOf <A0 extends AnyJSON> (a0: Schema<A0>): Schema<A0>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>): Schema<A0 | A1>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>): Schema<A0 | A1 | A2>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>): Schema<A0 | A1 | A2 | A3>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>): Schema<A0 | A1 | A2 | A3 | A4>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>): Schema<A0 | A1 | A2 | A3 | A4 | A5>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8>
-  oneOf <A0 extends AnyJSON, A1 extends AnyJSON, A2 extends AnyJSON, A3 extends AnyJSON, A4 extends AnyJSON, A5 extends AnyJSON, A6 extends AnyJSON, A7 extends AnyJSON, A8 extends AnyJSON, A9 extends AnyJSON> (a0: Schema<A0>, a1: Schema<A1>, a2: Schema<A2>, a3: Schema<A3>, a4: Schema<A4>, a5: Schema<A5>, a6: Schema<A6>, a7: Schema<A7>, a8: Schema<A8>, a9: Schema<A9>): Schema<A0 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9>
-  oneOf(...values: Schema<any>[]) {
-    return this.setProps({ oneOf: values.map(v => v.props) })
+  contains (contains: Schema<any>): this {
+    return this.setProps({ contains: contains.props })
   }
 
-  not <X extends AnyJSON> (schema: Schema<X>) {
-    return this.setProps({ not: schema.props })
+  maxItems (maxItems: number): this {
+    return this.setProps({ maxItems })
+  }
+
+  minItems (minItems: number): this {
+    return this.setProps({ minItems })
+  }
+
+  uniqueItems (uniqueItems: boolean): this {
+    return this.setProps({ uniqueItems })
+  }
+
+  /*===============
+  OBJECT
+  =================*/
+  properties<K extends string, Properties extends {[P in K]: Schema<any>}>(properties: Properties): SchemaUpdate<State, 'properties', Properties> {
+    const props = Object.keys(properties).reduce<JSONObject>((acc, key: K) => {
+      acc[key] = (properties[key] as Schema<any>).props
+      return acc
+    }, {})
+    return this.setProps({ properties: props })
+  }
+
+  required<K extends string>(...required: K[]): SchemaUpdate<State, 'required', K> {
+    return this.setProps({ required })
+  }
+
+  additionalProperties (additionalProperties: true): SchemaUpdate<State, 'additionalProperties', {key: string, type: any}>
+  additionalProperties (additionalProperties: false): SchemaUpdate<State, 'additionalProperties', {key: never, type: never}>
+  additionalProperties<T extends Schema<any>> (additionalProperties: T): SchemaUpdate<State, 'additionalProperties', {key: string, type: T['TypeOf']}>
+  additionalProperties (additionalProperties: boolean | Schema<any>): any {
+    if (additionalProperties instanceof Schema) {
+      return this.setProps({ additionalProperties: additionalProperties.props })
+    } else {
+      return this.setProps({ additionalProperties })
+    }
+  }
+  
+  patternProperties<T extends Schema<any>> (patternProperties: { [key: string]: T }): SchemaUpdate<State, 'patternProperties', {key: string, type: T['TypeOf']}> {
+    const props = Object.keys(patternProperties).reduce<JSONObject>((acc, key: keyof typeof patternProperties) => {
+      acc[key] = patternProperties[key].props
+      return acc
+    }, {})
+    return this.setProps({ patternProperties: props })
+  }
+
+  dependencies (dependencies: {[key: string]: Schema<any> | string[]}): this {
+    const props = Object.keys(dependencies).reduce<JSONObject>((acc, key) => {
+      const value = dependencies[key]
+      if (Array.isArray(value)) {
+        acc[key] = value
+      } else {
+        acc[key] = value.props
+      }
+      return acc
+    }, {})
+    return this.setProps({ dependencies: props })
+  }
+
+  maxProperties(maxProperties: number): this {
+    return this.setProps({ maxProperties })
+  }
+
+  minProperties(minProperties: number): this {
+    return this.setProps({ minProperties })
+  }
+
+  /*===================
+  NUMBER
+  =====================*/
+  maximum(maximum: number): this {
+    return this.setProps({ maximum })
+  }
+
+  minimum(minimum: number): this {
+    return this.setProps({ minimum })
+  }
+
+  exclusiveMaximum(exclusiveMaximum: number | boolean): this {
+    return this.setProps({ exclusiveMaximum })
+  }
+
+  exclusiveMinimum(exclusiveMinimum: number | boolean): this {
+    return this.setProps({ exclusiveMinimum })
+  }
+
+  multipleOf(multipleOf: number): this {
+    return this.setProps({ multipleOf })
+  }
+
+  /*=============
+  STRING
+  ===============*/
+  maxLength (maxLength: number): this {
+    return this.setProps({ maxLength })
+  }
+
+  minLength (minLength: number): this {
+    return this.setProps({ minLength })
+  }
+
+  pattern (pattern: RegExp): this {
+    return this.setProps({ pattern: pattern.source })
+  }
+
+  format (format: string): this {
+    return this.setProps({ format })
   }
 }
 
 declare module './schema' {
   //make schema instances newable so that they can be validated using decorators
-  export interface Schema<T extends AnyJSON> {
+  export interface Schema<State extends SchemaState> {
     new (...args: any[]): never
   }
 }
 
-import { StringSchema } from "./string";
-import { BooleanSchema } from "./boolean";
-import { NullSchema } from "./null";
-import { NumberSchema } from "./number";
-import { ArraySchema, TupleSchema } from "./array";
-import { ObjectSchema } from "./object";
-
-function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
-  const
-    boundMethod: T[K] = (obj[key] as Function).bind(obj),
-    merged = Object.assign(boundMethod, obj)
-
-  ;(boundMethod as any).__proto__ = (obj as any).__proto__
-  return merged
-}
-
-export class Validator {
-  ajv: Ajv.Ajv
-
-  constructor(options: Ajv.Options = {}) {
-    this.ajv = new Ajv(options)
-  }
-
-  validate <T extends AnyJSON>(schema: Schema<T>, obj: any): { valid: false, errors: Array<ErrorObject>, result: null } | { valid: true, errors: null, result: T }  {
-    const validate = this.ajv.compile(schema.toJSON())
-    const coercedValue: { result?: T } = { }
-    const isValid = validate(obj, undefined, coercedValue, 'result')
-    if (isValid) {
-      return { errors: null, result: coercedValue.result || obj, valid: true }
-    } else {
-      return { errors: validate.errors!, result: null, valid: false }
-    }
-  }
-}
-
-const
-  schema = new Schema<any>({}),
-  number = schema.type('number'),
-  integer = schema.type('integer'),
-  string = schema.type('string'),
-  boolean = schema.type('boolean'),
-  array = callableInstance(schema.type('array'), 'items'), //todo: this polutes all array types, it should only be on the base type
-  object = callableInstance(schema.type('object'), 'properties')
-
-
-type schema<T extends Schema<any>> = T['_T']
-
-function createValidationDecorator <T extends MethodDecorator>(delegate: T, options: Ajv.Options = {}) {
-  return (target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<Function>) => {
-    const method = descriptor.value!
-    const expectedParamTypes: any[] = Reflect.getMetadata('design:paramtypes', target, propertyKey)
-    const validator = new Validator(options)
-    for(let i = 0; i < expectedParamTypes.length; i++) {
-      const paramType = expectedParamTypes[i]
-      if (paramType === Number) {
-        expectedParamTypes[i] = number
-      } else if (paramType === String) {
-        expectedParamTypes[i] = string
-      } else if (paramType === Boolean) {
-        expectedParamTypes[i] = boolean
-      }
-    }
-    descriptor.value = function (...incomingArgs: any[]) {
-      const errorMessages: string[] = []
-      for (let i = 0; i < expectedParamTypes.length; i++) {
-        const paramType = expectedParamTypes[i]
-        if (paramType instanceof Schema) {
-          const { result, errors } = validator.validate(paramType, incomingArgs[i])
-          if (errors) {
-            errorMessages.push(`argument ${i}: value \`${JSON.stringify(incomingArgs[i])}\` did not match schema ${JSON.stringify(paramType.toJSON())}`)
-          } else {
-            incomingArgs[i] = result
-          }
-        }
-      }
-      if (errorMessages.length) {
-        const indent = '\n       '
-        throw new TypeError(`invalid invocation of ${target.constructor.name}.${propertyKey}:${indent}${errorMessages.join(indent)}`)
-      }
-      return method.apply(this, incomingArgs)
-    }
-  }
-}
-
-const ValidateArgs = (options: Ajv.Options = {}) => createValidationDecorator(() => {}, options)
-
-export {
-  schema,
-  number,
-  integer,
-  string,
-  boolean,
-  array,
-  object,
-  createValidationDecorator,
-  ValidateArgs,
-  TupleSchema
-}
+export type schema<T extends Schema<any>> = T['TypeOf']

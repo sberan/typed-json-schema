@@ -1,11 +1,13 @@
 {
   "name": "typed-json-schema",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "",
-  "main": "lib/src/schema",
-  "typings": "lib/src/schema",
+  "main": "lib/src/index",
+  "typings": "lib/src/index",
   "scripts": {
-    "test": "cross-env TS_NODE_CACHE=false mocha test/**/*.ts",
+    "mocha": "cross-env TS_NODE_CACHE=false mocha test/**/*.spec.ts",
+    "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test/typedefs.ts",
+    "test": "npm run mocha && npm run test-typedefs",
     "prepublish": "npm test && tsc --declaration"
   },
   "files": [
@@ -23,11 +25,8 @@
     "chai": "^4.1.0",
     "cross-env": "^5.0.5",
     "mocha": "^3.4.2",
-    "reflect-metadata": "^0.1.10",
     "ts-node": "^3.3.0",
-    "typescript": "2.5"
-  },
-  "peerDependencies": {
-    "reflect-metadata": "^0.1.10"
+    "typescript": "2.5",
+    "typings-checker": "^2.0.0"
   }
 }
