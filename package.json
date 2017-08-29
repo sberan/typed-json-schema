@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "lib/src/index",
   "typings": "lib/src/index",
@@ -15,6 +15,10 @@
   ],
   "author": "Sam Beran (sberan@gmail.com)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:sberan/typed-json-schema.git"
+  },
   "dependencies": {
     "ajv": "^5.2.2"
   },
