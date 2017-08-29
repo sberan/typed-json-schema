@@ -51,12 +51,10 @@ export type DefaultSchemaState = {
 export class Schema<State extends SchemaState = DefaultSchemaState> {
   TypeOf: Types<State>[State['type']]
 
-  private props: JSONObject = {}
+  constructor (private readonly props: JSONObject = {}) { }
 
   setProps (props: JSONObject): any {
-    var clone = Object.create(this)
-    clone.props = Object.assign({}, this.props, props)
-    return clone
+    return new Schema(Object.assign({}, this.props, props))
   }
 
   toJSON() {
