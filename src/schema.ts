@@ -7,21 +7,24 @@ export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
 export type SchemaUpdate<State extends SchemaState, K extends keyof SchemaState, V extends SchemaState[K]> = Schema<Omit<State, K> & {[P in K]: V}>
 export type SchemaMultiUpdate<State extends SchemaState, K extends keyof SchemaState, U extends {[P in K]: SchemaState[P]}> = Schema<Overwrite<State, U>>
 
-export type Types<State extends SchemaState = DefaultSchemaState> = {
+export type TypeNames = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object'
+
+export type TypeDefs<State extends SchemaState> = {
   string: string
   number: number
   integer: number
   boolean: boolean
   null: null
   array: (State['items'] | State['additionalItems'])[]
-  object: State['anyOf'] & State['oneOf'] & State['allOf'] &{[P in State['required']]: State['properties'][P]['TypeOf']}
+  object: State['anyOf'] & State['oneOf'] & State['allOf'] & {[P in State['required']]: State['properties'][P]['TypeOf']}
         & {[P in Diff<keyof State['properties'], State['required']>]?: State['properties'][P]['TypeOf'] }
         & {[P in State['additionalProperties']['key'] | State['patternProperties']['key']]?: State['additionalProperties']['type'] | State['patternProperties']['type'] },
   enum: State['enum']
+  const: State['const']
 }
 
 export type SchemaState = {
-  type: keyof Types
+  type: keyof TypeDefs<DefaultSchemaState>
   items: any
   additionalItems: any
   properties: any
@@ -32,10 +35,11 @@ export type SchemaState = {
   anyOf: any
   oneOf: any
   allOf: any
+  const: any
 }
 
 export type DefaultSchemaState = {
-  type: keyof Types
+  type: keyof TypeDefs<DefaultSchemaState>
   items: any
   additionalItems: never
   properties: any
@@ -43,13 +47,14 @@ export type DefaultSchemaState = {
   additionalProperties: {key: string, type: any}
   patternProperties: {key: never, type: never}
   enum: any
+  const: any
   anyOf: {}
   oneOf: {}
   allOf: {}
 }
 
 export class Schema<State extends SchemaState = DefaultSchemaState> {
-  TypeOf: Types<State>[State['type']]
+  TypeOf: TypeDefs<State>[State['type']]
 
   constructor (private readonly props: JSONObject = {}) { }
 
@@ -64,14 +69,18 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
   /*======================
   GLOBAL
   ========================*/
-  type<TypeKeys extends keyof Types>(type: TypeKeys[]): SchemaUpdate<State, 'type', TypeKeys> 
-  type<TypeKeys extends keyof Types>(type: TypeKeys): SchemaUpdate<State, 'type', TypeKeys>
-  type<TypeKeys extends keyof Types>(type: string | string[]) {
+  type<TypeKeys extends TypeNames>(type: TypeKeys[]): SchemaUpdate<State, 'type', TypeKeys> 
+  type<TypeKeys extends TypeNames>(type: TypeKeys): SchemaUpdate<State, 'type', TypeKeys>
+  type<TypeKeys extends TypeNames>(type: string | string[]) {
     return this.setProps({ type })
   }
   
   enum<T extends AnyJSON>(values: T[]): SchemaMultiUpdate<State, 'enum' | 'type', { type: 'enum', enum: T }> {
     return this.setProps({ enum: values })
+  }
+  
+  const<T extends AnyJSON>(constValue: T): SchemaMultiUpdate<State, 'const' | 'type', { type: 'const', const: T }> {
+    return this.setProps({ const: constValue })
   }
 
   // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler

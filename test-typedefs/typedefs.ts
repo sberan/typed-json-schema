@@ -1,93 +1,68 @@
 import { schema, array, string, number, boolean, object } from '../src'
 
-// $ExpectType number
-schema.type('number').TypeOf
+schema.type('number').TypeOf // $ExpectType number
 
-// $ExpectType string | number
-schema.type(['string', 'number']).TypeOf
+schema.type(['string', 'number']).TypeOf // $ExpectType string | number
 
-// $ExpectType any[]
-array.TypeOf
+array.TypeOf // $ExpectType any[]
 
-// $ExpectType string[]
-array.items(string).TypeOf
+array.items(string).TypeOf // $ExpectType string[]
 
-// $ExpectType number | string[]
-schema.type(['number', 'array']).items(string).TypeOf
+schema.type(['number', 'array']).items(string).TypeOf // $ExpectType number | string[]
 
-// $ExpectType (string | number)[]
-array.items(string).additionalItems(number).TypeOf
+array.items(string).additionalItems(number).TypeOf // $ExpectType (string | number)[]
 
-// $ExpectType (string | number)[]
-array.items([string, number]).TypeOf
+array.items([string, number]).TypeOf // $ExpectType (string | number)[]
 
-// $ExpectType (string | number | boolean)[]
-array.items([string, number]).additionalItems(boolean).TypeOf
+array.items([string, number]).additionalItems(boolean).TypeOf // $ExpectType (string | number | boolean)[]
 
-// $ExpectType any
-object.TypeOf.someRandomProperty
+object.TypeOf.someRandomProperty // $ExpectType any
 
-// $ExpectType string | undefined
-object.properties({ a: string }).TypeOf.a
+object.properties({ a: string }).TypeOf.a // $ExpectType string | undefined
 
-// $ExpectType any
-object.TypeOf.b
+object.TypeOf.b // $ExpectType any
 
-// $ExpectType string
-object.properties({ a: string }).required('a').TypeOf.a
+object.properties({ a: string }).required('a').TypeOf.a // $ExpectType string
 
-// $ExpectType any
-object.properties({ a: string }).required('b').TypeOf.b
+object.properties({ a: string }).required('b').TypeOf.b // $ExpectType any
 
-// $ExpectType string | undefined
-object.properties({ a: string }).additionalProperties(false).TypeOf.a
+object.properties({ a: string }).additionalProperties(false).TypeOf.a // $ExpectType string | undefined
 
-// $ExpectError Property 'b' does not exist
-object.properties({ a: string }).additionalProperties(false).TypeOf.b
+object.properties({ a: string }).additionalProperties(false).TypeOf.b // $ExpectError Property 'b' does not exist
 
-// $ExpectType string | boolean | undefined
-object.properties({ a: string }).additionalProperties(schema.type(['string', 'boolean'])).TypeOf.b
+object.properties({ a: string }).additionalProperties(schema.type(['string', 'boolean'])).TypeOf.b // $ExpectType string | boolean | undefined
 
-// $ExpectType string | boolean | undefined
-object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': string, 'a': boolean }).TypeOf.c
+object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': string, 'a': boolean }).TypeOf.c // $ExpectType string | boolean | undefined
 
-// $ExpectType string | undefined
-object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': object.properties({a: string}) }).TypeOf.c!.a
+object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': object.properties({a: string}) }).TypeOf.c!.a // $ExpectType string | undefined
 
-// $ExpectType true | "a" | 42
-schema.enum([true, 'a', 42]).TypeOf
+schema.enum([true, 'a', 42]).TypeOf // $ExpectType true | "a" | 42
 
 const b = object.properties({ brand: object.enum(['b']), b: string }).required('brand', 'b').additionalProperties(false)
 const c = object.properties({ brand: object.enum(['c']), c: string }).required('brand', 'c').additionalProperties(false)
 const x = object.properties({ a: number }).additionalProperties(false).anyOf([b, c]).TypeOf
 
-// $ExpectType number | undefined
-x.a
+x.a // $ExpectType number | undefined
 
 if (x.brand === 'b') {
-  // $ExpectType string
-  x.b
-  // $ExpectError Property 'c' does not exist
-  x.c
+  x.b // $ExpectType string
+  x.c // $ExpectError Property 'c' does not exist
 } else {
-  // $ExpectType string
-  x.c
-  // $ExpectError Property 'b' does not exist
-  x.b
+  x.c // $ExpectType string
+  x.b // $ExpectError Property 'b' does not exist
 }
 
 const oneOf = object.properties({ a: number }).additionalProperties(false).oneOf([b]).TypeOf
 
-// $ExpectType number | undefined
-oneOf.a
+oneOf.a // $ExpectType number | undefined
 
-// $ExpectType string
-oneOf.b
+oneOf.b // $ExpectType string
 
 const ASchema = schema.type(['string', 'null'])
 type ASchema = schema<typeof ASchema>
 
 function foo (value: ASchema) {
-  // $ExpectType string | null
-  value
+  value // $ExpectType string | null
 }
+
+schema.const(3).TypeOf // $ExpectType 3
