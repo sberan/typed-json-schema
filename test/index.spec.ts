@@ -372,6 +372,14 @@ describe('JSON schema', () => {
       enum: [ '5', null ]
     })
   })
+  
+  it('should allow const values', () => {
+    const constSchema = schema.const(4)
+  
+    expect(constSchema.toJSON()).to.eql({
+      const: 4
+    })
+  })
 
   it('should combine schemas using allOf', () => {
     const s = schema.allOf([
