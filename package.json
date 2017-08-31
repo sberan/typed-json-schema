@@ -7,7 +7,7 @@
   "scripts": {
     "mocha": "cross-env TS_NODE_CACHE=false mocha test/**/*.spec.ts",
     "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test-typedefs/*.ts",
-    "lint": "tslint --project .",
+    "lint": "tslint --project . && tslint --project test-typedefs",
     "test": "npm run mocha && npm run test-typedefs && npm run lint",
     "prepublish": "npm test && tsc --declaration"
   },
