@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "",
   "main": "lib/src/index",
   "typings": "lib/src/index",
@@ -9,7 +9,7 @@
     "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test-typedefs/*.ts",
     "lint": "tslint --project . && tslint --project test-typedefs",
     "test": "npm run mocha && npm run test-typedefs && npm run lint",
-    "prepublish": "npm test && tsc --declaration"
+    "prepublish": "rm -rf lib/ && npm test && tsc --declaration && rm -rf lib/test"
   },
   "files": [
     "lib"
