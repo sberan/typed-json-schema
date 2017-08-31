@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "",
   "main": "lib/src/index",
   "typings": "lib/src/index",
