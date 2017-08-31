@@ -1,4 +1,5 @@
-import { schema, array, string, number, boolean, object } from '../src'
+/* tslint:disable:no-unused-expression */
+import { array, boolean, number, object, schema, string } from '../src'
 
 schema.type('number').TypeOf // $ExpectType number
 
@@ -30,11 +31,20 @@ object.properties({ a: string }).additionalProperties(false).TypeOf.a // $Expect
 
 object.properties({ a: string }).additionalProperties(false).TypeOf.b // $ExpectError Property 'b' does not exist
 
-object.properties({ a: string }).additionalProperties(schema.type(['string', 'boolean'])).TypeOf.b // $ExpectType string | boolean | undefined
+// $ExpectType string | boolean | undefined
+object.properties({ a: string }).additionalProperties(schema.type(['string', 'boolean'])).TypeOf.b
 
-object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': string, 'a': boolean }).TypeOf.c // $ExpectType string | boolean | undefined
+// $ExpectType string | boolean | undefined
+object.properties({ a: string })
+  .additionalProperties(false)
+  .patternProperties({ '\\w+': string, 'a': boolean })
+  .TypeOf.c
 
-object.properties({ a: string }).additionalProperties(false).patternProperties({ '\\w+': object.properties({a: string}) }).TypeOf.c!.a // $ExpectType string | undefined
+// $ExpectType string | undefined
+object.properties({ a: string })
+  .additionalProperties(false)
+  .patternProperties({ '\\w+': object.properties({a: string}) })
+  .TypeOf.c!.a
 
 schema.enum([true, 'a', 42]).TypeOf // $ExpectType true | "a" | 42
 
@@ -52,17 +62,17 @@ if (x.brand === 'b') {
   x.b // $ExpectError Property 'b' does not exist
 }
 
-// const oneOf = object.properties({ a: number }).additionalProperties(false).oneOf([b]).TypeOf
+const oneOf = object.properties({ a: number }).additionalProperties(false).oneOf([b]).TypeOf
 
-// oneOf.a // $ExpectType number | undefined
+oneOf.a // $ExpectType number | undefined
 
-// oneOf.b // $ExpectType string
+oneOf.b // $ExpectType string
 
-// const ASchema = schema.type(['string', 'null'])
-// type ASchema = schema<typeof ASchema>
+const ASchema = schema.type(['string', 'null'])
+type ASchema = schema<typeof ASchema>
 
-// function foo (value: ASchema) {
-//   value // $ExpectType string | null
-// }
+function foo (value: ASchema) {
+  value // $ExpectType string | null
+}
 
-// schema.const(3).TypeOf // $ExpectType 3
+schema.const(3).TypeOf // $ExpectType 3
