@@ -52,17 +52,17 @@ if (x.brand === 'b') {
   x.b // $ExpectError Property 'b' does not exist
 }
 
-const oneOf = object.properties({ a: number }).additionalProperties(false).oneOf([b]).TypeOf
+// const oneOf = object.properties({ a: number }).additionalProperties(false).oneOf([b]).TypeOf
 
-oneOf.a // $ExpectType number | undefined
+// oneOf.a // $ExpectType number | undefined
 
-oneOf.b // $ExpectType string
+// oneOf.b // $ExpectType string
 
-const ASchema = schema.type(['string', 'null'])
-type ASchema = schema<typeof ASchema>
+// const ASchema = schema.type(['string', 'null'])
+// type ASchema = schema<typeof ASchema>
 
-function foo (value: ASchema) {
-  value // $ExpectType string | null
-}
+// function foo (value: ASchema) {
+//   value // $ExpectType string | null
+// }
 
-schema.const(3).TypeOf // $ExpectType 3
+// schema.const(3).TypeOf // $ExpectType 3

@@ -6,7 +6,7 @@
   "typings": "lib/src/index",
   "scripts": {
     "mocha": "cross-env TS_NODE_CACHE=false mocha test/**/*.spec.ts",
-    "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test-typedefs/typedefs.ts",
+    "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test-typedefs/*.ts",
     "test": "npm run mocha && npm run test-typedefs",
     "prepublish": "npm test && tsc --declaration"
   },

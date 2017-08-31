@@ -16,8 +16,9 @@ export type TypeDefs<State extends SchemaState> = {
   boolean: boolean
   null: null
   array: (State['items'] | State['additionalItems'])[]
-  object: State['anyOf'] & State['oneOf'] & State['allOf'] & {[P in State['required']]: State['properties'][P]['TypeOf']}
-        & {[P in Diff<keyof State['properties'], State['required']>]?: State['properties'][P]['TypeOf'] }
+  object: State['anyOf'] & State['oneOf'] & State['allOf']
+        & {[P in State['required']]: State['properties'][P]}
+        & {[P in Diff<keyof State['properties'], State['required']>]?: State['properties'][P] }
         & {[P in State['additionalProperties']['key'] | State['patternProperties']['key']]?: State['additionalProperties']['type'] | State['patternProperties']['type'] },
   enum: State['enum']
   const: State['const']
@@ -83,47 +84,17 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
     return this.setProps({ const: constValue })
   }
 
-  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
-  anyOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'anyOf', T1['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']>
-  anyOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'anyOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']| T9['TypeOf']>
-  anyOf (schemas: any[]) {
+  anyOf<S extends Schema<any>> (schemas: S[]): SchemaUpdate<State, 'anyOf', S['TypeOf']> {
     return this.setProps({ anyOf: schemas.map(s => s.props) })
   }
 
-  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
-  oneOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'oneOf', T1['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']>
-  oneOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'oneOf', T1['TypeOf'] | T2['TypeOf']| T3['TypeOf']| T4['TypeOf']| T5['TypeOf']| T6['TypeOf']| T7['TypeOf']| T8['TypeOf']| T9['TypeOf']>
-  oneOf (schemas: any[]) {
+  oneOf<S extends Schema<any>> (schemas: S[]): SchemaUpdate<State, 'oneOf', S['TypeOf']> {
     return this.setProps({ oneOf: schemas.map(s => s.props) })
   }
 
-  // TODO: these repetitions shouldn't be needed, but using the correct type causes an infinite loop in the compiler
   // TODO: these should be intersection types but that doesn't work :(
-  allOf<T1 extends Schema<any>> (anyOf: [T1]):  SchemaUpdate<State, 'allOf', T1['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>> (anyOf: [T1, T2]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>> (anyOf: [T1, T2, T3]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>> (anyOf: [T1, T2, T3, T4]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf'] | T8['TypeOf']>
-  allOf<T1 extends Schema<any>, T2 extends Schema<any>, T3 extends Schema<any>, T4 extends Schema<any>, T5 extends Schema<any>, T6 extends Schema<any>, T7 extends Schema<any>, T8 extends Schema<any>, T9 extends Schema<any>> (anyOf: [T1, T2, T3, T4, T5, T6, T7, T8, T9]):  SchemaUpdate<State, 'allOf', T1['TypeOf'] | T2['TypeOf'] | T3['TypeOf'] | T4['TypeOf'] | T5['TypeOf'] | T6['TypeOf'] | T7['TypeOf'] | T8['TypeOf'] | T9['TypeOf']>
-  allOf (schemas: any[])  {
-    return this.setProps({ allOf: schemas.map(s => s.props) })
+  allOf<S extends Schema<any>> (schemas: S[]): SchemaUpdate<State, 'allOf', S['TypeOf']> {
+      return this.setProps({ allOf: schemas.map(s => s.props) })
   }
 
   title (title: string): this {
@@ -187,8 +158,8 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
   /*===============
   OBJECT
   =================*/
-  properties<K extends string, Properties extends {[P in K]: Schema<any>}>(properties: Properties): SchemaUpdate<State, 'properties', Properties> {
-    const props = Object.keys(properties).reduce<JSONObject>((acc, key: K) => {
+  properties<Properties extends {[P: string]: Schema<any>}>(properties: Properties): SchemaUpdate<State, 'properties', {[K in keyof Properties]: Properties[K]['TypeOf']}> {
+    const props = Object.keys(properties).reduce<JSONObject>((acc, key: keyof Properties) => {
       acc[key] = (properties[key] as Schema<any>).props
       return acc
     }, {})

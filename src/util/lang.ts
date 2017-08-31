@@ -1,4 +1,4 @@
-export type JSONPrimitive = string | number | boolean | null | undefined
+export type JSONPrimitive = string | number | boolean | null
 export interface JSONArray extends Array<AnyJSON> {}
 export interface JSONObject { [key: string]: AnyJSON }
 export type AnyJSON = JSONPrimitive | JSONArray | JSONObject
