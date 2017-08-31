@@ -14,6 +14,7 @@ export type SchemaMultiUpdate<
 export type TypeNames = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object'
 
 export interface TypeDefs<State extends SchemaState> {
+  any: any
   string: string
   number: number
   integer: number
@@ -45,7 +46,7 @@ export interface SchemaState {
 }
 
 export interface DefaultSchemaState {
-  type: keyof TypeDefs<DefaultSchemaState>
+  type: 'any'
   items: any
   additionalItems: never
   properties: any

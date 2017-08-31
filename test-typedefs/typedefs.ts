@@ -1,6 +1,8 @@
 /* tslint:disable:no-unused-expression */
 import { array, boolean, number, object, schema, string } from '../src'
 
+schema.TypeOf // $ExpectType any
+
 schema.type('number').TypeOf // $ExpectType number
 
 schema.type(['string', 'number']).TypeOf // $ExpectType string | number
