@@ -15,7 +15,7 @@ This library is able to validate JSON-Schema at runtime, and also emit type defi
 ``` typescript
 import { string, array, object } from 'typed-json-schema'
 
-string.minLength(3) // type: Schema<string>
+string.minLength(3) // result type: string
 
 //generated JSON Schema: 
 {
@@ -23,7 +23,7 @@ string.minLength(3) // type: Schema<string>
   "minLength": "3"
 }
 
-array(string.pattern(/\w+/)) // type: Schema<string[]>
+array(string.pattern(/\w+/)) // result type: string[]
 
 //generated JSON Schema:
 {
@@ -35,7 +35,7 @@ array(string.pattern(/\w+/)) // type: Schema<string[]>
 }
 
 object({ a: string, b: array(number) })
-  .required('a', 'b') // type: Schema<{a: string, b: number[] }>
+  .required('a', 'b') // result type: {a: string, b: number[] }
 
 //generated JSON Schema:
 {
