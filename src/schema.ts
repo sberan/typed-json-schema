@@ -75,8 +75,7 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
   /*======================
   GLOBAL
   ========================*/
-  type<TypeKeys extends TypeNames> (type: TypeKeys[] | TypeKeys): SchemaUpdate<State, 'type', TypeKeys>
-  type<TypeKeys extends TypeNames> (type: string | string[]) {
+  type<TypeKeys extends TypeNames> (type: TypeKeys[] | TypeKeys): SchemaUpdate<State, 'type', TypeKeys> {
     return this.setProps({ type })
   }
 
