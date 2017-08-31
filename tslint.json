@@ -1,0 +1,21 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "semicolon": [ true, "never" ],
+    "quotemark": [ true, "single" ],
+    "trailing-comma": [ false ],
+    "space-before-function-paren": {
+      "anonymous": "always",
+      "constructor": "always",
+      "method": "always",
+      "named": "always"
+    },
+    "object-literal-sort-keys": [false],
+    "member-access": [true, "no-public"],
+    "interface-name": [true, "never-prefix"],
+    "one-variable-per-declaration": [false]
+  }
+}
