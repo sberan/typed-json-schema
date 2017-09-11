@@ -16,6 +16,8 @@
     "object-literal-sort-keys": [false],
     "member-access": [true, "no-public"],
     "interface-name": [true, "never-prefix"],
-    "one-variable-per-declaration": [false]
+    "one-variable-per-declaration": [false],
+    "arrow-parens": [false],
+    "no-shadowed-variable": [false]
   }
 }
