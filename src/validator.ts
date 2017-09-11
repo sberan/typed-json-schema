@@ -18,7 +18,7 @@ export class Validator {
     const coercedValue: { result?: T } = { }
     const isValid = validate(obj, undefined, coercedValue, 'result')
     if (isValid) {
-      return { errors: null, result: coercedValue.result || obj, valid: true }
+      return { errors: null, result: coercedValue.result !== undefined ? coercedValue.result : obj, valid: true }
     } else {
       return { errors: validate.errors!, result: null, valid: false }
     }
