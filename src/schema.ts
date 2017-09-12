@@ -63,10 +63,18 @@ export interface DefaultSchemaState {
 export class Schema<State extends SchemaState = DefaultSchemaState> {
   TypeOf: TypeDefs<State>[State['type']]
 
-  constructor (private readonly props: JSONObject = {}) { }
+  constructor (private readonly props: JSONObject = {}, private readonly state: JSONObject = {}) { }
 
   setProps (props: JSONObject): any {
-    return new Schema(Object.assign({}, this.props, props))
+    return new Schema(Object.assign({}, this.props, props), this.state)
+  }
+
+  getState (key: string) {
+    return this.state[key]
+  }
+
+  setState (key: string, val: AnyJSON) {
+    this.state[key] = val
   }
 
   toJSON () {

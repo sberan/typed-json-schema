@@ -5,7 +5,7 @@
   ],
   "rules": {
     "semicolon": [ true, "never" ],
-    "quotemark": [ true, "single" ],
+    "quotemark": [ true, "single", "avoid-escape" ],
     "trailing-comma": [ false ],
     "space-before-function-paren": {
       "anonymous": "always",

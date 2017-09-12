@@ -3,11 +3,11 @@ import { CustomKeyword } from '../validator'
 
 declare module '../schema' {
   interface Schema {
-    trim (trim: boolean): Schema
+    trim (trim?: boolean): Schema
   }
 }
 
-Schema.prototype.trim = function (trim: boolean) {
+Schema.prototype.trim = function (trim = true) {
   return this.setProps({ trim })
 }
 
