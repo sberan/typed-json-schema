@@ -1,18 +1,24 @@
 {
   "name": "typed-json-schema",
-  "version": "3.0.10",
+  "version": "3.0.12",
   "description": "",
-  "main": "lib/src/index",
-  "typings": "lib/src/index",
+  "main": "index",
+  "typings": "index.d.ts",
   "scripts": {
     "mocha": "cross-env TS_NODE_CACHE=false mocha test/**/*.spec.ts",
     "test-typedefs": "typings-checker --project tsconfig.json --allow-expect-error test-typedefs/*.ts",
     "lint": "tslint --project . && tslint --project test-typedefs",
     "test": "npm run mocha && npm run test-typedefs && npm run lint",
-    "prepublish": "rm -rf lib/ && npm test && tsc --declaration && rm -rf lib/test"
+    "clean": "rm *.js *.d.ts; rm -rf ext/;true",
+    "tsc": "tsc -p src/ --declaration",
+    "build": "npm run clean && npm run tsc",
+    "prepublish": "npm test && npm run build",
+    "postpublish": "npm run clean"
   },
   "files": [
-    "lib"
+    "*.js",
+    "*.d.ts",
+    "ext"
   ],
   "author": "Sam Beran (sberan@gmail.com)",
   "license": "MIT",

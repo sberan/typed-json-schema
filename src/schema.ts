@@ -1,4 +1,4 @@
-import { AnyJSON, Diff, JSONObject, Omit, Overwrite } from './util/lang'
+import { AnyJSON, Diff, JSONObject, Omit, Overwrite } from './util'
 
 export type SchemaUpdate<
   State extends SchemaState, K extends keyof SchemaState,

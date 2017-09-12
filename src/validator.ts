@@ -2,7 +2,7 @@
 import Ajv = require('ajv')
 import { ErrorObject } from 'ajv'
 import { Schema } from './schema'
-import { AnyJSON } from './util/lang'
+import { AnyJSON } from './util'
 
 export type CustomKeyword = { name: string } & Ajv.KeywordDefinition
 
