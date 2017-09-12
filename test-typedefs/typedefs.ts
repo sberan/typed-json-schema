@@ -1,5 +1,6 @@
 /* tslint:disable:no-unused-expression */
 import { array, boolean, number, object, schema, string } from '../src'
+import '../src/ext'
 
 schema.TypeOf // $ExpectType any
 
@@ -78,3 +79,12 @@ function foo (value: ASchema) {
 }
 
 schema.const(3).TypeOf // $ExpectType 3
+
+// $ExpectType { a: string; b: number; } & {}
+object.strictProperties({ a: string, b: number }).TypeOf
+
+// $ExpectType { b: number; } & { a?: string | undefined; c?: boolean | undefined; }
+object.optional('a', 'c').strictProperties({ a: string, b: number, c: boolean }).TypeOf
+
+// $ExpectType string | null
+string.allowNull().TypeOf

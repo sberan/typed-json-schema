@@ -1,9 +1,13 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "lib": [
+      "es2016",
+      "dom"
+    ],
     "rootDir": ".."
   },
   "include": [
-    "./**/*.ts"
+    "**/*.ts"
   ]
 }

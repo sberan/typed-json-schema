@@ -1,9 +1,18 @@
 {
-  "extends": "../src/tsconfig.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".."
+    "target": "es5",
+    "module": "commonjs",
+    "lib": [ "es2016" ],
+    "baseDir": ".",
+    "strict": true,
+    "noEmitOnError": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+
   },
   "include": [
-    "./*.ts"
-  ]
+    "./**/*.ts"
+  ],
+  "exclude": [ ]
 }

@@ -4,10 +4,24 @@ import { ErrorObject } from 'ajv'
 import { Schema } from './schema'
 import { AnyJSON } from './util'
 
-export type CustomKeyword = { name: string } & Ajv.KeywordDefinition
+export interface CustomKeyword extends Ajv.KeywordDefinition {
+  name: string
+}
+
+export type CustomKeywords = Array<CustomKeyword | CustomKeyword[]>
 
 export interface ValidatorOptions extends Ajv.Options {
-  customKeywords?: CustomKeyword[]
+  customKeywords?: CustomKeywords
+}
+
+function addCustomKeywords (ajv: Ajv.Ajv, customKeywords: CustomKeywords) {
+  customKeywords.forEach(kw => {
+    if (Array.isArray(kw)) {
+      addCustomKeywords(ajv, kw)
+    } else {
+      ajv.addKeyword(kw.name, kw)
+    }
+  })
 }
 
 export class Validator {
@@ -15,10 +29,8 @@ export class Validator {
 
   constructor (options: ValidatorOptions = {}) {
     this.ajv = new Ajv(options)
-    if ( options.customKeywords) {
-      options.customKeywords.forEach(kw => {
-        this.ajv.addKeyword(kw.name, kw)
-      })
+    if (options.customKeywords) {
+      addCustomKeywords(this.ajv, options.customKeywords)
     }
   }
 
