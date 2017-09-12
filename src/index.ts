@@ -1,6 +1,6 @@
 import { Schema } from './schema'
 import { DefaultSchemaState } from './schema'
-import { callableInstance } from './util/lang'
+import { callableInstance } from './util'
 
 export { Schema } from './schema'
 export { Validator } from './validator'

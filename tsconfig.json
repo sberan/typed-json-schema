@@ -3,17 +3,12 @@
     "target": "es5",
     "module": "commonjs",
     "lib": [ "es2016", "dom" ],
-    "outDir": "./lib",
+    "outDir": ".",
     "strict": true,
     "noEmitOnError": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": [
-    "./src/**/*.ts",
-    "./test/**/*.ts"
-  ],
-  "exclude": [
-    "./test/typedefs.ts"
-  ]
+  "include": [],
+  "exclude": []
 }
