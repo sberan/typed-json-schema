@@ -88,3 +88,18 @@ object.optional('a', 'c').strictProperties({ a: string, b: number, c: boolean })
 
 // $ExpectType string | null
 string.allowNull().TypeOf
+
+// $ExpectType any
+schema.allowNull().TypeOf
+
+// $ExpectType string | null
+schema.type('string').allowNull().TypeOf
+
+// $ExpectType ({} & {} & {}) | null
+object.additionalProperties(false).allowNull().TypeOf
+
+// $ExpectType 3 | 1 | 2 | null
+schema.enum([1, 2, 3]).allowNull().TypeOf
+
+// $ExpectType 3 | 1 | 2 | null
+string.enum([1, 2, 3]).allowNull().TypeOf
