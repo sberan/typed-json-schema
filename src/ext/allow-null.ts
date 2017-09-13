@@ -9,12 +9,17 @@ declare module '../schema' {
 }
 
 Schema.prototype.allowNull = function () {
-  let type = this.toJSON().type
-  if (type === 'null') {
-    return this
+  const
+    props = this.toJSON(),
+    enums = props.enum
+
+  let type = props.type
+
+  if (Array.isArray(enums) && !enums.includes(null)) {
+    enums.push(null)
   }
-  if (!type) {
-    return this.setProps({ type: 'null' })
+  if (!type || type === 'null') {
+    return this
   }
   if (!Array.isArray(type)) {
     type = [type]
