@@ -9,11 +9,11 @@ describe('trim keyword', () => {
     expect(trimmedString.toJSON()).to.eql({ type: 'string', trim: true })
   })
 
-  it('should trim the value when validating', () => {
+  it('should trim the value when validating', async () => {
     const trimmedStringSchema = schema.type('string').trim(true),
       validator = new Validator({ coerceTypes: true, customKeywords: [trim] })
 
-    const trimmedString = validator.validate(trimmedStringSchema, ' asdf ').result
+    const trimmedString = await validator.validate(trimmedStringSchema, ' asdf ')
     expect(trimmedString).to.eql('asdf')
   })
 })

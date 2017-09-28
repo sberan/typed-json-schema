@@ -437,17 +437,15 @@ describe('JSON schema', () => {
     })
   })
 
-  it('should validate a schema', () => {
-    const { errors, result } = new Validator().validate(schema.anyOf([string]), 'a')
+  it('should validate a schema', async () => {
+    const result = await new Validator().validate(schema.anyOf([string]), 'a')
 
-    expect(errors).to.not.exist // tslint:disable-line:no-unused-expression
     expect(result).to.eql('a')
   })
 
-  it('should coerce validated data', () => {
-    const { errors, result } = new Validator({ coerceTypes: true }).validate(string, 1)
+  it('should coerce validated data', async () => {
+    const result = await new Validator({ coerceTypes: true }).validate(string, 1)
 
-    expect(errors).to.not.exist // tslint:disable-line:no-unused-expression
     expect(result).to.eql('1')
   })
 })
