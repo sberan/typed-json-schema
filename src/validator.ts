@@ -24,6 +24,22 @@ function addCustomKeywords (ajv: Ajv.Ajv, customKeywords: CustomKeywords) {
   })
 }
 
+class ValidationError extends Error {
+  constructor (input: any, schema: Schema<any>, public errors: ErrorObject[]) {
+    super(`
+
+could not validate object:
+${JSON.stringify(input, null, 2)}
+
+against schema:
+${JSON.stringify(schema.toJSON(), null, 2)}
+
+errors:
+  * ${errors.map(e => e.message).join('\n  * ')}`)
+  }
+}
+
+// tslint:disable-next-line:max-classes-per-file
 export class Validator {
   ajv: Ajv.Ajv
 
@@ -34,16 +50,14 @@ export class Validator {
     }
   }
 
-  validate <T extends Schema<any>> (schema: T, obj: any)
-      : { valid: false, errors: ErrorObject[], result: null }
-      | { valid: true, errors: null, result: T['TypeOf'] }  {
+  validate <T extends Schema<any>> (schema: T, obj: any): Promise<T['TypeOf']> {
     const validate = this.ajv.compile(schema.toJSON())
     const coercedValue: { result?: T } = { }
-    const isValid = validate(obj, undefined, coercedValue, 'result')
-    if (isValid) {
-      return { errors: null, result: coercedValue.result !== undefined ? coercedValue.result : obj, valid: true }
+    validate(obj, undefined, coercedValue, 'result')
+    if (!validate.errors) {
+      return Promise.resolve(coercedValue.result !== undefined ? coercedValue.result : obj)
     } else {
-      return { errors: validate.errors!, result: null, valid: false }
+      return Promise.reject(new ValidationError(obj, schema, validate.errors))
     }
   }
 }
