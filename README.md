@@ -1,6 +1,6 @@
 Typed-JSON-Schema
-</br><a href="https://www.npmjs.com/package/typed-json-schema"><img src="https://img.shields.io/npm/v/typed-json-schema.svg" alt="Version"></a>
 ------------------
+</br><a href="https://www.npmjs.com/package/typed-json-schema"><img src="https://img.shields.io/npm/v/typed-json-schema.svg" alt="Version"></a>
 
 ## TypeScript-Friendly JSON-Schema Definitions
 
@@ -13,38 +13,15 @@ This library is able to validate JSON-Schema at runtime, and also emit type defi
 ### Schema generation:
 
 ``` typescript
-import { string, array, object } from 'typed-json-schema'
+await validator.validate(string.minLength(3), 'asdf') // type: string
 
-string.minLength(3) // result type: string
+await validator.validate(array(string.pattern(/\w+/))) // result type: string[]
 
-//generated JSON Schema: 
-{
-  "type": "string",
-  "minLength": "3"
-}
+await validator.validate(object.required('a', 'b').properties({
+  a: string,
+  b: array(number) 
+}) // result type: {a: string, b: number[] }
 
-array(string.pattern(/\w+/)) // result type: string[]
-
-//generated JSON Schema:
-{
-  "type": "array",
-  "items": {
-    "type": string
-    "pattern": "\\w+"
-  }
-}
-
-object({ a: string, b: array(number) })
-  .required('a', 'b') // result type: {a: string, b: number[] }
-
-//generated JSON Schema:
-{
-  "type": "object",
-    a: { type: 'string' },
-    b: { type: 'array', items: { type: 'number' }}
-  },
-  required: ['a', 'b']
-}
 ```
 
 ### Validation
@@ -54,24 +31,20 @@ import { schema, string, Validator } from 'typed-json-schema'
 
 const validator = new Validator()
 
-const StringOrNull = schema.anyOf(
-  string,
-  schema.type('null')
-)
+const StringOrNull = schema.type(['string', 'null'])
 
-const validation = validator.validate(StringOrNull, 'Hello'),
+const result = await validator.validate(StringOrNull, 'Hello'),
 
-if (validation.valid) {
-  validation.result.toFixed(1) // error: Property 'toFixed' does not exist on type 'string'.
-  validation.result.toLowerCase() //error: object is possibly null
-  validation.result && validation.result.toLowerCase() //success!
-}
+result.toFixed(1) // error: Property 'toFixed' does not exist on type 'string'.
+result.toLowerCase() //error: object is possibly null
+result && validation.result.toLowerCase() //success!
+
 ```
 
 
 ## Usage
 
-### Schema Generation
+### Schema Creation
 
 In general, all [JSON-Schema keywords](https://spacetelescope.github.io/understanding-json-schema/reference/index.html) can be used as builders on the `schema` object.
 
@@ -106,14 +79,9 @@ Use a `Validator` to validate a json schema:
 ```typescript
 import { schema, Validator }
 
-const validator =  new Validator({ coerceTypes: true }) //any AJV options can be supplied
-const validation = validator.validate(schema.type('number'))
+const validator = new Validator({ coerceTypes: true }) //any AJV options can be supplied
+const result = await validator.validate(schema.type('number')) //result is a number
 
-if (validation.valid) {
-  console.log(validation.result) //type: number
-} else {
-  console.log(validation.errors) //contains a list of error messages
-}
 
 ```
 
