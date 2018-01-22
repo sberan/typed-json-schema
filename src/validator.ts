@@ -50,6 +50,22 @@ export class Validator {
     }
   }
 
+  /**
+   * @deprecated use validate instead
+   */
+  validateSync <T extends Schema<any>> (schema: T, obj: any)
+      : { valid: false, errors: ErrorObject[], result: null }
+      | { valid: true, errors: null, result: T['TypeOf'] }  {
+    const validate = this.ajv.compile(schema.toJSON())
+    const coercedValue: { result?: T } = { }
+    const isValid = validate(obj, undefined, coercedValue, 'result')
+    if (isValid) {
+      return { errors: null, result: coercedValue.result !== undefined ? coercedValue.result : obj, valid: true }
+    } else {
+      return { errors: validate.errors!, result: null, valid: false }
+    }
+  }
+
   validate <T extends Schema<any>> (schema: T, obj: any): Promise<T['TypeOf']> {
     const validate = this.ajv.compile(schema.toJSON())
     const coercedValue: { result?: T } = { }
