@@ -24,7 +24,7 @@ function addCustomKeywords (ajv: Ajv.Ajv, customKeywords: CustomKeywords) {
   })
 }
 
-class ValidationError extends Error {
+export class ValidationError extends Error {
   constructor (input: any, schema: Schema<any>, public errors: ErrorObject[]) {
     super(`
 

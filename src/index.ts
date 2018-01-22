@@ -3,7 +3,7 @@ import { DefaultSchemaState } from './schema'
 import { callableInstance } from './util'
 
 export { Schema } from './schema'
-export { Validator } from './validator'
+export { Validator, ValidationError } from './validator'
 
 export type schema<T extends Schema<any>> = T['TypeOf']
 
