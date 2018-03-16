@@ -357,6 +357,15 @@ describe('JSON schema', () => {
     })
   })
 
+  it('should allow examples', () => {
+    const schemaWithDefault = string.example('fizz')
+
+    expect(schemaWithDefault.toJSON()).to.eql({
+      type: 'string',
+      example: 'fizz'
+    })
+  })
+
   it('should allow enumerated values', () => {
     const enumSchema = schema.enum([[4, 5], '3', false, null])
 

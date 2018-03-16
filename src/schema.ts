@@ -121,6 +121,10 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
     return this.setProps({ default: defaultValue })
   }
 
+  example<S extends Schema<any>> (example: S['TypeOf']): this {
+    return this.setProps({ example })
+  }
+
   not <X extends SchemaState> (schema: Schema<X>): this {
     return this.setProps({ not: schema.props })
   }
