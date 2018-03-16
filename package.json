@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "",
   "main": "index",
   "typings": "index.d.ts",
