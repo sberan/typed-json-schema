@@ -1,4 +1,4 @@
-import { AnyJSON, Diff, JSONObject, Omit, Overwrite } from './util'
+import { AnyJSON, copyJson, Diff, JSONObject, Omit, Overwrite } from './util'
 
 export type SchemaUpdate<
   State extends SchemaState, K extends keyof SchemaState,
@@ -63,10 +63,10 @@ export interface DefaultSchemaState {
 export class Schema<State extends SchemaState = DefaultSchemaState> {
   TypeOf: TypeDefs<State>[State['type']]
 
-  constructor (private readonly props: JSONObject = {}, private readonly state: JSONObject = {}) { }
+  constructor (readonly props: JSONObject = {}, private readonly state: JSONObject = {}) { }
 
   setProps (props: JSONObject): any {
-    return new Schema(Object.assign({}, this.props, props), this.state)
+    return new Schema({ ...copyJson(this.props), ...props }, { ...this.state })
   }
 
   getState (key: string) {
@@ -78,7 +78,7 @@ export class Schema<State extends SchemaState = DefaultSchemaState> {
   }
 
   toJSON () {
-    return this.props
+    return copyJson(this.props)
   }
 
   /*======================

@@ -44,7 +44,7 @@ Schema.prototype.strictProperties = function (strictProperties): any {
 
 Schema.prototype.optional = function (...properties): any {
   this.setState('optional', properties)
-  const props = this.toJSON(),
+  const props = this.props,
     existingRequireds = props && props.required
   if (Array.isArray(existingRequireds)) {
     properties.forEach(property => {
