@@ -3,6 +3,10 @@ export interface JSONArray extends Array<AnyJSON> {} // tslint:disable-line:no-e
 export interface JSONObject { [key: string]: AnyJSON }
 export type AnyJSON = JSONPrimitive | JSONArray | JSONObject
 
+export function copyJson<T> (json: T) {
+  return JSON.parse(JSON.stringify(json)) as T
+}
+
 // tslint:disable-next-line:ban-types
 export function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
   const

@@ -10,7 +10,7 @@ declare module '../schema' {
 
 Schema.prototype.allowNull = function () {
   const
-    props = this.toJSON(),
+    props = this.props,
     enums = props.enum
 
   let type = props.type
