@@ -15,6 +15,7 @@
     },
     "object-literal-sort-keys": [false],
     "member-access": [true, "no-public"],
+    "callable-types": [false],
     "interface-name": [true, "never-prefix"],
     "one-variable-per-declaration": [false],
     "arrow-parens": [false],
