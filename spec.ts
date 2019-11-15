@@ -1,4 +1,4 @@
-import { validate, AnyJson, AnyJsonObject, JsonObject } from './tjs'
+import { validate, AnyJson, AnyJsonObject, JsonObject, BothOf, AnyJsonArray } from './tjs'
 
 // $ExpectType AnyJson
 validate({})
@@ -53,7 +53,7 @@ validate({
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
-  required: ['b', 'c'] as const
+  required: ['b', 'c']
 })
 
 // $ExpectType JsonObject<"b" | "c", { a: string; b: number; }>
@@ -96,3 +96,14 @@ validate({
 validate({
   type: 'object'
 })
+
+function bothOf<A, B>():[BothOf<A,B>, BothOf<B, A>] { throw 'nope'}
+
+// $ExpectType [1, 1]
+bothOf<1, number>()
+
+// $ExpectType [1, 1]
+bothOf<1 | AnyJsonObject, number | AnyJsonArray>()
+
+// $ExpectType [AnyJsonObject, AnyJsonObject]
+bothOf<1 | AnyJsonObject, [3] | JsonObject<"", {}>>()

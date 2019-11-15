@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "typings-checker --project tsconfig.json spec.ts"
   },
   "devDependencies": {
-    "typescript": "https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/43241/artifacts?artifactName=tgz&fileId=18BFC7CBB110612EE5100493AF2C995B329CAFD40BF618BA7115044F589D95E702&fileName=/typescript-3.7.0-insiders.20190909.tgz",
+    "typescript": "3.7.2",
     "typings-checker": "2.0.0"
   },
   "author": "",

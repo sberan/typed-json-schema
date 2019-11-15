@@ -4,14 +4,34 @@ export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonArray | AnyJsonObject
 
 export type JsonObject<RequiredFields extends string, T extends AnyJsonObject> = 
-  {[key: string]: AnyJson}
+  {[key: string]: AnyJson }
   & {[P in Exclude<keyof T, RequiredFields>]?: Exclude<T[P], undefined> }
   & {[P in Extract<keyof T, RequiredFields>]: Exclude<T[P], undefined> }
 
+type BothJsonPrimitives<A, B> =
+  A extends AnyJsonPrimitive
+    ? B extends AnyJsonPrimitive
+      ? A extends B 
+        ? A
+        : B extends A
+          ? B
+          : never
+      : never
+    : never
 
-type ExtractBoth<A, B, X> = X extends A ? X extends B ? X : never : never
+type BothJsonObjects<A, B> = 
+  A extends AnyJsonPrimitive
+    ? never
+    : A extends AnyJsonArray
+      ? never
+      : AnyJsonObject extends A
+        ? AnyJsonObject extends B
+          ? AnyJsonObject
+          : never
+        : never
+          
 
-type BothArrays<A, B> =
+type BothJsonArrays<A, B> =
   A extends AnyJsonArray
     ? B extends AnyJsonArray
       ? AnyJsonArray extends A
@@ -28,9 +48,10 @@ type BothArrays<A, B> =
       : never
     : never
 
-type BothOf<A, B> = { 0: 
-  ExtractBoth<A, B, AnyJsonPrimitive> 
-  | BothArrays<A, B>
+export type BothOf<A, B> = { 0: 
+  BothJsonPrimitives<A, B> 
+  | BothJsonArrays<A, B>
+  | BothJsonObjects<A, B>
 }[0]
 
 
