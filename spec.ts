@@ -35,15 +35,16 @@ validate({
   type: 'object'
 })
 
-// $ExpectType JsonObject<"", { a: string; }>
+// $ExpectType JsonObject<"a", { a: string; }>
 validate({
   type: 'object',
   properties: {
     a: 'string'
-  }
+  },
+  required: ['a'] as const
 })
 
-// $ExpectType JsonObject<"", { a: string; }>
+// $ExpectType AnyJsonObject
 validate({
   type: 'object',
   properties: { a: 'string' }
@@ -53,7 +54,7 @@ validate({
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
-  required: ['b', 'c']
+  required: ['b', 'c'] as const
 })
 
 // $ExpectType JsonObject<"b" | "c", { a: string; b: number; }>
@@ -64,13 +65,14 @@ validate({
   additionalProperties: false
 })
 
-// $ExpectType string | JsonObject<"", { foo: string | number; bar: JsonObject<"", { baz: number; }>; }>
+// $ExpectType string | JsonObject<"foo", { foo: string | number; bar: JsonObject<"baz", { baz: number; }>; }>
 validate({
   type: ['string', 'object'],
   properties: {
     foo: { type: ['string', 'number' ]},
-    bar: { type: 'object', properties: { baz: 'number' }}
-  }
+    bar: { type: 'object', properties: { baz: 'number' }, required: ['baz'] as const }
+  },
+  required: ['foo'] as const
 })
 
 // $ExpectType number | AnyJsonArray
@@ -92,7 +94,7 @@ validate({
   oneOf: [ 'number', 'string' ]
 })
 
-// $ExpectType { a: number; } | { b: number; }
+// $ExpectType AnyJsonObject
 validate({
   type: 'object'
 })
@@ -107,3 +109,9 @@ bothOf<1 | AnyJsonObject, number | AnyJsonArray>()
 
 // $ExpectType [AnyJsonObject, AnyJsonObject]
 bothOf<1 | AnyJsonObject, [3] | JsonObject<"", {}>>()
+
+// $ExpectType [JsonObject<"a", { a: 42; b: 52; }>, JsonObject<"a", { a: 42; b: 52; }>]
+bothOf<AnyJsonObject, JsonObject<"a", {a: 42, b: 52}>>()
+
+// // $ExpectType [JsonObject<"a", { a: 1; b: never; }>
+// bothOf<JsonObject<"a", {a: 1, b: 52}>, JsonObject<"a", {a: number, b: "asdf"}>>()

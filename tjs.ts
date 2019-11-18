@@ -27,8 +27,16 @@ type BothJsonObjects<A, B> =
       : AnyJsonObject extends A
         ? AnyJsonObject extends B
           ? AnyJsonObject
-          : never
-        : never
+          : B extends AnyJsonObject
+            ? B
+            : never
+        : AnyJsonObject extends B
+          ? A extends AnyJsonObject
+            ? A
+            : never
+          : A extends JsonObject<infer Keys, infer Vals>
+            ? JsonObject<Keys, Vals>
+            : never
           
 
 type BothJsonArrays<A, B> =
