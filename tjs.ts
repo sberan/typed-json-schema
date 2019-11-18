@@ -99,7 +99,11 @@ type ArrayTypeOf<S extends SchemaDef> =
   S extends { items: infer T } ? Array<TypeOf<T>> : AnyJsonArray
 
 type ObjectTypeOf<S extends SchemaDef> = 
-  S extends { properties: infer PropTypes } ? JsonObject<S extends { required: ReadonlyArray<infer R> } ? R extends string ? R : '' : '', { [P in keyof PropTypes]: TypeOf<PropTypes[P]>}> : AnyJsonObject
+  S extends { properties: infer PropTypes }
+    ? S extends { required: ReadonlyArray<infer R> }
+      ? JsonObject<R extends string ? R : never, { [P in keyof PropTypes]: TypeOf<PropTypes[P]>}>
+      : AnyJsonObject
+    : AnyJsonObject
 
 type OneOfTypeOf<S extends SchemaDef> =
   S extends { oneOf: infer T} ? {[P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
