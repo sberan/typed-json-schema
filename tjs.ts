@@ -34,8 +34,19 @@ type BothJsonObjects<A, B> =
           ? A extends AnyJsonObject
             ? A
             : never
-          : A extends JsonObject<infer Keys, infer Vals>
-            ? JsonObject<Keys, Vals>
+          : A extends JsonObject<infer AKeys, infer AVals>
+            ? B extends JsonObject<infer BKeys, infer BVals>
+              ? JsonObject<AKeys| BKeys, {
+                [P in (keyof AVals | keyof BVals)]:
+                  P extends keyof AVals
+                    ? P extends keyof BVals
+                      ? BothOf<AVals[P], BVals[P]>
+                      : AVals[P]
+                    : P extends keyof BVals
+                      ? BVals[P]
+                      : never
+              }>
+              : never
             : never
           
 

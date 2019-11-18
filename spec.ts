@@ -113,5 +113,5 @@ bothOf<1 | AnyJsonObject, [3] | JsonObject<"", {}>>()
 // $ExpectType [JsonObject<"a", { a: 42; b: 52; }>, JsonObject<"a", { a: 42; b: 52; }>]
 bothOf<AnyJsonObject, JsonObject<"a", {a: 42, b: 52}>>()
 
-// // $ExpectType [JsonObject<"a", { a: 1; b: never; }>
-// bothOf<JsonObject<"a", {a: 1, b: 52}>, JsonObject<"a", {a: number, b: "asdf"}>>()
+// $ExpectType [JsonObject<"a" | "b", { a: 1; b: never; }>, JsonObject<"a" | "b", { a: 1; b: never; }>]
+bothOf<JsonObject<"a", {a: 1, b: 52}>, JsonObject<"b", {a: number, b: "asdf", c: 42}>>()
