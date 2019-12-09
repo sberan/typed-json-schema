@@ -3,11 +3,6 @@ export type AnyJsonObject = { [key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonArray | AnyJsonObject
 
-export type JsonObject<RequiredFields extends string, T extends AnyJsonObject> = 
-  {[key: string]: AnyJson }
-  & {[P in Exclude<keyof T, RequiredFields>]?: Exclude<T[P], undefined> }
-  & {[P in Extract<keyof T, RequiredFields>]: Exclude<T[P], undefined> }
-
 type BothJsonPrimitives<A, B> =
   A extends AnyJsonPrimitive
     ? B extends AnyJsonPrimitive
@@ -16,6 +11,15 @@ type BothJsonPrimitives<A, B> =
         : B extends A
           ? B
           : never
+      : never
+    : never
+
+type PropertiesTypeOf<A> =
+  A extends JsonObject<infer ASpec>
+    ? ASpec extends { properties: infer AProperties }
+      ? AProperties extends AnyJsonObject
+        ? AProperties
+        : never
       : never
     : never
 
@@ -34,20 +38,46 @@ type BothJsonObjects<A, B> =
           ? A extends AnyJsonObject
             ? A
             : never
-          : A extends JsonObject<infer AKeys, infer AVals>
-            ? B extends JsonObject<infer BKeys, infer BVals>
-              ? JsonObject<AKeys| BKeys, {
-                [P in (keyof AVals | keyof BVals)]:
-                  P extends keyof AVals
-                    ? P extends keyof BVals
-                      ? BothOf<AVals[P], BVals[P]>
-                      : AVals[P]
-                    : P extends keyof BVals
-                      ? BVals[P]
+          : A extends JsonObject<infer ASpec>
+            ? ASpec extends { properties: infer AProperties }
+              ? AProperties extends AnyJsonObject
+                ? B extends JsonObject<infer BSpec>
+                  ? BSpec extends { properties: infer BProperties}
+                    ? BProperties extends AnyJsonObject
+                      ? JsonObject<{
+                        properties: {
+                          [P in (keyof AProperties | keyof BProperties)]:
+                            P extends keyof AProperties
+                              ? P extends keyof BProperties
+                                ? BothOf<AProperties[P], BProperties[P]>
+                                : AProperties[P]
+                              : P extends keyof BProperties
+                                ? BProperties[P]
+                                : never
+                        }
+                      }>
                       : never
-              }>
+                    : never
+                  : never
+                : never
               : never
             : never
+            // // ? B extends JsonObject<infer BProperties>
+            //   // ? JsonObject<{
+            //   //   properties: {
+            //   //     [P in (keyof AProperties | keyof BProperties)]:
+            //   //       P extends keyof AProperties
+            //   //         ? P extends keyof BProperties
+            //   //           ? BothOf<AProperties[P], BProperties[P]>
+            //   //           : AProperties[P]
+            //   //         : P extends keyof BProperties
+            //   //           ? BProperties[P]
+            //   //           : never
+            //   //   }
+            //   // }>
+            //   ? AProps
+            //   : A
+            // : 4
           
 
 type BothJsonArrays<A, B> =
@@ -86,7 +116,7 @@ interface BaseTypes<S extends SchemaDef> {
 type TypeNameDef = keyof BaseTypes<{}>
 
 type SchemaDef = TypeNameDef | {
-  type?: TypeNameDef | TypeNameDef[]
+  type?: TypeNameDef | readonly TypeNameDef[]
   items?: SchemaDef
   properties?: { [key: string]: SchemaDef }
   oneOf?: [SchemaDef, ...SchemaDef[]]
@@ -98,10 +128,25 @@ type SchemaDef = TypeNameDef | {
 type ArrayTypeOf<S extends SchemaDef> =
   S extends { items: infer T } ? Array<TypeOf<T>> : AnyJsonArray
 
-type ObjectTypeOf<S extends SchemaDef> = 
+export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: boolean}> = 
+  (S extends { additionalProperties: false }
+    ? { }
+    : { [key: string]: AnyJson })
+  & (S extends { required: string }
+    ? {[P in Exclude<keyof S['properties'], S['required']>]?: Exclude<S['properties'][P], undefined> }
+    : {})
+  & {[P in Extract<keyof S['properties'], S['required']>]: Exclude<S['properties'][P], undefined> }
+
+type Simplify<T> = {'1': {[P in keyof T]: T[P]}}['1']
+
+type ObjectTypeOf<S extends SchemaDef> =
   S extends { properties: infer PropTypes }
-    ? S extends { required: ReadonlyArray<infer R> }
-      ? JsonObject<R extends string ? R : never, { [P in keyof PropTypes]: TypeOf<PropTypes[P]>}>
+    ? PropTypes extends {[key: string]: SchemaDef}
+      ? JsonObject<Simplify<
+        { properties: {[P in keyof PropTypes]: TypeOf<PropTypes[P]> } }
+        & (S extends { required: ReadonlyArray<infer S> } ? { required: S } : {})
+        & (S extends { additionalProperties: false } ? { additionalProperties: false} : {})
+      >>
       : AnyJsonObject
     : AnyJsonObject
 

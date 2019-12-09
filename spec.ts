@@ -35,7 +35,7 @@ validate({
   type: 'object'
 })
 
-// $ExpectType JsonObject<"a", { a: string; }>
+// $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
 validate({
   type: 'object',
   properties: {
@@ -44,34 +44,34 @@ validate({
   required: ['a'] as const
 })
 
-// $ExpectType AnyJsonObject
+// $ExpectType JsonObject<{ properties: { a: string; }; }>
 validate({
   type: 'object',
   properties: { a: 'string' }
 })
 
-// $ExpectType JsonObject<"b" | "c", { a: string; b: number; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
   required: ['b', 'c'] as const
 })
 
-// $ExpectType JsonObject<"b" | "c", { a: string; b: number; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
-  required: ['b', 'c'] as const
+  required: ['b', 'c'] as const,
+  additionalProperties: false as const
 })
 
-// $ExpectType string | JsonObject<"foo", { foo: string | number; bar: JsonObject<"baz", { baz: number; }>; }>
+// $ExpectType string | JsonObject<{ properties: { foo: string | number; bar: JsonObject<{ properties: { baz: number; }; }>; }; }>
 validate({
   type: ['string', 'object'],
   properties: {
-    foo: { type: ['string', 'number' ]},
-    bar: { type: 'object', properties: { baz: 'number' }, required: ['baz'] as const }
-  },
-  required: ['foo'] as const
+    foo: { type: ['string', 'number'] },
+    bar: { type: 'object', properties: { baz: 'number' } }
+  }
 })
 
 // $ExpectType number | AnyJsonArray
@@ -107,10 +107,10 @@ bothOf<1, number>()
 bothOf<1 | AnyJsonObject, number | AnyJsonArray>()
 
 // $ExpectType [AnyJsonObject, AnyJsonObject]
-bothOf<1 | AnyJsonObject, [3] | JsonObject<"", {}>>()
+bothOf<1 | AnyJsonObject, [3] | JsonObject<{ properties: { } }>>()
 
-// $ExpectType [JsonObject<"a", { a: 42; b: 52; }>, JsonObject<"a", { a: 42; b: 52; }>]
-bothOf<AnyJsonObject, JsonObject<"a", {a: 42, b: 52}>>()
+// $ExpectType [JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>, JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>]
+bothOf<AnyJsonObject, JsonObject<{ properties: {a: 42, b: 52 }, required: 'a' }>>()
 
-// $ExpectType [JsonObject<"a" | "b", { a: 1; b: never; c: 42; }>, JsonObject<"a" | "b", { a: 1; b: never; c: 42; }>]
-bothOf<JsonObject<"a", {a: 1, b: 52}>, JsonObject<"b", {a: number, b: "asdf", c: 42}>>()
+// $ExpectType [JsonObject<{ properties: { a: 1; b: never; c: 42; }; }>, JsonObject<{ properties: { a: 1; b: never; c: 42; }; }>]
+bothOf<JsonObject<{ properties: {a: 1, b: 52}, required: 'a' }>, JsonObject<{ properties: {a: number, b: "asdf", c: 42}, required: 'b' }>>()
