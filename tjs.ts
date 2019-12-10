@@ -14,14 +14,9 @@ type BothJsonPrimitives<A, B> =
       : never
     : never
 
-type PropertiesTypeOf<A> =
-  A extends JsonObject<infer ASpec>
-    ? ASpec extends { properties: infer AProperties }
-      ? AProperties extends AnyJsonObject
-        ? AProperties
-        : never
-      : never
-    : never
+type PropertyTypesOf<P extends AnyJsonObject, R extends string > = { properties: P, required?: string extends R ? never : R }
+
+type Specify<T, S extends T> = T extends S ? never : S
 
 type BothJsonObjects<A, B> = 
   A extends AnyJsonPrimitive
@@ -39,45 +34,27 @@ type BothJsonObjects<A, B> =
             ? A
             : never
           : A extends JsonObject<infer ASpec>
-            ? ASpec extends { properties: infer AProperties }
-              ? AProperties extends AnyJsonObject
-                ? B extends JsonObject<infer BSpec>
-                  ? BSpec extends { properties: infer BProperties}
-                    ? BProperties extends AnyJsonObject
-                      ? JsonObject<{
-                        properties: {
-                          [P in (keyof AProperties | keyof BProperties)]:
-                            P extends keyof AProperties
-                              ? P extends keyof BProperties
-                                ? BothOf<AProperties[P], BProperties[P]>
-                                : AProperties[P]
-                              : P extends keyof BProperties
-                                ? BProperties[P]
-                                : never
-                        }
-                      }>
-                      : never
-                    : never
-                  : never
-                : never
-              : never
-            : never
-            // // ? B extends JsonObject<infer BProperties>
-            //   // ? JsonObject<{
-            //   //   properties: {
-            //   //     [P in (keyof AProperties | keyof BProperties)]:
-            //   //       P extends keyof AProperties
-            //   //         ? P extends keyof BProperties
-            //   //           ? BothOf<AProperties[P], BProperties[P]>
-            //   //           : AProperties[P]
-            //   //         : P extends keyof BProperties
-            //   //           ? BProperties[P]
-            //   //           : never
-            //   //   }
-            //   // }>
-            //   ? AProps
-            //   : A
-            // : 4
+            ? ASpec extends PropertyTypesOf<infer AProperties, infer ARequired>
+              ? B extends JsonObject<infer BSpec>
+                ? BSpec extends PropertyTypesOf<infer BProperties, infer BRequired>
+                  ? JsonObject<Simplify<{
+                      properties: {
+                        [P in (keyof AProperties | keyof BProperties)]:
+                          P extends keyof AProperties
+                            ? P extends keyof BProperties
+                              ? BothOf<AProperties[P], BProperties[P]>
+                              : AProperties[P]
+                            : P extends keyof BProperties
+                              ? BProperties[P]
+                              : never
+                      }
+                    } & {
+                      required: Specify<string, ARequired> | Specify<string, BRequired>
+                    }>>
+                  : 42
+                : 41
+              : 444
+            : 43
           
 
 type BothJsonArrays<A, B> =
