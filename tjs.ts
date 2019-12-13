@@ -1,3 +1,5 @@
+import { List, Any } from 'ts-toolbelt'
+
 export type AnyJsonPrimitive = string | number | boolean | null 
 export type AnyJsonObject = { [key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
@@ -94,6 +96,11 @@ export type BothOf<A, B> = { 0:
   | BothJsonObjects<A, B>
 }[0]
 
+type AllOf<A extends AnyJsonArray, Acc = AnyJson> =
+    A extends [infer A1] ? BothOf<A1, Acc>
+  :  {"0": 
+        AllOf<List.Tail<A>, BothOf<List.Head<A>, Acc>>
+     }[A extends 1 ? "0" : "0"]
 
 interface BaseTypes<S extends SchemaDef> {
   string: string
@@ -145,6 +152,14 @@ type AnyOfTypeOf<S extends SchemaDef> =
   S extends { anyOf: infer T} ? {[P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
   : AnyJson
 
+
+type AllOfTypeOf<S extends SchemaDef> =
+  S extends { allOf: infer T }
+    ? T extends SchemaDef[]
+      ? AllOf<Extract<{[P in keyof T]: TypeOf<T[P]> }, AnyJsonArray>>
+      : AnyJson
+    : AnyJson
+
 type BaseTypeOf<S extends SchemaDef> = 
   S extends TypeNameDef ? S :
   S extends { type: Array<infer Name> } ? Name :
@@ -153,7 +168,13 @@ type BaseTypeOf<S extends SchemaDef> =
 
 type TypeOf<S extends SchemaDef> = BothOf<
   BaseTypes<S>[BaseTypeOf<S>], 
-  BothOf<OneOfTypeOf<S>, AnyOfTypeOf<S>>
+  BothOf<
+    OneOfTypeOf<S>,
+    BothOf<
+      AnyOfTypeOf<S>,
+      AllOfTypeOf<S>
+    >
+  >
 >
 
 export function validate<S extends SchemaDef>(schema: S ) : TypeOf<S> {

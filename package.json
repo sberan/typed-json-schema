@@ -11,5 +11,8 @@
     "typings-checker": "2.0.0"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ts-toolbelt": "4.13.5"
+  }
 }

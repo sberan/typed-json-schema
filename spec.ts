@@ -93,9 +93,24 @@ validate({
   oneOf: [ 'number', 'string' ]
 })
 
-// $ExpectType AnyJsonObject
+
+// $ExpectType JsonObject<{ properties: { a: string; }; }>
 validate({
-  type: 'object'
+  type: 'object',
+  oneOf: [
+    { properties: { a : 'string' }}
+  ]
+})
+
+
+// $ExpectType JsonObject<{ properties: { a: number; b: string; c: boolean; }; }>
+validate({
+  type: 'object' ,
+  allOf: [
+      { properties: { a: 'number' } },
+      { properties: { b: 'string' } },
+      { properties: { c: 'boolean' } },
+  ]
 })
 
 function bothOf<A, B>():[BothOf<A,B>, BothOf<B, A>] { throw 'nope'}
