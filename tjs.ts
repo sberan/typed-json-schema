@@ -101,11 +101,16 @@ export type BothOf<A, B> = { 0:
   | BothJsonObjects<A, B>
 }[0]
 
-type AllOf<A extends AnyJsonArray, Acc = AnyJson> =
-    A extends [infer A1] ? BothOf<A1, Acc>
-  :  {"0": 
-        AllOf<List.Tail<A>, BothOf<List.Head<A>, Acc>>
-     }[A extends 1 ? "0" : "0"]
+type AllOf<A extends AnyJsonArray> =
+    A extends [infer A1] ? A1
+  : A extends [infer A1, infer A2] ? BothOf<A1, A2>
+  : A extends [infer A1, infer A2, infer A3] ? BothOf<BothOf<A1, A2>, A3>
+  : A extends [infer A1, infer A2, infer A3, infer A4] ? BothOf<BothOf<A1, A2>, BothOf<A3, A4>>
+  : A extends [infer A1, infer A2, infer A3, infer A4, infer A5] ? BothOf<BothOf<BothOf<A1, A2>, BothOf<A3, A4>>, A5>
+  : A extends [infer A1, infer A2, infer A3, infer A4, infer A5, infer A6] ? BothOf<BothOf<BothOf<A1, A2>, BothOf<A3, A4>>, BothOf<A5, A6>>
+  : A extends [infer A1, infer A2, infer A3, infer A4, infer A5, infer A6, infer A7] ? BothOf<BothOf<BothOf<A1, A2>, BothOf<A3, A4>>, BothOf<BothOf<A5, A6>, A7>>
+  : A extends [infer A1, infer A2, infer A3, infer A4, infer A5, infer A6, infer A7, infer A8] ? BothOf<BothOf<BothOf<A1, A2>, BothOf<A3, A4>>, BothOf<BothOf<A5, A6>, BothOf<A7, A8>>>
+  : never
 
 interface BaseTypes<S extends SchemaDef> {
   string: string
@@ -168,16 +173,12 @@ type BaseTypeOf<S extends SchemaDef> =
   S extends { type: infer Name } ? Name :
   TypeNameDef
 
-type TypeOf<S extends SchemaDef> = BothOf<
+type TypeOf<S extends SchemaDef> = AllOf<[
   BaseTypes<S>[BaseTypeOf<S>], 
-  BothOf<
-    OneOfTypeOf<S>,
-    BothOf<
-      AnyOfTypeOf<S>,
-      AllOfTypeOf<S>
-    >
-  >
->
+  OneOfTypeOf<S>,
+  AnyOfTypeOf<S>,
+  AllOfTypeOf<S>
+]>
 
 type RequireReadOnly<T> =
   T extends object 

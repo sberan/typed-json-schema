@@ -109,7 +109,7 @@ validate({
   allOf: [
       { properties: { a: 'number' } },
       { properties: { b: 'string' } },
-      { properties: { c: 'boolean' } },
+      { properties: { c: 'boolean' } }
   ]
 } as const)
 
@@ -147,3 +147,4 @@ bothOf<JsonObject<{ properties: {a: 1 | 2, b: 52}, additionalProperties: false }
 
 //fixme const keyword
 //fixme enum keyword
+//fixme combining additional properties / required fields
