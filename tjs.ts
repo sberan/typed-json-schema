@@ -1,4 +1,4 @@
-import { List, Any } from 'ts-toolbelt'
+import { List, Object } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null 
 export type AnyJsonObject = { [key: string]: AnyJson }
@@ -114,13 +114,13 @@ interface BaseTypes<S extends SchemaDef> {
 type TypeNameDef = keyof BaseTypes<{}>
 
 type SchemaDef = TypeNameDef | {
-  type?: TypeNameDef | readonly TypeNameDef[]
-  items?: SchemaDef
-  properties?: { [key: string]: SchemaDef }
-  oneOf?: [SchemaDef, ...SchemaDef[]]
-  anyOf?: [SchemaDef, ...SchemaDef[]]
-  allOf?: [SchemaDef, ...SchemaDef[]]
-  required?: readonly [string, ... readonly string[]]
+  readonly type?: TypeNameDef | readonly TypeNameDef[]
+  readonly items?: SchemaDef
+  readonly properties?: { readonly [key: string]: SchemaDef }
+  readonly oneOf?: readonly [SchemaDef, ...SchemaDef[]]
+  readonly anyOf?: readonly [SchemaDef, ...SchemaDef[]]
+  readonly allOf?: readonly [SchemaDef, ...SchemaDef[]]
+  readonly required?: readonly [string, ... readonly string[]]
 }
 
 type ArrayTypeOf<S extends SchemaDef> =
@@ -135,9 +135,9 @@ type Simplify<T> = {'1': {[P in keyof T]: T[P]}}['1']
 
 type ObjectTypeOf<S extends SchemaDef> =
   S extends { properties: infer PropTypes }
-    ? PropTypes extends {[key: string]: SchemaDef}
+    ? PropTypes extends { readonly [key: string]: SchemaDef}
       ? JsonObject<Simplify<
-        { properties: {[P in keyof PropTypes]: TypeOf<PropTypes[P]> } }
+        { properties: { -readonly [P in keyof PropTypes]: TypeOf<PropTypes[P]> } }
         & (S extends { required: ReadonlyArray<infer S> } ? { required: S } : {})
         & (S extends { additionalProperties: false } ? { additionalProperties: false} : {})
       >>
@@ -145,24 +145,21 @@ type ObjectTypeOf<S extends SchemaDef> =
     : AnyJsonObject
 
 type OneOfTypeOf<S extends SchemaDef> =
-  S extends { oneOf: infer T} ? {[P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
+  S extends { oneOf: infer T} ? {-readonly [P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
   : AnyJson
 
 type AnyOfTypeOf<S extends SchemaDef> =
-  S extends { anyOf: infer T} ? {[P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
+  S extends { anyOf: infer T} ? {-readonly [P in keyof T]: TypeOf<T[P]>}[Extract<keyof T, number>]
   : AnyJson
 
 
 type AllOfTypeOf<S extends SchemaDef> =
-  S extends { allOf: infer T }
-    ? T extends SchemaDef[]
-      ? AllOf<Extract<{[P in keyof T]: TypeOf<T[P]> }, AnyJsonArray>>
-      : AnyJson
-    : AnyJson
+  S extends { allOf: infer T} ? AllOf<Extract<{-readonly [P in keyof T]: TypeOf<T[P]>}, AnyJsonArray>>
+  : AnyJson
 
 type BaseTypeOf<S extends SchemaDef> = 
   S extends TypeNameDef ? S :
-  S extends { type: Array<infer Name> } ? Name :
+  S extends { type: ReadonlyArray<infer Name> } ? Name :
   S extends { type: infer Name } ? Name :
   TypeNameDef
 
