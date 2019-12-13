@@ -174,6 +174,19 @@ type TypeOf<S extends SchemaDef> = BothOf<
   >
 >
 
-export function validate<S extends SchemaDef>(schema: S ) : TypeOf<S> {
+type RequireReadOnly<T> =
+  T extends object 
+    ? Object.WritableKeys<T> extends never
+      ? T
+      : never
+    : T
+
+function foo<T extends Object>(o: T): RequireReadOnly<T> {
+  throw 'nope'
+}
+
+const x = foo({ a: 42 })
+
+export function validate<S extends SchemaDef>(schema: S ) : TypeOf<RequireReadOnly<S>> {
   throw 'nope'
 }
