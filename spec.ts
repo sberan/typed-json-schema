@@ -140,7 +140,10 @@ bothOf<JsonObject<{ properties: {a: 1, b: 52} }>, JsonObject<{ properties: {a: n
 bothOf<JsonObject<{ properties: {a: 1, b: 52} }>, AnyJsonObject>()
 
 // $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>]
-bothOf<JsonObject<{ properties: {a: 1, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1, b: 52}}>>()
+bothOf<JsonObject<{ properties: {a: 1, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1, b: 52, c: 32}}>>()
 
+// $ExpectType [JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>]
+bothOf<JsonObject<{ properties: {a: 1 | 2, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1 | 3, c: 3 }, additionalProperties: false }>>()
 
-//fixme additionalproperties: false should remove fields from other object
+//fixme const keyword
+//fixme enum keyword

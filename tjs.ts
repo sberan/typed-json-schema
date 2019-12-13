@@ -1,4 +1,4 @@
-import { List, Object } from 'ts-toolbelt'
+import { List, Object, A } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null 
 export type AnyJsonObject = { [key: string]: AnyJson }
@@ -16,7 +16,7 @@ type BothJsonPrimitives<A, B> =
       : never
     : never
 
-type PropertyTypesOf<P extends AnyJsonObject, R extends string, A extends boolean > = { properties: P, required?: string extends R ? never : R, additionalProperties?: A }
+type PropertyTypesOf<P extends AnyJsonObject, R extends string> = { properties: P, required?: string extends R ? never : R, additionalProperties?: boolean }
 
 type Specify<T, S extends T> = T extends S ? never : S
 type NonNull<T> = Exclude<T, undefined | null | void>
@@ -34,6 +34,11 @@ type BothAnyJsonObjects<A, B> =
         : never
       : never
 
+type JsonObjectSpec =  { properties: AnyJsonObject, required?: string, additionalProperties?: boolean }
+
+type PropertyKeysOf<ASpec extends JsonObjectSpec, BSpec extends JsonObjectSpec> =
+    Extract<keyof ASpec['properties'],  BSpec extends { additionalProperties: false } ? keyof BSpec['properties'] : string>
+  | Extract<keyof BSpec['properties'],  ASpec extends { additionalProperties: false } ? keyof ASpec['properties'] : string>
 
 type BothJsonObjects<A, B> = 
   A extends AnyJsonPrimitive
@@ -41,12 +46,12 @@ type BothJsonObjects<A, B> =
     : A extends AnyJsonArray
       ? never
       : A extends JsonObject<infer ASpec>
-        ? ASpec extends PropertyTypesOf<infer AProperties, infer ARequired, infer AAdditional>
+        ? ASpec extends PropertyTypesOf<infer AProperties, infer ARequired>
           ? B extends JsonObject<infer BSpec>
-            ? BSpec extends PropertyTypesOf<infer BProperties, infer BRequired, infer BAdditional>
+            ? BSpec extends PropertyTypesOf<infer BProperties, infer BRequired>
               ? JsonObject<Simplify<{
                   properties: {
-                    [P in (keyof AProperties | keyof BProperties)]:
+                    [P in PropertyKeysOf<ASpec, BSpec>]:
                       P extends keyof AProperties
                         ? P extends keyof BProperties
                           ? BothOf<AProperties[P], BProperties[P]>
@@ -180,12 +185,6 @@ type RequireReadOnly<T> =
       ? T
       : never
     : T
-
-function foo<T extends Object>(o: T): RequireReadOnly<T> {
-  throw 'nope'
-}
-
-const x = foo({ a: 42 })
 
 export function validate<S extends SchemaDef>(schema: S ) : TypeOf<RequireReadOnly<S>> {
   throw 'nope'
