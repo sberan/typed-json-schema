@@ -1,4 +1,6 @@
+/*
 import { List, Object, A } from 'ts-toolbelt'
+
 
 export type AnyJsonPrimitive = string | number | boolean | null 
 export type AnyJsonObject = { [key: string]: AnyJson }
@@ -173,12 +175,19 @@ type BaseTypeOf<S extends SchemaDef> =
   S extends { type: infer Name } ? Name :
   TypeNameDef
 
-type TypeOf<S extends SchemaDef> = AllOf<[
-  BaseTypes<S>[BaseTypeOf<S>], 
-  OneOfTypeOf<S>,
-  AnyOfTypeOf<S>,
-  AllOfTypeOf<S>
-]>
+type ConstTypeOf<S extends SchemaDef> = S extends { const: AnyJson } ? S["const"] : AnyJson
+
+type TypeOf<S extends SchemaDef> = BothOf<
+  BothOf<
+    BothOf<
+      BaseTypes<S>[BaseTypeOf<S>], 
+      ConstTypeOf<S>
+    >,
+    OneOfTypeOf<S>>,
+  BothOf<
+    AnyOfTypeOf<S>,
+    AllOfTypeOf<S>>
+>
 
 type RequireReadOnly<T> =
   T extends object 
@@ -190,3 +199,4 @@ type RequireReadOnly<T> =
 export function validate<S extends SchemaDef>(schema: S ) : TypeOf<RequireReadOnly<S>> {
   throw 'nope'
 }
+*/
