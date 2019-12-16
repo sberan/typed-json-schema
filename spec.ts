@@ -3,33 +3,50 @@ import { validate, AnyJsonObject, AnyJsonArray } from './tjs'
 // $ExpectType {}
 validate({} as const)
 
-// $ExpectType { excludeTypes: "number" | "boolean" | "object" | "null" | "array"; }
+// $ExpectType { type: "string"; }
 validate('string')
 
-// $ExpectType { excludeTypes: "string" | "number" | "boolean" | "object" | "null" | "array"; }
+// $ExpectType { type: "number"; }
 validate({ type: 'number' } as const)
 
-// $ExpectType { excludeTypes: "boolean" | "object" | "null" | "array"; }
+// $ExpectType { type: "string" | "number"; }
 validate({ type: ['number', 'string']} as const)
 
-// $ExpectType { excludeTypes: "number" | "boolean" | "object" | "null" | "array"; }
+// $ExpectType { type: "string"; }
 validate({ allOf: [
   { type: ['string', 'number'] },
   { type: ['string', 'object'] }
 ]} as const)
 
-// $ExpectType { const: 42; excludeTypes: "string" | "number" | "boolean" | "object" | "null" | "array"; }
-validate({ allOf: [
-  { const: 42 },
-  { const: 42 },
-  { type: 'string' }
-]} as const)
 
-// $ExpectType { const: never; }
-validate({ allOf: [
-  { const: 42 },
-  { const: 34 }
-]} as const)
+// // $ExpectType { const: 42; type: "string" }
+// validate({ allOf: [
+//   { const: 42 },
+//   { type: 'string' }
+// ]} as const)
+
+
+// // $ExpectType { const: 42; type: "string" }
+// validate({ allOf: [
+//   { const: 42 },
+//   { const: 42 },
+//   { type: 'string' }
+// ]} as const)
+
+// // $ExpectType { const: never; }
+// validate({ allOf: [
+//   { const: 42 },
+//   { const: 34 }
+// ]} as const)
+
+// // $ExpectType { const: never; }
+// validate({
+//   oneOf: [
+//     { type: 'string' },
+//     { type: 'number' },
+//     { type: 'boolean' }
+//   ]
+// })
 
 // // $ExpectType AnyJsonArray
 // validate({ type: 'array' } as const)

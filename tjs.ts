@@ -29,7 +29,7 @@ type JsonSchema = keyof JsonTypes | {
 }
 
 type JsonRestriction = {
-  excludeTypes: keyof JsonTypes
+  type: keyof JsonTypes
   const: M.JSON.Value
   items: JsonRestriction //TODO: | TupleOf<JsonRestriction>
   properties: {[key: string]: JsonRestriction }
@@ -38,11 +38,11 @@ type JsonRestriction = {
 }
 
 type ExpandRestrictions<S extends JsonSchema> =
-  (S extends string ? { excludeTypes: Exclude<keyof JsonTypes, S> }
+  (S extends string ? { type: Exclude<keyof JsonTypes, S> }
   : S extends { type: infer T } 
-    ? T extends string ? { excludeTypes: Exclude<keyof JsonTypes, S> }
-      : T extends TupleOf<infer Ts>  ? { excludeTypes: Exclude<keyof JsonTypes, Ts> }
-      : T
+    ? T extends string ? { type: Exclude<keyof JsonTypes, T>}
+      : T extends TupleOf<infer Ts>  ? { type: Exclude<keyof JsonTypes, Ts> }
+      : never
     : never)
  | (S extends { const: infer C } ? C extends M.JSON.Value ? { const: C }: never : never)
  | (S extends { items: infer I } ? { items: ExpandRestrictions<I> } : never )
@@ -52,8 +52,7 @@ type ExpandRestrictions<S extends JsonSchema> =
  | (S extends { allOf: infer A } ? {-readonly [P in keyof A]: ExpandRestrictions<A[P]>}[Extract<keyof A, number>] : never)
 
 type CombineRestrictions<R extends Partial<JsonRestriction>> = {
-  [P in keyof Union.Merge<R>]: 
-    P extends 'const' ? Union.IntersectOf<Union.Merge<R>[P]> : Union.Merge<R>[P]
+  [P in keyof Union.Merge<R>]: P extends keyof JsonRestriction ? Exclude<JsonRestriction[P], Union.Merge<R>[P]> : never
 }
 
 export function validate<S extends JsonSchema>(schema: S): Any.Compute<CombineRestrictions<ExpandRestrictions<S>>> { throw 'nope'}
