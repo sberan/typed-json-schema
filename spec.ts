@@ -3,7 +3,7 @@ import { validate, AnyJsonObject, AnyJsonArray } from './tjs'
 // $ExpectType AnyJsonObject
 validate({} as const)
 
-// // $ExpectType { type: "string"; }
+// $ExpectType string
 validate('string')
 
 // // $ExpectType { type: "number"; }
