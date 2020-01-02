@@ -7,12 +7,27 @@ validate({} as const)
 validate('string')
 
 // $ExpectType number
+validate('number')
+
+// $ExpectType boolean
+validate('boolean')
+
+// $ExpectType null
+validate('null')
+
+// $ExpectType AnyJsonObject
+validate('object')
+
+// $ExpectType AnyJsonArray
+validate('array')
+
+// $ExpectType number
 validate({ type: 'number' } as const)
 
 // $ExpectType string | number
 validate({ type: ['number', 'string']} as const)
 
-// // $ExpectType { type: "string"; }
+// // $ExpectType string
 // validate({ allOf: [
 //   { type: ['string', 'number'] },
 //   { type: ['string', 'object'] }
