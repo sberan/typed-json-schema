@@ -11,17 +11,21 @@ type JsonTypes = {
   number: number
 }
 
+type TypeName = keyof JsonTypes
+
 interface JsonSchema {
-  type?: keyof JsonTypes 
+  type?: TypeName | ReadonlyArray<TypeName>
 }
 
-type TypeKeyword<S extends keyof JsonTypes> = { type: S }
+type SingleTypeName<S extends TypeName> = { type: S }
+type MultiTypeName<S extends TypeName> = { type: ReadonlyArray<S> }
 
-type JsonSchemaInput = JsonSchema | keyof JsonTypes
+type JsonSchemaInput = JsonSchema | TypeName
 
 export type TypeOf<S extends JsonSchemaInput> = 
-    S extends keyof JsonTypes ? JsonTypes[S]
-  : S extends TypeKeyword<infer T> ? JsonTypes[T]
+    S extends TypeName ? JsonTypes[S]
+  : S extends SingleTypeName<infer T> ? JsonTypes[T]
+  : S extends MultiTypeName<infer T> ? JsonTypes[T]
   : AnyJson
 
 

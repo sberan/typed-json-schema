@@ -9,8 +9,8 @@ validate('string')
 // $ExpectType number
 validate({ type: 'number' } as const)
 
-// // $ExpectType { type: "string" | "number"; }
-// validate({ type: ['number', 'string']} as const)
+// $ExpectType string | number
+validate({ type: ['number', 'string']} as const)
 
 // // $ExpectType { type: "string"; }
 // validate({ allOf: [
