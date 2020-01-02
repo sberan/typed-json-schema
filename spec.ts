@@ -20,24 +20,24 @@ validate({ allOf: [
 
 
 // // $ExpectType { const: 42; type: "string" }
-// validate({ allOf: [
-//   { const: 42 },
-//   { type: 'string' }
-// ]} as const)
+validate({ allOf: [
+  { const: 42 },
+  { type: 'string' }
+]} as const)
 
 
 // // $ExpectType { const: 42; type: "string" }
-// validate({ allOf: [
-//   { const: 42 },
-//   { const: 42 },
-//   { type: 'string' }
-// ]} as const)
+validate({ allOf: [
+  { const: 42 },
+  { const: 42 },
+  { type: 'string' }
+]} as const)
 
 // // $ExpectType { const: never; }
-// validate({ allOf: [
-//   { const: 42 },
-//   { const: 34 }
-// ]} as const)
+validate({ allOf: [
+  { const: 42 },
+  { const: 34 }
+]} as const)
 
 // // $ExpectType { const: never; }
 // validate({

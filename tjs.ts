@@ -29,30 +29,34 @@ type JsonSchema = keyof JsonTypes | {
 }
 
 type JsonRestriction = {
-  type: keyof JsonTypes
-  const: M.JSON.Value
-  items: JsonRestriction //TODO: | TupleOf<JsonRestriction>
-  properties: {[key: string]: JsonRestriction }
-  additionalProperties: boolean  //todo: | JsonRestriction
-  required: string
+  type: TupleOf<keyof JsonTypes>
+  const: TupleOf<M.JSON.Value>
+  // items: JsonRestriction //TODO: | TupleOf<JsonRestriction>
+  // properties: {[key: string]: JsonRestriction }
+  // additionalProperties: boolean  //todo: | JsonRestriction
+  // required: string
 }
 
 type ExpandRestrictions<S extends JsonSchema> =
-  (S extends string ? { type: Exclude<keyof JsonTypes, S> }
+  (S extends string ? { type: [S] }
   : S extends { type: infer T } 
-    ? T extends string ? { type: Exclude<keyof JsonTypes, T>}
-      : T extends TupleOf<infer Ts>  ? { type: Exclude<keyof JsonTypes, Ts> }
+    ? T extends string ? { type: [T] }
+      : T extends TupleOf<infer Ts>  ? { type: [Ts] }
       : never
     : never)
  | (S extends { const: infer C } ? C extends M.JSON.Value ? { const: C }: never : never)
- | (S extends { items: infer I } ? { items: ExpandRestrictions<I> } : never )
- | (S extends { properties: infer Props } ? { properties: {- readonly [P in keyof Props]: ExpandRestrictions<Props[P]> } } : never)
- | (S extends { additionalProperties: false } ? { additionalProperties: false } : never)
- | (S extends { required: TupleOf<infer R> } ? R extends string ? { required: R } : never : never)
+//  | (S extends { items: infer I } ? { items: ExpandRestrictions<I> } : never )
+//  | (S extends { properties: infer Props } ? { properties: {- readonly [P in keyof Props]: ExpandRestrictions<Props[P]> } } : never)
+//  | (S extends { additionalProperties: false } ? { additionalProperties: false } : never)
+//  | (S extends { required: TupleOf<infer R> } ? R extends string ? { required: R } : never : never)
  | (S extends { allOf: infer A } ? {-readonly [P in keyof A]: ExpandRestrictions<A[P]>}[Extract<keyof A, number>] : never)
 
-type CombineRestrictions<R extends Partial<JsonRestriction>> = {
-  [P in keyof Union.Merge<R>]: P extends keyof JsonRestriction ? Exclude<JsonRestriction[P], Union.Merge<R>[P]> : never
-}
+type CombineRestrictions<R extends Partial<JsonRestriction>> = Object.Overwrite<JsonRestriction, {
+  [P in Extract<keyof Union.Merge<R>, keyof JsonRestriction>]:
+    Union.Merge<R>[P] extends any[]
+    ? List.Flatten<Extract<Union.ListOf<Union.Merge<R>[P]>, any[]>>
+    : Union.Merge<R>[P]
+}>
 
-export function validate<S extends JsonSchema>(schema: S): Any.Compute<CombineRestrictions<ExpandRestrictions<S>>> { throw 'nope'}
+type TypeOf<R extends JsonRestriction> = JsonTypes[]
+export function validate<S extends JsonSchema>(schema: S): Any.Compute<TypeOf<CombineRestrictions<ExpandRestrictions<S>>>> { throw 'nope'}
