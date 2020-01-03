@@ -211,9 +211,9 @@ validate({
 // // $ExpectType never
 // validate({ type: 'string' } /* forgot as const */)
 
-function bothOf<A, B>() { return validate(42 as unknown as { allOf: [A, B]})}
+// function bothOf<A, B>() { return validate(42 as unknown as { allOf: [A, B]})}
 
-// $ExpectType 1
+// // $ExpectType 1
 // bothOf<1, number>()
 
 // // $ExpectType [1, 1]
@@ -240,6 +240,4 @@ function bothOf<A, B>() { return validate(42 as unknown as { allOf: [A, B]})}
 // // $ExpectType [JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>]
 // bothOf<JsonObject<{ properties: {a: 1 | 2, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1 | 3, c: 3 }, additionalProperties: false }>>()
 
-// //fixme const keyword
 // //fixme enum keyword
-// //fixme combining additional properties / required fields

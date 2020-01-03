@@ -5,6 +5,26 @@ export type AnyJsonObject = {[key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
+type Specify<T, S extends T> = T extends S ? never : S
+
+type NonNull<T> = Exclude<T, undefined | null | void>
+
+type CleanJson<T extends AnyJson> =
+  T extends AnyJsonArray
+    ? Exclude<keyof T, keyof AnyJsonArray> extends never
+      ? T
+      : never
+    : T extends AnyJsonObject
+      ? T extends AnyJsonPrimitive
+        ? never
+        : T
+      : T
+
+export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: boolean }> = 
+  (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
+  & {[P in Exclude<keyof S['properties'], Specify<string, NonNull<S['required']>>>]?: Exclude<S['properties'][P], undefined> }
+  & {[P in Extract<keyof S['properties'], Specify<string, NonNull<S['required']>>>]: Exclude<S['properties'][P], undefined> }
+
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
 type JsonSchemaInput = TypeName | {
@@ -48,14 +68,6 @@ type SpecOf<S extends JsonSchemaInput> = {
     : {}
 )
 
-type Specify<T, S extends T> = T extends S ? never : S
-type NonNull<T> = Exclude<T, undefined | null | void>
-
-export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: boolean }> = 
-  (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
-  & {[P in Exclude<keyof S['properties'], Specify<string, NonNull<S['required']>>>]?: Exclude<S['properties'][P], undefined> }
-  & {[P in Extract<keyof S['properties'], Specify<string, NonNull<S['required']>>>]: Exclude<S['properties'][P], undefined> }
-
 type TypeOf<S extends JsonSchemaSpec> = AnyJson extends S['const']
   ? {
       string: string
@@ -73,17 +85,7 @@ type TypeOf<S extends JsonSchemaSpec> = AnyJson extends S['const']
     }[S['type']]
   : S['const']
 
-type Clean<T extends AnyJson> = T extends AnyJsonArray
-  ? Exclude<keyof T, keyof AnyJsonArray> extends never
-    ? T
-    : never
-  : T extends AnyJsonObject
-    ? T extends AnyJsonPrimitive
-      ? never
-      : T
-    : T
-
-export function validate<S extends JsonSchemaInput>(schema: S): Clean<TypeOf<SpecOf<S>>> { throw 'nope'}
+export function validate<S extends JsonSchemaInput>(schema: S): CleanJson<TypeOf<SpecOf<S>>> { throw 'nope'}
 
 function specOf<S extends JsonSchemaInput>(): Any.Compute<SpecOf<S>> { throw 'nope'}
 
