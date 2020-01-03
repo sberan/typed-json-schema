@@ -71,17 +71,17 @@ validate({ allOf: [
 //   { const: 34 }
 // ]} as const)
 
-// // $ExpectType { const: never; }
-// validate({
-//   oneOf: [
-//     { type: 'string' },
-//     { type: 'number' },
-//     { type: 'boolean' }
-//   ]
-// })
+// $ExpectType string | number | boolean
+validate({
+  oneOf: [
+    { type: 'string' },
+    { type: 'number' },
+    { type: 'boolean' }
+  ]
+} as const)
 
-// // $ExpectType AnyJsonArray
-// validate({ type: 'array' } as const)
+// $ExpectType AnyJsonArray
+validate({ type: 'array' } as const)
 
 // $ExpectType string[]
 validate({ type: 'array', items: 'string' } as const)
@@ -99,18 +99,18 @@ validate({
 } as const)
 
 // // $ExpectType string[]
-// validate({
-//   type: 'array',
-//   items: { type: ['string', 'number'] },
-//   oneOf: [
-//     { items: { type: ['string', 'null'] } }
-//   ]
-// } as const)
+validate({
+  type: 'array',
+  items: { type: ['string', 'number'] },
+  oneOf: [
+    { items: { type: ['string', 'null'] } }
+  ]
+} as const)
 
-// // $ExpectType AnyJsonObject
-// validate({
-//   type: 'object'
-// } as const)
+// $ExpectType AnyJsonObject
+validate({
+  type: 'object'
+} as const)
 
 // // $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
 // validate({
@@ -151,24 +151,24 @@ validate({
 //   }
 // } as const)
 
-// // $ExpectType number | AnyJsonArray
-// validate({
-//   oneOf: [
-//     { type: 'array' },
-//     'number'
-//   ]
-// } as const)
+// $ExpectType number | AnyJsonArray
+validate({
+  oneOf: [
+    { type: 'array' },
+    'number'
+  ]
+} as const)
 
-// // $ExpectType AnyJsonPrimitive
-// validate({
-//   oneOf: [ 'string', 'number', 'null', 'boolean' ]
-// } as const)
+// $ExpectType AnyJsonPrimitive
+validate({
+  oneOf: [ 'string', 'number', 'null', 'boolean' ]
+} as const)
 
-// // $ExpectType string | number
-// validate({
-//   type: ['string', 'number', 'boolean', 'null'],
-//   oneOf: [ 'number', 'string' ]
-// } as const)
+// $ExpectType string | number
+validate({
+  type: ['string', 'number', 'boolean', 'null'],
+  oneOf: [ 'number', 'string' ]
+} as const)
 
 
 // // $ExpectType JsonObject<{ properties: { a: string; }; }>

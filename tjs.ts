@@ -1,10 +1,9 @@
-import { Object, List, Union, Any, M } from 'ts-toolbelt'
+import { Union, Any } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
-
 
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
@@ -12,6 +11,7 @@ type JsonSchemaInput = TypeName | {
   type?: TypeName | ReadonlyArray<TypeName>
   items?: JsonSchemaInput
   allOf?: ReadonlyArray<JsonSchemaInput>
+  oneOf?: ReadonlyArray<JsonSchemaInput>
 }
 
 type SingleTypeName<S extends TypeName> = { type: S }
@@ -31,6 +31,10 @@ type SpecOf<S extends JsonSchemaInput> = {
 } & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]>
+    : {}
+) & (
+  S extends { oneOf: infer T }
+    ? {[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]
     : {}
 )
 
