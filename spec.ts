@@ -1,4 +1,4 @@
-import { validate } from './tjs'
+import { validate, TypeOf } from './tjs'
 
 // $ExpectType AnyJson
 validate({} as const)
@@ -206,12 +206,12 @@ validate({
   ]
 } as const)
 
-// // $ExpectType never
-// validate({ type: 'string' } /* forgot as const */)
-
-// function bothOf<A, B>() { return validate(42 as unknown as { allOf: [A, B]})}
-
 // // $ExpectType 1
+// validate({
+//   allOf: [
+//     {}
+//   ]
+// })
 // bothOf<1, number>()
 
 // // $ExpectType [1, 1]
@@ -237,5 +237,8 @@ validate({
 
 // // $ExpectType [JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>]
 // bothOf<JsonObject<{ properties: {a: 1 | 2, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1 | 3, c: 3 }, additionalProperties: false }>>()
+
+// $ExpectType never
+validate({ type: ['string'] } /* forgot as const */)
 
 // //fixme enum keyword

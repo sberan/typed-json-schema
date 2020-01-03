@@ -52,40 +52,40 @@ type SingleTypeName<S extends TypeName> = { type: S }
 
 type MultiTypeName<S extends TypeName> = { type: ReadonlyArray<S> }
 
-type JsonSchemaNode = {
+type SchemaNode = {
   type: TypeName
-  items: JsonSchemaNode
+  items: SchemaNode
   const: AnyJson
-  properties: {[key: string]: JsonSchemaNode}
+  properties: {[key: string]: SchemaNode}
   required: string
   additionalProperties: false
 }
 
-type NodeOf<S extends JsonSchemaInput> = {
+type SchemaNodeOf<S extends JsonSchemaInput> = {
   type: S extends TypeName ? S
       : S extends SingleTypeName<infer T> ? T
       : S extends MultiTypeName<infer T> ? T
       : TypeName
-  items: S extends { items: infer I } ? NodeOf<I> : JsonSchemaNode
+  items: S extends { items: infer I } ? SchemaNodeOf<I> : SchemaNode
   const: S extends { const: infer T } ? T : AnyJson
-  properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: NodeOf<T[P]> } : {}
+  properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
   required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
   additionalProperties: S extends { additionalProperties: false } ? false : never
 } & (
   S extends { allOf: infer T }
-    ? IntersectionOf<{[P in keyof T]: NodeOf<T[P]>}[Extract<keyof T, number>]>
+    ? IntersectionOf<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
 ) & (
   S extends { oneOf: infer T }
-    ? {[P in keyof T]: NodeOf<T[P]>}[Extract<keyof T, number>]
+    ? {[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]
     : {}
 ) & (
   S extends { anyOf: infer T }
-    ? {[P in keyof T]: NodeOf<T[P]>}[Extract<keyof T, number>]
+    ? {[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]
     : {}
 )
 
-type ComputedType<S extends JsonSchemaNode> = CombineConstants<
+type ComputedType<S extends SchemaNode> = CombineConstants<
   S['const'],
   {
     string: string
@@ -93,8 +93,8 @@ type ComputedType<S extends JsonSchemaNode> = CombineConstants<
     boolean: boolean
     null: null
     array: S extends { items: infer I }
-      ? I extends JsonSchemaNode
-        ? JsonSchemaNode extends I
+      ? I extends SchemaNode
+        ? SchemaNode extends I
           ? AnyJsonArray
           : ComputedType<I>[]
         : AnyJsonArray
@@ -107,6 +107,9 @@ type ComputedType<S extends JsonSchemaNode> = CombineConstants<
   }[S['type']]
 >
 
-export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<NodeOf<S>>>
+// "as const" must be used in order to avoid widening
+type RequireConst<S extends JsonSchemaInput> = true extends {[P in keyof S]?: 'push' extends keyof S[P] ? true : never }[keyof S] ? never : S
+
+export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<RequireConst<S>>>>
 
 export function validate<S extends JsonSchemaInput>(schema: S, obj?: any): TypeOf<S> { throw 'nope'}
