@@ -51,25 +51,43 @@ validate({ allOf: [
 ]} as const)
 
 
-// // $ExpectType { const: 42; type: "string" }
-// validate({ allOf: [
-//   { const: 42 },
-//   { type: 'string' }
-// ]} as const)
+// $ExpectType 42
+validate({
+  const: 42,
+  type: 'number'
+} as const)
 
 
-// // $ExpectType { const: 42; type: "string" }
-// validate({ allOf: [
-//   { const: 42 },
-//   { const: 42 },
-//   { type: 'string' }
-// ]} as const)
+// $ExpectType never
+validate({
+  allOf: [
+    { const: 42 },
+    { const: 43 }
+  ]
+} as const)
 
-// // $ExpectType { const: never; }
-// validate({ allOf: [
-//   { const: 42 },
-//   { const: 34 }
-// ]} as const)
+// $ExpectType 42
+validate({
+  allOf: [
+    { const: 42 },
+    { type: 'number' }
+  ]
+} as const)
+
+// // $ExpectType never
+// validate({
+//   allOf: [
+//     { const: 42 },
+//     { type: 'string' }
+//   ]
+// } as const)
+
+// // $ExpectType never
+// validate({
+//   const: 42,
+//   type: 'string'
+// } as const)
+
 
 // $ExpectType string | number | boolean
 validate({
@@ -167,7 +185,7 @@ validate({
 // $ExpectType string | number
 validate({
   type: ['string', 'number', 'boolean', 'null'],
-  oneOf: [ 'number', 'string' ]
+  anyOf: [ 'number', 'string' ]
 } as const)
 
 
