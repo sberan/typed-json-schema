@@ -22,6 +22,7 @@ type JsonSchemaSpec = {
   type: TypeName
   items: JsonSchemaSpec
   const: AnyJson
+  properties: {[key: string]: JsonSchemaSpec}
 }
 
 type SpecOf<S extends JsonSchemaInput> = {
@@ -31,6 +32,7 @@ type SpecOf<S extends JsonSchemaInput> = {
       : TypeName
   items: S extends { items: infer I } ? SpecOf<I> : JsonSchemaSpec
   const: S extends { const: infer T } ? T : AnyJson
+  properties: S extends { properties: infer P } ? P : {}
 } & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]>
