@@ -1,4 +1,4 @@
-import { Union, Any } from 'ts-toolbelt'
+import { Union, Object } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -25,6 +25,8 @@ export type JsonObject<S extends { properties: AnyJsonObject, required?: string,
   & {[P in Exclude<keyof S['properties'], Specify<string, NonNull<S['required']>>>]?: Exclude<S['properties'][P], undefined> }
   & {[P in Extract<keyof S['properties'], Specify<string, NonNull<S['required']>>>]: Exclude<S['properties'][P], undefined> }
 
+type CleanJsonObjectSpec<S extends { properties: AnyJsonObject, required: string }> = S['required'] extends never ? { properties: S['properties'] } : S
+
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
 type JsonSchemaInput = TypeName | {
@@ -34,6 +36,7 @@ type JsonSchemaInput = TypeName | {
   allOf?: ReadonlyArray<JsonSchemaInput>
   oneOf?: ReadonlyArray<JsonSchemaInput>
   properties?: {[key: string]: JsonSchemaInput}
+  required?: ReadonlyArray<string>
 }
 
 type SingleTypeName<S extends TypeName> = { type: S }
@@ -44,6 +47,7 @@ type JsonSchemaSpec = {
   items: JsonSchemaSpec
   const: AnyJson
   properties: {[key: string]: JsonSchemaSpec}
+  required: string
 }
 
 type SpecOf<S extends JsonSchemaInput> = {
@@ -53,7 +57,8 @@ type SpecOf<S extends JsonSchemaInput> = {
       : TypeName
   items: S extends { items: infer I } ? SpecOf<I> : JsonSchemaSpec
   const: S extends { const: infer T } ? T : AnyJson
-  properties: S extends { properties: infer T } ? {[P in keyof T]: SpecOf<T[P]> } : {}
+  properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SpecOf<T[P]> } : {}
+  required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
 } & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]>
@@ -81,21 +86,11 @@ type TypeOf<S extends JsonSchemaSpec> = AnyJson extends S['const']
             : TypeOf<I>[]
           : AnyJsonArray
         : AnyJsonArray
-      object: {} extends S['properties'] ? AnyJsonObject : JsonObject<{ properties: {-readonly [P in keyof S['properties']]: TypeOf<S['properties'][P]> }}>
+      object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectSpec<{ 
+        properties: {[P in keyof S['properties']]: TypeOf<S['properties'][P]> }
+        required: S['required']
+      }>>
     }[S['type']]
   : S['const']
 
 export function validate<S extends JsonSchemaInput>(schema: S): CleanJson<TypeOf<SpecOf<S>>> { throw 'nope'}
-
-function specOf<S extends JsonSchemaInput>(): Any.Compute<SpecOf<S>> { throw 'nope'}
-
-const x = specOf<{
-  allOf: [
-    { items: { type: ['string', 'number'] } },
-    { items: { type: ['number', 'object'] } },
-  ]
-}>()
-
-function t<T>(): Any.Compute<T> { throw 'nope' }
-
-const y = t<({a: { type: 'string'}} & {a: {required: 'number'}})['a']>()

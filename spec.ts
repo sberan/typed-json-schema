@@ -130,14 +130,14 @@ validate({
   type: 'object'
 } as const)
 
-// // $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
-// validate({
-//   type: 'object',
-//   properties: {
-//     a: 'string'
-//   },
-//   required: ['a']
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
+validate({
+  type: 'object',
+  properties: {
+    a: 'string'
+  },
+  required: ['a']
+} as const)
 
 // $ExpectType JsonObject<{ properties: { a: string; }; }>
 validate({
@@ -145,12 +145,12 @@ validate({
   properties: { a: 'string' }
 } as const)
 
-// // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
-// validate({
-//   type: 'object',
-//   properties: { a: 'string', b: 'number' },
-//   required: ['b', 'c']
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
+validate({
+  type: 'object',
+  properties: { a: 'string', b: 'number' },
+  required: ['b', 'c']
+} as const)
 
 // // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
 // validate({
