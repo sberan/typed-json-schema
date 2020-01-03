@@ -12,7 +12,5 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "ts-toolbelt": "4.13.5"
-  }
+  "dependencies": {}
 }

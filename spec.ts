@@ -27,7 +27,6 @@ validate({ type: 'number' } as const)
 // $ExpectType string | number
 validate({ type: ['number', 'string']} as const)
 
-
 // $ExpectType string
 validate({
   allOf: [
@@ -74,19 +73,19 @@ validate({
   ]
 } as const)
 
-// // $ExpectType never
-// validate({
-//   allOf: [
-//     { const: 42 },
-//     { type: 'string' }
-//   ]
-// } as const)
+// $ExpectType never
+validate({
+  allOf: [
+    { const: 42 },
+    { type: 'string' }
+  ]
+} as const)
 
-// // $ExpectType never
-// validate({
-//   const: 42,
-//   type: 'string'
-// } as const)
+// $ExpectType never
+validate({
+  const: 42,
+  type: 'string'
+} as const)
 
 
 // $ExpectType string | number | boolean
@@ -196,7 +195,6 @@ validate({
     { properties: { a : 'string' }}
   ]
 } as const)
-
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; c: boolean; }; }>
 validate({
