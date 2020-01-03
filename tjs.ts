@@ -27,11 +27,28 @@ type MultiTypeName<S extends TypeName> = { type: ReadonlyArray<S> }
 
 type JsonSchemaInput = JsonSchema | TypeName
 
-export type TypeOf<S extends JsonSchemaInput> = 
-    S extends TypeName ? JsonTypes[S]
-  : S extends SingleTypeName<infer T> ? JsonTypes[T]
-  : S extends MultiTypeName<infer T> ? JsonTypes[T]
-  : AnyJson
+type SpecOf<S extends JsonSchemaInput> = {
+  type: Exclude<TypeName, S extends TypeName ? S
+      : S extends SingleTypeName<infer T> ? T
+      : S extends MultiTypeName<infer T> ? T
+      : TypeName
+      >
+} | (
+  S extends { allOf: infer T }
+    ? {[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]
+    : never
+)
 
+type JsonSchemaSpec = {
+  type: TypeName
+}
 
-export function validate<S extends JsonSchemaInput>(schema: S): TypeOf<S> { throw 'nope'}
+type TypeOf<S extends JsonSchemaSpec> = JsonTypes[Exclude<TypeName, S['type']>]
+
+export function validate<S extends JsonSchemaInput>(schema: S): TypeOf<SpecOf<S>> { throw 'nope'}
+
+function specOf<S extends JsonSchemaInput>(): Any.Compute<SpecOf<S>> { throw 'nope'}
+
+const x = specOf<{
+  allOf:[{ type: 'number'}]
+}>()
