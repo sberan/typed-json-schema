@@ -17,39 +17,45 @@ type JsonSchemaInput = TypeName | {
 type SingleTypeName<S extends TypeName> = { type: S }
 type MultiTypeName<S extends TypeName> = { type: ReadonlyArray<S> }
 
+type JsonSchemaSpec = {
+  type: TypeName
+  items: JsonSchemaSpec
+}
+
 type SpecOf<S extends JsonSchemaInput> = {
-  type: Exclude<TypeName, S extends TypeName ? S
+  type: S extends TypeName ? S
       : S extends SingleTypeName<infer T> ? T
       : S extends MultiTypeName<infer T> ? T
       : TypeName
-      >
-  items: S extends { items: infer I } ? SpecOf<I> : {}
-} | (
+  items: S extends { items: infer I } ? SpecOf<I> : JsonSchemaSpec
+} & (
   S extends { allOf: infer T }
-    ? {[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]
-    : never
+    ? Union.IntersectOf<{[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]>
+    : {}
 )
-
-type JsonSchemaSpec = {
-  type?: TypeName
-  items?: JsonSchemaSpec
-}
-
-type SpecField<S extends JsonSchemaSpec, P extends keyof JsonSchemaSpec, Default extends JsonSchemaSpec[P]> = P extends keyof S ? Exclude<S[P], undefined> : Default
 
 type TypeOf<S extends JsonSchemaSpec> = {} extends S ? AnyJson : {
   string: string
   number: number
   boolean: boolean
   null: null
-  array: S extends { items: infer I } ? TypeOf<I>[] : AnyJsonArray
+  array: S extends { items: infer I }
+    ? I extends JsonSchemaSpec
+      ? JsonSchemaSpec extends I
+        ? AnyJsonArray
+        : TypeOf<I>[]
+      : AnyJsonArray
+    : AnyJsonArray
   object: AnyJsonObject
-}[Exclude<TypeName, SpecField<S, 'type', never>>]
+}[S['type']]
 
 export function validate<S extends JsonSchemaInput>(schema: S): TypeOf<SpecOf<S>> { throw 'nope'}
 
 function specOf<S extends JsonSchemaInput>(): Any.Compute<SpecOf<S>> { throw 'nope'}
 
 const x = specOf<{
-  allOf:[{ type: 'number'}]
+  allOf: [
+    { items: { type: ['string', 'number'] } } ,
+    { items: { type: ['number', 'object'] } } ,
+  ]
 }>()

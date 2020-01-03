@@ -1,6 +1,6 @@
 import { validate, AnyJsonObject, AnyJsonArray } from './tjs'
 
-// $ExpectType string | number | boolean | AnyJsonObject | AnyJson[] | null
+// $ExpectType AnyJson
 validate({} as const)
 
 // $ExpectType string
@@ -18,7 +18,7 @@ validate('null')
 // $ExpectType AnyJsonObject
 validate('object')
 
-// $ExpectType AnyJson[]
+// $ExpectType AnyJsonArray
 validate('array')
 
 // $ExpectType number
@@ -88,6 +88,15 @@ validate({ type: 'array', items: 'string' } as const)
 
 // $ExpectType (string | number)[]
 validate({ type: 'array', items: { type: ['string', 'number'] } } as const)
+
+// $ExpectType string[]
+validate({
+  type: 'array',
+  allOf: [
+    { items: { type: ['string', 'number'] } },
+    { items: { type: ['string', 'object'] } }
+  ]
+} as const)
 
 // // $ExpectType string[]
 // validate({
