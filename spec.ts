@@ -1,4 +1,4 @@
-import { validate, AnyJsonObject, AnyJsonArray } from './tjs'
+import { validate } from './tjs'
 
 // $ExpectType AnyJson
 validate({} as const)
@@ -116,7 +116,7 @@ validate({
   ]
 } as const)
 
-// // $ExpectType string[]
+// $ExpectType string[]
 validate({
   type: 'array',
   items: { type: ['string', 'number'] },
@@ -139,11 +139,11 @@ validate({
 //   required: ['a']
 // } as const)
 
-// // $ExpectType JsonObject<{ properties: { a: string; }; }>
-// validate({
-//   type: 'object',
-//   properties: { a: 'string' }
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: string; }; }>
+validate({
+  type: 'object',
+  properties: { a: 'string' }
+} as const)
 
 // // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
 // validate({
@@ -160,14 +160,14 @@ validate({
 //   additionalProperties: false
 // } as const)
 
-// // $ExpectType string | JsonObject<{ properties: { foo: string | number; bar: JsonObject<{ properties: { baz: number; }; }>; }; }>
-// validate({
-//   type: ['string', 'object'],
-//   properties: {
-//     foo: { type: ['string', 'number'] },
-//     bar: { type: 'object', properties: { baz: 'number' } }
-//   }
-// } as const)
+// $ExpectType string | JsonObject<{ properties: { foo: string | number; bar: JsonObject<{ properties: { baz: number; }; }>; }; }>
+validate({
+  type: ['string', 'object'],
+  properties: {
+    foo: { type: ['string', 'number'] },
+    bar: { type: 'object', properties: { baz: 'number' } }
+  }
+} as const)
 
 // $ExpectType number | AnyJsonArray
 validate({
@@ -189,31 +189,31 @@ validate({
 } as const)
 
 
-// // $ExpectType JsonObject<{ properties: { a: string; }; }>
-// validate({
-//   type: 'object',
-//   oneOf: [
-//     { properties: { a : 'string' }}
-//   ]
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: string; }; }>
+validate({
+  type: 'object',
+  oneOf: [
+    { properties: { a : 'string' }}
+  ]
+} as const)
 
 
-// // $ExpectType JsonObject<{ properties: { a: number; b: string; c: boolean; }; }>
-// validate({
-//   type: 'object',
-//   allOf: [
-//       { properties: { a: 'number' } },
-//       { properties: { b: 'string' } },
-//       { properties: { c: 'boolean' } }
-//   ]
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: number; b: string; c: boolean; }; }>
+validate({
+  type: 'object',
+  allOf: [
+      { properties: { a: 'number' } },
+      { properties: { b: 'string' } },
+      { properties: { c: 'boolean' } }
+  ]
+} as const)
 
 // // $ExpectType never
 // validate({ type: 'string' } /* forgot as const */)
 
-// function bothOf<A, B>():[BothOf<A,B>, BothOf<B, A>] { throw 'nope'}
+function bothOf<A, B>() { return validate(42 as unknown as { allOf: [A, B]})}
 
-// // $ExpectType [1, 1]
+// $ExpectType 1
 // bothOf<1, number>()
 
 // // $ExpectType [1, 1]

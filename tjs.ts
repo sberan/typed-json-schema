@@ -13,6 +13,7 @@ type JsonSchemaInput = TypeName | {
   items?: JsonSchemaInput
   allOf?: ReadonlyArray<JsonSchemaInput>
   oneOf?: ReadonlyArray<JsonSchemaInput>
+  properties?: {[key: string]: JsonSchemaInput}
 }
 
 type SingleTypeName<S extends TypeName> = { type: S }
@@ -32,7 +33,7 @@ type SpecOf<S extends JsonSchemaInput> = {
       : TypeName
   items: S extends { items: infer I } ? SpecOf<I> : JsonSchemaSpec
   const: S extends { const: infer T } ? T : AnyJson
-  properties: S extends { properties: infer P } ? P : {}
+  properties: S extends { properties: infer T } ? {[P in keyof T]: SpecOf<T[P]> } : {}
 } & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SpecOf<T[P]>}[Extract<keyof T, number>]>
@@ -47,6 +48,14 @@ type SpecOf<S extends JsonSchemaInput> = {
     : {}
 )
 
+type Specify<T, S extends T> = T extends S ? never : S
+type NonNull<T> = Exclude<T, undefined | null | void>
+
+export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: boolean }> = 
+  (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
+  & {[P in Exclude<keyof S['properties'], Specify<string, NonNull<S['required']>>>]?: Exclude<S['properties'][P], undefined> }
+  & {[P in Extract<keyof S['properties'], Specify<string, NonNull<S['required']>>>]: Exclude<S['properties'][P], undefined> }
+
 type TypeOf<S extends JsonSchemaSpec> = AnyJson extends S['const']
   ? {
       string: string
@@ -60,7 +69,7 @@ type TypeOf<S extends JsonSchemaSpec> = AnyJson extends S['const']
             : TypeOf<I>[]
           : AnyJsonArray
         : AnyJsonArray
-      object: AnyJsonObject
+      object: {} extends S['properties'] ? AnyJsonObject : JsonObject<{ properties: {-readonly [P in keyof S['properties']]: TypeOf<S['properties'][P]> }}>
     }[S['type']]
   : S['const']
 
@@ -84,3 +93,7 @@ const x = specOf<{
     { items: { type: ['number', 'object'] } },
   ]
 }>()
+
+function t<T>(): Any.Compute<T> { throw 'nope' }
+
+const y = t<({a: { type: 'string'}} & {a: {required: 'number'}})['a']>()
