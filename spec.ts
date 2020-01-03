@@ -152,13 +152,13 @@ validate({
   required: ['b', 'c']
 } as const)
 
-// // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
-// validate({
-//   type: 'object',
-//   properties: { a: 'string', b: 'number' },
-//   required: ['b', 'c'],
-//   additionalProperties: false
-// } as const)
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
+validate({
+  type: 'object',
+  properties: { a: 'string', b: 'number' },
+  required: ['b', 'c'],
+  additionalProperties: false
+} as const)
 
 // $ExpectType string | JsonObject<{ properties: { foo: string | number; bar: JsonObject<{ properties: { baz: number; }; }>; }; }>
 validate({
