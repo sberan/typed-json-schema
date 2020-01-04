@@ -32,11 +32,11 @@ export type JsonObject<S extends { properties: AnyJsonObject, required?: string,
   & {[P in Exclude<keyof S['properties'], NonNullable<S['required']>>]?: Exclude<S['properties'][P], undefined> }
   & {[P in Extract<keyof S['properties'], NonNullable<S['required']>>]: Exclude<S['properties'][P], undefined> }
 
-type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string, additionalProperties: false }> = Compute<
+type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string, additionalProperties: boolean }> = Compute<
   Pick<S,
     'properties'
     | (S['required'] extends never ? never : 'required' )
-    | (false extends S['additionalProperties']  ? 'additionalProperties' : never)
+    | (S['additionalProperties'] extends false ? 'additionalProperties' : never)
   >
 >
 
@@ -65,7 +65,7 @@ type SchemaNode = {
   enum: AnyJson
   properties: {[key: string]: SchemaNode}
   required: string
-  additionalProperties: false
+  additionalProperties: boolean
 }
 
 type SchemaNodeOf<S extends JsonSchemaInput> = {
@@ -78,7 +78,7 @@ type SchemaNodeOf<S extends JsonSchemaInput> = {
   enum: S extends { enum: ReadonlyArray<infer T> } ? T : AnyJson
   properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
   required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
-  additionalProperties: S extends { additionalProperties: false } ? false : never
+  additionalProperties: S extends { additionalProperties: false } ? false : boolean
 } & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
@@ -122,6 +122,20 @@ export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNod
 
 export function validate<S extends JsonSchemaInput>(schema: S, obj?: any): TypeOf<S> { throw 'nope'}
 
-type Test<T extends JsonSchemaInput> = ComputedType<Compute<SchemaNodeOf<T>>>
+type TestSchemaDef<T extends JsonSchemaInput> = Compute<SchemaNodeOf<T>>
 
-const x: Test<{ enum: [1]}> = null as any
+
+const x: TestSchemaDef<{
+  oneOf: [
+    { type: 'object', properties: { a: 'string' }, additionalProperties: false }
+    ,
+    { type: 'object', properties: { a: 'string', b: 'string' } }
+  ]
+}> = null as any
+
+let y: Compute<
+
+  { type: 'object', properties: { a: 'string' }, additionalProperties: false }
+  &
+  { type: 'object', properties: { a: 'string', b: 'string' }, additionalProperties: boolean }
+>
