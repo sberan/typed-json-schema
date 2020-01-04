@@ -1,7 +1,7 @@
 import { validate, TypeOf } from './tjs'
 
 // $ExpectType AnyJson
-validate({} as const)
+validate({})
 
 // $ExpectType string
 validate('string')
@@ -22,7 +22,7 @@ validate('object')
 validate('array')
 
 // $ExpectType number
-validate({ type: 'number' } as const)
+validate({ type: 'number' })
 
 // $ExpectType string | number
 validate({ type: ['number', 'string']} as const)
@@ -87,6 +87,26 @@ validate({
   type: 'string'
 } as const)
 
+// $ExpectType 1 | 2
+validate({
+  enum: [1, 2]
+} as const)
+
+// $ExpectType 2
+validate({
+  allOf: [
+    { enum: [1, 2] },
+    { enum: [2, 3] }
+  ]
+} as const)
+
+// // $ExpectType { a: 1 }
+validate({
+  allOf: [
+    { enum: [{ a: 1 }] },
+    { enum: [{ a: 1 }] }
+  ]
+} as const)
 
 // $ExpectType string | number | boolean
 validate({
@@ -98,10 +118,10 @@ validate({
 } as const)
 
 // $ExpectType AnyJsonArray
-validate({ type: 'array' } as const)
+validate({ type: 'array' })
 
 // $ExpectType string[]
-validate({ type: 'array', items: 'string' } as const)
+validate({ type: 'array', items: 'string' })
 
 // $ExpectType (string | number)[]
 validate({ type: 'array', items: { type: ['string', 'number'] } } as const)
@@ -127,7 +147,7 @@ validate({
 // $ExpectType AnyJsonObject
 validate({
   type: 'object'
-} as const)
+})
 
 // $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
 validate({
@@ -229,26 +249,133 @@ validate({
   }]
 } as const)
 
-// // $ExpectType [AnyJsonObject, AnyJsonObject]
-// bothOf<1 | AnyJsonObject, [3] | JsonObject<{ properties: { } }>>()
+// // $ExpectType AnyJsonObject
+validate({
+  allOf: [{ 
+    oneOf: [
+      { const: 1 },
+      { }
+    ],
+  }, { 
+    oneOf: [
+      { type: 'array', items: { const: 3 } },
+      { type: 'object' }
+    ],
+  }]
+} as const)
 
-// // $ExpectType [JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>, JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>]
-// bothOf<AnyJsonObject, JsonObject<{ properties: {a: 42, b: 52 }, required: 'a' }>>()
+// // $ExpectType JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>
+validate({
+  allOf: [
+    { },
+    { 
+      type: 'object',
+      required: ['a'],
+      properties: {
+        a: { const: 42 },
+        b: { const: 52 }
+      }
+    }]
+} as const)
 
-// // $ExpectType [JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>, JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>]
-// bothOf<JsonObject<{ properties: {a: 1, b: 52}, required: 'a' }>, JsonObject<{ properties: {a: number, b: "asdf", c: 42}, required: 'b' }>>()
+// // $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>
+validate({
+  allOf: [
+    { 
+      type: 'object',
+      required: ['a'],
+      properties: {
+        a: { const: 1 },
+        b: { const: 52 }
+      }
+    },
+    { 
+      type: 'object',
+      required: ['b'],
+      properties: {
+        a: { type: 'number' },
+        b: { const: 'asdf' },
+        c: { const: 42 }
+      }
+    }]
+} as const)
 
-// // $ExpectType [JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>, JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>]
-// bothOf<JsonObject<{ properties: {a: 1, b: 52} }>, JsonObject<{ properties: {a: number, b: "asdf", c: 42}, required: 'b' }>>()
+// // $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>
+validate({
+  allOf: [
+    { 
+      type: 'object',
+      properties: {
+        a: { const: 1 },
+        b: { const: 52 }
+      }
+    },
+    { 
+      type: 'object',
+      required: ['b'],
+      properties: {
+        a: { type: 'number' },
+        b: { const: 'asdf' },
+        c: { const: 42 }
+      }
+    }]
+} as const)
 
 // // $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; }>, JsonObject<{ properties: { a: 1; b: 52; }; }>]
-// bothOf<JsonObject<{ properties: {a: 1, b: 52} }>, AnyJsonObject>()
+validate({
+  allOf: [
+    { 
+      type: 'object',
+      properties: {
+        a: { const: 1 },
+        b: { const: 52 }
+      }
+    },
+    {}
+  ]
+} as const)
 
-// // $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>]
-// bothOf<JsonObject<{ properties: {a: 1, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1, b: 52, c: 32}}>>()
+// // $ExpectType JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>
+validate({
+  allOf: [
+    { 
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        a: { const: 1 },
+        b: { const: 52 }
+      }
+    },
+    { 
+      type: 'object',
+      properties: {
+        a: { const: 1 },
+        b: { const: 52 },
+        c: { const: 32 }
+      }
+    }]
+} as const)
 
-// // $ExpectType [JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>, JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>]
-// bothOf<JsonObject<{ properties: {a: 1 | 2, b: 52}, additionalProperties: false }>, JsonObject<{ properties: {a: 1 | 3, c: 3 }, additionalProperties: false }>>()
+// // $ExpectType JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>
+validate({
+  allOf: [
+    { 
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        a: { enum: [1, 2] },
+        b: { const: 52 }
+      }
+    },
+    { 
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        a: { enum: [1, 3] },
+        c: { const: 3 }
+      }
+    }]
+} as const)
 
 // $ExpectType never
 validate({ type: ['string'] } /* forgot as const */)

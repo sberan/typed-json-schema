@@ -1,4 +1,4 @@
-import { Object, Union } from 'ts-toolbelt'
+import { Union } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -45,6 +45,7 @@ type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 type JsonSchemaInput = TypeName | {
   type?: TypeName | ReadonlyArray<TypeName>
   const?: AnyJson
+  enum?: ReadonlyArray<AnyJson>
   items?: JsonSchemaInput
   allOf?: ReadonlyArray<JsonSchemaInput>
   oneOf?: ReadonlyArray<JsonSchemaInput>
@@ -61,6 +62,7 @@ type SchemaNode = {
   type: TypeName
   items: SchemaNode
   const: AnyJson
+  enum: AnyJson
   properties: {[key: string]: SchemaNode}
   required: string
   additionalProperties: false
@@ -73,6 +75,7 @@ type SchemaNodeOf<S extends JsonSchemaInput> = {
       : TypeName
   items: S extends { items: infer I } ? SchemaNodeOf<I> : SchemaNode
   const: S extends { const: infer T } ? T : AnyJson
+  enum: S extends { enum: ReadonlyArray<infer T> } ? T : AnyJson
   properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
   required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
   additionalProperties: S extends { additionalProperties: false } ? false : never
@@ -91,7 +94,7 @@ type SchemaNodeOf<S extends JsonSchemaInput> = {
 )
 
 type ComputedType<S extends SchemaNode> = CombineConstants<
-  S['const'],
+  CombineConstants<S['enum'], S['const']>,
   {
     string: string
     number: number
@@ -112,9 +115,13 @@ type ComputedType<S extends SchemaNode> = CombineConstants<
   }[S['type']]
 >
 
-// "as const" must be used in order to avoid widening
+// "as const" must be used in order to avoid widening of writable arrays
 type RequireConst<S extends JsonSchemaInput> = true extends {[P in keyof S]?: 'push' extends keyof S[P] ? true : never }[keyof S] ? never : S
 
 export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<RequireConst<S>>>>
 
 export function validate<S extends JsonSchemaInput>(schema: S, obj?: any): TypeOf<S> { throw 'nope'}
+
+type Test<T extends JsonSchemaInput> = ComputedType<Compute<SchemaNodeOf<T>>>
+
+const x: Test<{ enum: [1]}> = null as any
