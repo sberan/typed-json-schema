@@ -206,16 +206,28 @@ validate({
   ]
 } as const)
 
-// // $ExpectType 1
-// validate({
-//   allOf: [
-//     {}
-//   ]
-// })
-// bothOf<1, number>()
+// $ExpectType 1
+validate({
+  allOf: [
+    { const: 1 },
+    { type: 'number' }
+  ]
+} as const)
 
-// // $ExpectType [1, 1]
-// bothOf<1 | AnyJsonObject, number | AnyJsonArray>()
+// $ExpectType number
+validate({
+  allOf: [{ 
+    oneOf: [
+      { type: 'number' },
+      { type: 'string' }
+    ],
+  }, { 
+    oneOf: [
+      { type: 'number' },
+      { type: 'object' }
+    ],
+  }]
+} as const)
 
 // // $ExpectType [AnyJsonObject, AnyJsonObject]
 // bothOf<1 | AnyJsonObject, [3] | JsonObject<{ properties: { } }>>()

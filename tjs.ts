@@ -1,3 +1,5 @@
+import { Object, Union } from 'ts-toolbelt'
+
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
@@ -30,10 +32,13 @@ export type JsonObject<S extends { properties: AnyJsonObject, required?: string,
   & {[P in Exclude<keyof S['properties'], NonNullable<S['required']>>]?: Exclude<S['properties'][P], undefined> }
   & {[P in Extract<keyof S['properties'], NonNullable<S['required']>>]: Exclude<S['properties'][P], undefined> }
 
-type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string, additionalProperties: false }> = Compute<Pick<S, 'properties'
-  | (S['required'] extends never ? never : 'required' )
-  | (false extends S['additionalProperties']  ? 'additionalProperties' : never)
->>
+type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string, additionalProperties: false }> = Compute<
+  Pick<S,
+    'properties'
+    | (S['required'] extends never ? never : 'required' )
+    | (false extends S['additionalProperties']  ? 'additionalProperties' : never)
+  >
+>
 
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
@@ -73,15 +78,15 @@ type SchemaNodeOf<S extends JsonSchemaInput> = {
   additionalProperties: S extends { additionalProperties: false } ? false : never
 } & (
   S extends { allOf: infer T }
-    ? IntersectionOf<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
+    ? Union.IntersectOf<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
 ) & (
   S extends { oneOf: infer T }
-    ? {[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]
+    ? Union.Merge<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
 ) & (
   S extends { anyOf: infer T }
-    ? {[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]
+    ? Union.Merge<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
 )
 
