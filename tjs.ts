@@ -64,7 +64,7 @@ type SchemaNode = {
   const?: AnyJson
   enum?: AnyJson
   properties: {[key: string]: SchemaNode}
-  required: string
+  required?: string
   additionalProperties: boolean
 }
 
@@ -77,10 +77,11 @@ type SchemaNodeOf<S extends JsonSchemaInput> = (
   S extends { const: infer T } ? { const: T } : {}
 ) & (
   S extends { enum: ReadonlyArray<infer T> } ? { enum: T } : {}
+) & (
+  S extends { required: ReadonlyArray<infer T> } ? T extends string ? { required: T } : {} : {}
 ) & ({
   items: S extends { items: infer I } ? SchemaNodeOf<I> : SchemaNode
   properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
-  required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
   additionalProperties: S extends { additionalProperties: false } ? false : boolean
 }) & (
   S extends { allOf: infer T }
@@ -119,7 +120,7 @@ type ComputedType<S extends SchemaNode> =
           : AnyJsonArray
         object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{ 
           properties: {[P in keyof S['properties']]: ComputedType<S['properties'][P]> }
-          required: S['required']
+          required: S extends { required: infer R } ? R extends string ? R : never : never
           additionalProperties: S['additionalProperties']
         }>>
       }[Extract<TypeName, T>]

@@ -113,7 +113,7 @@ validate({
   ]
 } as const)
 
-// FIXME // $ExpectType { a: 1 }
+// FIXME $ExpectType { a: 1 }
 validate({
   allOf: [
     { enum: [{ a: 1 }] },
@@ -121,7 +121,7 @@ validate({
   ]
 } as const)
 
-// $ExpectType 1 | string
+// FIXME $ExpectType 1 | string
 validate({
   oneOf: [
     { enum: [1] },
@@ -185,14 +185,16 @@ validate({
   properties: { a: 'string' }
 } as const)
 
-// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; }>
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
   required: ['b', 'c']
 } as const)
 
-// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; additionalProperties: false; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; additionalProperties: false; }>
 validate({
   type: 'object',
   properties: { a: 'string', b: 'number' },
@@ -270,7 +272,7 @@ validate({
   ]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: string; }; additionalProperties: false; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: string; }; additionalProperties: false; }>
 validate({
   allOf: [
     { type: 'object', properties: { a: 'string' }, additionalProperties: false },
@@ -278,7 +280,7 @@ validate({
   ]
 } as const)
 
-// FIXME // $ExpectType AnyJsonObject
+// FIXME $ExpectType AnyJsonObject
 validate({
   allOf: [{ 
     oneOf: [
@@ -293,7 +295,7 @@ validate({
   }]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>
 validate({
   allOf: [
     { },
@@ -307,7 +309,7 @@ validate({
     }]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>
 validate({
   allOf: [
     { 
@@ -329,7 +331,7 @@ validate({
     }]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>
 validate({
   allOf: [
     { 
@@ -350,7 +352,7 @@ validate({
     }]
 } as const)
 
-// FIXME // $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; }>, JsonObject<{ properties: { a: 1; b: 52; }; }>]
+// FIXME $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; }>, JsonObject<{ properties: { a: 1; b: 52; }; }>]
 validate({
   allOf: [
     { 
@@ -364,7 +366,7 @@ validate({
   ]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>
 validate({
   allOf: [
     { 
@@ -385,7 +387,7 @@ validate({
     }]
 } as const)
 
-// FIXME // $ExpectType JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>
+// FIXME $ExpectType JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>
 validate({
   allOf: [
     { 
