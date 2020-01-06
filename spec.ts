@@ -52,6 +52,11 @@ validate({ allOf: [
 
 // $ExpectType 42
 validate({
+  const: 42
+} as const)
+
+// $ExpectType 42
+validate({
   const: 42,
   type: 'number'
 } as const)
@@ -81,6 +86,14 @@ validate({
   ]
 } as const)
 
+// FIXME $ExpectType 42 | string
+validate({
+  oneOf: [
+    { const: 42 },
+    { type: 'string' }
+  ]
+} as const)
+
 // $ExpectType never
 validate({
   const: 42,
@@ -105,6 +118,14 @@ validate({
   allOf: [
     { enum: [{ a: 1 }] },
     { enum: [{ a: 1 }] }
+  ]
+} as const)
+
+// $ExpectType 1 | string
+validate({
+  oneOf: [
+    { enum: [1] },
+    { type: 'string' }
   ]
 } as const)
 
@@ -226,14 +247,6 @@ validate({
   ]
 } as const)
 
-// $ExpectType 1
-validate({
-  allOf: [
-    { const: 1 },
-    { type: 'number' }
-  ]
-} as const)
-
 // $ExpectType number
 validate({
   allOf: [{ 
@@ -270,7 +283,7 @@ validate({
   allOf: [{ 
     oneOf: [
       { const: 1 },
-      { }
+      { type: 'object' }
     ],
   }, { 
     oneOf: [

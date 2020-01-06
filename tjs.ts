@@ -1,4 +1,4 @@
-import { Union } from 'ts-toolbelt'
+import { Object, Union } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -59,27 +59,30 @@ type SingleTypeName<S extends TypeName> = { type: S }
 type MultiTypeName<S extends TypeName> = { type: ReadonlyArray<S> }
 
 type SchemaNode = {
-  type: TypeName
+  type?: TypeName
   items: SchemaNode
-  const: AnyJson
-  enum: AnyJson
+  const?: AnyJson
+  enum?: AnyJson
   properties: {[key: string]: SchemaNode}
   required: string
   additionalProperties: boolean
 }
 
-type SchemaNodeOf<S extends JsonSchemaInput> = {
-  type: S extends TypeName ? S
-      : S extends SingleTypeName<infer T> ? T
-      : S extends MultiTypeName<infer T> ? T
-      : TypeName
+type SchemaNodeOf<S extends JsonSchemaInput> = (
+  S extends TypeName ? { type: S }
+  : S extends SingleTypeName<infer T> ? { type: T }
+  : S extends MultiTypeName<infer T> ? { type: T }
+  : { }
+) & (
+  S extends { const: infer T } ? { const: T } : {}
+) & (
+  S extends { enum: ReadonlyArray<infer T> } ? { enum: T } : {}
+) & ({
   items: S extends { items: infer I } ? SchemaNodeOf<I> : SchemaNode
-  const: S extends { const: infer T } ? T : AnyJson
-  enum: S extends { enum: ReadonlyArray<infer T> } ? T : AnyJson
   properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
   required: S extends { required: ReadonlyArray<infer T> } ? T extends string ? T : never : never
   additionalProperties: S extends { additionalProperties: false } ? false : boolean
-} & (
+}) & (
   S extends { allOf: infer T }
     ? Union.IntersectOf<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
@@ -93,28 +96,35 @@ type SchemaNodeOf<S extends JsonSchemaInput> = {
     : {}
 )
 
-type ComputedType<S extends SchemaNode> = CombineConstants<
-  CombineConstants<S['enum'], S['const']>,
-  {
-    string: string
-    number: number
-    boolean: boolean
-    null: null
-    array: S extends { items: infer I }
-      ? I extends SchemaNode
-        ? SchemaNode extends I
-          ? AnyJsonArray
-          : ComputedType<I>[]
-        : AnyJsonArray
-      : AnyJsonArray
-    object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{ 
-      properties: {[P in keyof S['properties']]: ComputedType<S['properties'][P]> }
-      required: S['required']
-      additionalProperties: S['additionalProperties']
-    }>>
-  }[S['type']]
+type ComputedType<S extends SchemaNode> =
+  CombineConstants<
+    CombineConstants<
+      S extends { const: infer C } ? C : AnyJson,
+      S extends { enum: infer C } ? C : AnyJson
+    >
+  ,
+  S extends { type: infer T }
+    ?
+      {
+        string: string
+        number: number
+        boolean: boolean
+        null: null
+        array: S extends { items: infer I }
+          ? I extends SchemaNode
+            ? SchemaNode extends I
+              ? AnyJsonArray
+              : ComputedType<I>[]
+            : AnyJsonArray
+          : AnyJsonArray
+        object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{ 
+          properties: {[P in keyof S['properties']]: ComputedType<S['properties'][P]> }
+          required: S['required']
+          additionalProperties: S['additionalProperties']
+        }>>
+      }[Extract<TypeName, T>]
+    : AnyJson
 >
-
 // "as const" must be used in order to avoid widening of writable arrays
 type RequireConst<S extends JsonSchemaInput> = true extends {[P in keyof S]?: 'push' extends keyof S[P] ? true : never }[keyof S] ? never : S
 
@@ -127,15 +137,10 @@ type TestSchemaDef<T extends JsonSchemaInput> = Compute<SchemaNodeOf<T>>
 
 const x: TestSchemaDef<{
   oneOf: [
-    { type: 'object', properties: { a: 'string' }, additionalProperties: false }
+    { const: 42 }
     ,
-    { type: 'object', properties: { a: 'string', b: 'string' } }
+    { type: 'string' }
   ]
 }> = null as any
 
-let y: Compute<
-
-  { type: 'object', properties: { a: 'string' }, additionalProperties: false }
-  &
-  { type: 'object', properties: { a: 'string', b: 'string' }, additionalProperties: boolean }
->
+let y: Compute<Object.Path<SchemaNode, ['type']>>
