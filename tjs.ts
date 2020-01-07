@@ -1,4 +1,4 @@
-import { Object, Union } from 'ts-toolbelt'
+import {  Union } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -126,22 +126,40 @@ type ComputedType<S extends SchemaNode> =
       }[Extract<TypeName, T>]
     : AnyJson
 >
-// "as const" must be used in order to avoid widening of writable arrays
-type RequireConst<S extends JsonSchemaInput> = true extends {[P in keyof S]?: 'push' extends keyof S[P] ? true : never }[keyof S] ? never : S
 
-export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<RequireConst<S>>>>
+export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<S>>>
 
 export function validate<S extends JsonSchemaInput>(schema: S, obj?: any): TypeOf<S> { throw 'nope'}
 
-type TestSchemaDef<T extends JsonSchemaInput> = Compute<SchemaNodeOf<T>>
 
-
-const x: TestSchemaDef<{
-  oneOf: [
-    { const: 42 }
-    ,
-    { type: 'string' }
-  ]
+const asdf: TypeOf<{
+  type: 'object',
+  properties: {
+    a: 'string'
+    b: 'string'
+  },
+  required: readonly ['a']
 }> = null as any
 
-let y: Compute<Object.Path<SchemaNode, ['type']>>
+export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties) => {
+    const structSchema = {
+      type: 'object',
+      properties,
+      additionalProperties: false
+    } as const
+    type ObjectType = TypeOf<typeof structSchema>
+    return class {
+      static schema = structSchema
+      constructor (data: ObjectType) {
+        
+      }
+    } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType }
+}
+
+class Person extends Struct(<const>{
+  a: {type: 'object', properties: { a: 'string'}},
+  b: 'number'
+}) {}
+
+Person.schema.a.a
+const x = new Person({a: {}, b: 42 })
