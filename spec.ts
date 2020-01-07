@@ -1,4 +1,6 @@
-import { validate, TypeOf } from './tjs'
+import { validate, TypeOf, JsonSchemaInput } from './tjs'
+import { Any } from 'ts-toolbelt'
+const pick = <S extends JsonSchemaInput, Keys extends string>(s: S, k: Keys[]): Any.Compute<Pick<TypeOf<S>, Extract<Keys, keyof TypeOf<S>>>> => { throw 'types only' }
 
 // $ExpectType AnyJson
 validate(<const>{})
@@ -169,6 +171,27 @@ validate(<const>{
 validate(<const>{
   type: 'object'
 })
+
+// $ExpectType { a: string; b?: string | undefined; c: AnyJson; }
+pick(<const>{
+  type: 'object',
+  properties: {
+    a: 'string',
+    b: 'string'
+  },
+  required: ['a']
+}, ['a', 'b', 'c'])
+
+// $ExpectType { a: string; b?: string | undefined }
+pick(<const>{
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    a: 'string',
+    b: 'string'
+  },
+  required: ['a']
+}, ['a', 'b', 'c' ])
 
 // $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
 validate(<const>{

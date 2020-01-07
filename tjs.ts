@@ -29,8 +29,8 @@ type CleanJson<T extends AnyJson> =
 
 export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: false }> = 
   (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
-  & {[P in Exclude<keyof S['properties'], NonNullable<S['required']>>]?: Exclude<S['properties'][P], undefined> }
-  & {[P in Extract<keyof S['properties'], NonNullable<S['required']>>]: Exclude<S['properties'][P], undefined> }
+  & {[P in Exclude<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]?: Exclude<S['properties'][P], undefined> }
+  & {[P in Extract<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]: Exclude<S['properties'][P], undefined> }
 
 type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string, additionalProperties: boolean }> = Compute<
   Pick<S,
@@ -42,7 +42,7 @@ type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string
 
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
-type JsonSchemaInput = TypeName | {
+export type JsonSchemaInput = TypeName | {
   type?: TypeName | ReadonlyArray<TypeName>
   const?: AnyJson
   enum?: ReadonlyArray<AnyJson>
@@ -155,11 +155,3 @@ export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInp
       }
     } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType }
 }
-
-class Person extends Struct(<const>{
-  a: {type: 'object', properties: { a: 'string'}},
-  b: 'number'
-}) {}
-
-Person.schema.a.a
-const x = new Person({a: {}, b: 42 })
