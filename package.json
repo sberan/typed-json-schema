@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test-typedefs": "typings-checker --project tsconfig.json test/types.ts",
+    "test-typedefs": "typings-checker --project tsconfig.json test/typedefs.ts",
     "test-mocha": "mocha --require ts-node/register test/*.spec.ts",
     "test": "npm run test-typedefs && npm run test-mocha"
   },

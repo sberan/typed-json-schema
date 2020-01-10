@@ -1,4 +1,4 @@
-import { TypeOf, JsonSchemaInput, Struct } from '../tjs'
+import { TypeOf, JsonSchemaInput, Struct } from '..'
 import { Any } from 'ts-toolbelt'
 
 const getType = <S extends JsonSchemaInput>(s: S): TypeOf<S> => { throw 'nope' }

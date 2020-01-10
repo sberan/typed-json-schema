@@ -1,4 +1,4 @@
-import { schema } from "../tjs"
+import { schema } from ".."
 import { deepStrictEqual as assertEqual } from 'assert'
 
 describe('validation', () => {
