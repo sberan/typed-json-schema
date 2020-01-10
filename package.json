@@ -1,7 +1,7 @@
 {
-  "name": "tjs-easy",
-  "version": "1.0.0",
-  "description": "",
+  "name": "tjs",
+  "version": "5.0.0",
+  "description": "a type-level validator for json schema",
   "main": "index.js",
   "scripts": {
     "test-typedefs": "typings-checker --project tsconfig.json test/typedefs.ts",
@@ -17,8 +17,8 @@
     "typescript": "3.7.2",
     "typings-checker": "2.0.0"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Sam Beran (sberan@gmail.com)",
+  "license": "MIT",
   "dependencies": {
     "ajv": "6.10.2",
     "ts-toolbelt": "6.1.5"
