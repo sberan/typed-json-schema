@@ -51,6 +51,7 @@ export type JsonSchemaInput = TypeName | {
   items?: JsonSchemaInput
   allOf?: ReadonlyArray<JsonSchemaInput>
   oneOf?: ReadonlyArray<JsonSchemaInput>
+  anyOf?: ReadonlyArray<JsonSchemaInput>
   properties?: {[key: string]: JsonSchemaInput}
   required?: ReadonlyArray<string>
   additionalProperties?: boolean
@@ -131,11 +132,58 @@ type ComputedType<S extends SchemaNode> =
 
 export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<S>>>
 
+const schemaValueKeys = [
+  'items',
+  'additionalProperties',
+  'propertyNames',
+  'additionalItems',
+  'contains',
+  'if',
+  'then',
+  'else',
+  'oneOf',
+  'anyOf',
+  'allOf'
+]
+
+const schemaObjectValueKeys = [
+  'properties',
+  'patternProperties',
+  'dependencies',
+  'definitions'
+]
+
+function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObjectKeys = schemaObjectValueKeys): any {
+  if (typeof schema === 'string') {
+    return { type: schema }
+  }
+
+  if (Array.isArray(schema)) {
+    return schema.map(x => preProcessSchema(x))
+  }
+
+  if (typeof schema === 'object') {
+    schemaKeys.forEach(key => {
+      if (key in schema) {
+        schema[key] = preProcessSchema(schema[key])
+      }
+    })
+    schemaObjectKeys.forEach(key => {
+      const value = schema[key]
+      if (value && typeof value === 'object' && !Array.isArray(value) ) {
+        schema[key] = preProcessSchema(value, Object.keys(value), [])
+      }
+    })
+  }
+  return schema
+}
+
 export function schema<S extends JsonSchemaInput>(schema: S): { validate(input: any): Promise<TypeOf<S>> } {
-  const ajv = new Ajv()
+  const ajv = new Ajv(),
+    processedSchema = preProcessSchema(schema)
   return {
     validate(input: any) {
-      const valid = ajv.validate(schema, input)
+      const valid = ajv.validate(processedSchema, input)
       if (valid) {
         return Promise.resolve(input as TypeOf<S>)
       }

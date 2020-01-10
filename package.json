@@ -6,7 +6,7 @@
   "scripts": {
     "test-typedefs": "typings-checker --project tsconfig.json test/types.ts",
     "test-mocha": "mocha --require ts-node/register test/*.spec.ts",
-    "test": "npm run test-typedefs"
+    "test": "npm run test-typedefs && npm run test-mocha"
   },
   "devDependencies": {
     "@types/ajv": "1.0.0",

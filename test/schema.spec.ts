@@ -22,4 +22,26 @@ describe('validation', () => {
       }]
     )
   })
+
+  describe('expansion', () => {
+    it('should expand top-level string types', async () => {
+      const actual = await schema('string').validate('hello')
+      assertEqual(actual, 'hello')
+    })
+
+    it('should expand item-level string types', async () => {
+      const actual = await schema({ items: 'string' }).validate(['hello'])
+      assertEqual(actual, ['hello'])
+    })
+
+    it('should expand array string types', async () => {
+      const actual = await schema(<const>{ anyOf: ['string', 'number'] }).validate(42)
+      assertEqual(actual, 42)
+    })
+
+    it('should expand object string types', async () => {
+      const actual = await schema(<const>{ properties: { a: 'string' } }).validate({ a: 'asdf' })
+      assertEqual(actual, { a: 'asdf' })
+    })
+  })
 })
