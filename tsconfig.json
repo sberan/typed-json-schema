@@ -2,8 +2,9 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "lib": ["ES6"],
+    "lib": ["es2018"],
     "strict": true,
     "esModuleInterop": true
-  }
+  },
+  "include": ["index.ts"]
 }
