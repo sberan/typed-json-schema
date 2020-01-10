@@ -1,36 +1,38 @@
-import { validate, TypeOf, JsonSchemaInput } from './tjs'
+import { TypeOf, JsonSchemaInput, Struct } from '../tjs'
 import { Any } from 'ts-toolbelt'
-const pick = <S extends JsonSchemaInput, Keys extends string>(s: S, k: Keys[]): Any.Compute<Pick<TypeOf<S>, Extract<Keys, keyof TypeOf<S>>>> => { throw 'types only' }
+
+const getType = <S extends JsonSchemaInput>(s: S): TypeOf<S> => { throw 'nope' }
+const pickType = <S extends JsonSchemaInput, Keys extends string>(s: S, k: Keys[]): Any.Compute<Pick<TypeOf<S>, Extract<Keys, keyof TypeOf<S>>>> => { throw 'types only' }
 
 // $ExpectType AnyJson
-validate(<const>{})
+getType(<const>{})
 
 // $ExpectType string
-validate('string')
+getType('string')
 
 // $ExpectType number
-validate('number')
+getType('number')
 
 // $ExpectType boolean
-validate('boolean')
+getType('boolean')
 
 // $ExpectType null
-validate('null')
+getType('null')
 
 // $ExpectType AnyJsonObject
-validate('object')
+getType('object')
 
 // $ExpectType AnyJsonArray
-validate('array')
+getType('array')
 
 // $ExpectType number
-validate(<const>{ type: 'number' })
+getType(<const>{ type: 'number' })
 
 // $ExpectType string | number
-validate(<const>{ type: ['number', 'string']})
+getType(<const>{ type: ['number', 'string']})
 
 // $ExpectType string
-validate(<const>{
+getType(<const>{
   allOf: [
     { type: 'string' }
   ]
@@ -38,7 +40,7 @@ validate(<const>{
 
 
 // $ExpectType never
-validate(<const>{
+getType(<const>{
   type: 'number',
   allOf: [
     { type: 'string' }
@@ -46,26 +48,26 @@ validate(<const>{
 })
 
 // $ExpectType string
-validate(<const>{ allOf: [
+getType(<const>{ allOf: [
   { type: ['string', 'number'] },
   { type: ['string', 'object'] }
 ]})
 
 
 // $ExpectType 42
-validate(<const>{
+getType(<const>{
   const: 42
 })
 
 // $ExpectType 42
-validate(<const>{
+getType(<const>{
   const: 42,
   type: 'number'
 })
 
 
 // $ExpectType never
-validate(<const>{
+getType(<const>{
   allOf: [
     { const: 42 },
     { const: 43 }
@@ -73,7 +75,7 @@ validate(<const>{
 })
 
 // $ExpectType 42
-validate(<const>{
+getType(<const>{
   allOf: [
     { const: 42 },
     { type: 'number' }
@@ -81,7 +83,7 @@ validate(<const>{
 })
 
 // $ExpectType never
-validate(<const>{
+getType(<const>{
   allOf: [
     { const: 42 },
     { type: 'string' }
@@ -89,7 +91,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType 42 | string
-validate(<const>{
+getType(<const>{
   oneOf: [
     { const: 42 },
     { type: 'string' }
@@ -97,18 +99,18 @@ validate(<const>{
 })
 
 // $ExpectType never
-validate(<const>{
+getType(<const>{
   const: 42,
   type: 'string'
 })
 
 // $ExpectType 1 | 2
-validate(<const>{
+getType(<const>{
   enum: [1, 2]
 })
 
 // $ExpectType 2
-validate(<const>{
+getType(<const>{
   allOf: [
     { enum: [1, 2] },
     { enum: [2, 3] }
@@ -116,7 +118,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType { a: 1 }
-validate(<const>{
+getType(<const>{
   allOf: [
     { enum: [{ a: 1 }] },
     { enum: [{ a: 1 }] }
@@ -124,7 +126,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType 1 | string
-validate(<const>{
+getType(<const>{
   oneOf: [
     { enum: [1] },
     { type: 'string' }
@@ -132,7 +134,7 @@ validate(<const>{
 })
 
 // $ExpectType string | number | boolean
-validate(<const>{
+getType(<const>{
   oneOf: [
     { type: 'string' },
     { type: 'number' },
@@ -141,16 +143,16 @@ validate(<const>{
 })
 
 // $ExpectType AnyJsonArray
-validate(<const>{ type: 'array' })
+getType(<const>{ type: 'array' })
 
 // $ExpectType string[]
-validate(<const>{ type: 'array', items: 'string' })
+getType(<const>{ type: 'array', items: 'string' })
 
 // $ExpectType (string | number)[]
-validate(<const>{ type: 'array', items: { type: ['string', 'number'] } })
+getType(<const>{ type: 'array', items: { type: ['string', 'number'] } })
 
 // $ExpectType string[]
-validate(<const>{
+getType(<const>{
   type: 'array',
   allOf: [
     { items: { type: ['string', 'number'] } },
@@ -159,7 +161,7 @@ validate(<const>{
 })
 
 // $ExpectType string[]
-validate(<const>{
+getType(<const>{
   type: 'array',
   items: { type: ['string', 'number'] },
   oneOf: [
@@ -168,12 +170,12 @@ validate(<const>{
 })
 
 // $ExpectType AnyJsonObject
-validate(<const>{
+getType(<const>{
   type: 'object'
 })
 
 // $ExpectType { a: string; b?: string | undefined; c: AnyJson; }
-pick(<const>{
+pickType(<const>{
   type: 'object',
   properties: {
     a: 'string',
@@ -182,8 +184,8 @@ pick(<const>{
   required: ['a']
 }, ['a', 'b', 'c'])
 
-// $ExpectType { a: string; b?: string | undefined }
-pick(<const>{
+// $ExpectType { a: string; b?: string | undefined; }
+pickType(<const>{
   type: 'object',
   additionalProperties: false,
   properties: {
@@ -193,8 +195,8 @@ pick(<const>{
   required: ['a']
 }, ['a', 'b', 'c' ])
 
-// $ExpectType JsonObject<{ properties: { a: string; }; required: "a"; }>
-validate(<const>{
+// $ExpectType JsonObject<{ properties: { a: string; b: string; }; required: "a"; }>
+getType(<const>{
   type: 'object',
   properties: {
     a: 'string',
@@ -204,14 +206,14 @@ validate(<const>{
 })
 
 // $ExpectType JsonObject<{ properties: { a: string; }; }>
-validate(<const>{
+getType(<const>{
   type: 'object',
   properties: { a: 'string' }
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
 // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; }>
-validate(<const>{
+getType(<const>{
   type: 'object',
   properties: { a: 'string', b: 'number' },
   required: ['b', 'c']
@@ -219,7 +221,7 @@ validate(<const>{
 
 // FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
 // $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; additionalProperties: false; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; additionalProperties: false; }>
-validate(<const>{
+getType(<const>{
   type: 'object',
   properties: { a: 'string', b: 'number' },
   required: ['b', 'c'],
@@ -227,7 +229,7 @@ validate(<const>{
 })
 
 // $ExpectType string | JsonObject<{ properties: { foo: string | number; bar: JsonObject<{ properties: { baz: number; }; }>; }; }>
-validate(<const>{
+getType(<const>{
   type: ['string', 'object'],
   properties: {
     foo: { type: ['string', 'number'] },
@@ -236,7 +238,7 @@ validate(<const>{
 })
 
 // $ExpectType number | AnyJsonArray
-validate(<const>{
+getType(<const>{
   oneOf: [
     { type: 'array' },
     'number'
@@ -244,19 +246,19 @@ validate(<const>{
 })
 
 // $ExpectType AnyJsonPrimitive
-validate(<const>{
+getType(<const>{
   oneOf: [ 'string', 'number', 'null', 'boolean' ]
 })
 
 // $ExpectType string | number
-validate(<const>{
+getType(<const>{
   type: ['string', 'number', 'boolean', 'null'],
   anyOf: [ 'number', 'string' ]
 })
 
 
 // $ExpectType JsonObject<{ properties: { a: string; }; }>
-validate(<const>{
+getType(<const>{
   type: 'object',
   oneOf: [
     { properties: { a : 'string' }}
@@ -264,7 +266,7 @@ validate(<const>{
 })
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; c: boolean; }; }>
-validate(<const>{
+getType(<const>{
   type: 'object',
   allOf: [
       { properties: { a: 'number' } },
@@ -274,7 +276,7 @@ validate(<const>{
 })
 
 // $ExpectType number
-validate(<const>{
+getType(<const>{
   allOf: [{ 
     oneOf: [
       { type: 'number' },
@@ -289,7 +291,7 @@ validate(<const>{
 })
 
 // $ExpectType JsonObject<{ properties: { a: string; }; additionalProperties: false; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { type: 'object', properties: { a: 'string' }, additionalProperties: false },
     { type: 'object', properties: { a: 'string' } }
@@ -297,7 +299,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: string; }; additionalProperties: false; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { type: 'object', properties: { a: 'string' }, additionalProperties: false },
     { type: 'object', properties: { a: 'string', b: 'string' } }
@@ -305,7 +307,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType AnyJsonObject
-validate(<const>{
+getType(<const>{
   allOf: [{ 
     oneOf: [
       { const: 1 },
@@ -320,7 +322,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: 42; b: 52; }; required: "a"; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { },
     { 
@@ -334,7 +336,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { 
       type: 'object',
@@ -356,7 +358,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { 
       type: 'object',
@@ -377,7 +379,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; }>, JsonObject<{ properties: { a: 1; b: 52; }; }>]
-validate(<const>{
+getType(<const>{
   allOf: [
     { 
       type: 'object',
@@ -391,7 +393,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { 
       type: 'object',
@@ -412,7 +414,7 @@ validate(<const>{
 })
 
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>
-validate(<const>{
+getType(<const>{
   allOf: [
     { 
       type: 'object',
@@ -431,3 +433,9 @@ validate(<const>{
       }
     }]
 })
+
+// $ExpectType JsonObject<{ properties: { a: number; b: string; }; additionalProperties: false; }>
+Struct(<const>{
+  a: 'number',
+  b: 'string'
+}).schema

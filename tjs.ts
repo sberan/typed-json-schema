@@ -1,4 +1,6 @@
 import {  Union } from 'ts-toolbelt'
+import Ajv from 'ajv'
+import ajv from 'ajv'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -129,29 +131,30 @@ type ComputedType<S extends SchemaNode> =
 
 export type TypeOf<S extends JsonSchemaInput> = CleanJson<ComputedType<SchemaNodeOf<S>>>
 
-export function validate<S extends JsonSchemaInput>(schema: S, obj?: any): TypeOf<S> { throw 'nope'}
-
-
-const asdf: TypeOf<{
-  type: 'object',
-  properties: {
-    a: 'string'
-    b: 'string'
-  },
-  required: readonly ['a']
-}> = null as any
+export function schema<S extends JsonSchemaInput>(schema: S): { validate(input: any): Promise<TypeOf<S>> } {
+  const ajv = new Ajv()
+  return {
+    validate(input: any) {
+      const valid = ajv.validate(schema, input)
+      if (valid) {
+        return Promise.resolve(input as TypeOf<S>)
+      }
+      return Promise.reject({ errors: ajv.errors })
+    }
+  }
+}
 
 export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties) => {
-    const structSchema = {
-      type: 'object',
-      properties,
-      additionalProperties: false
-    } as const
-    type ObjectType = TypeOf<typeof structSchema>
-    return class {
-      static schema = structSchema
-      constructor (data: ObjectType) {
-        
-      }
-    } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType }
+  const structSchema = {
+    type: 'object',
+    properties,
+    additionalProperties: false
+  } as const
+  type ObjectType = TypeOf<typeof structSchema>
+  return class {
+    static schema = structSchema
+    constructor (data: ObjectType) {
+      
+    }
+  } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType }
 }

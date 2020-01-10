@@ -4,15 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "typings-checker --project tsconfig.json spec.ts"
+    "test-typedefs": "typings-checker --project tsconfig.json test/types.ts",
+    "test-mocha": "mocha --require ts-node/register test/*.spec.ts",
+    "test": "npm run test-typedefs"
   },
   "devDependencies": {
+    "@types/ajv": "1.0.0",
+    "@types/mocha": "5.2.7",
+    "@types/node": "13.1.6",
+    "mocha": "7.0.0",
+    "ts-node": "8.6.0",
     "typescript": "3.7.2",
     "typings-checker": "2.0.0"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ajv": "6.10.2",
     "ts-toolbelt": "6.1.5"
   }
 }
