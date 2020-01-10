@@ -1,4 +1,4 @@
-import { schema } from ".."
+import { schema, Struct } from ".."
 import { deepStrictEqual as assertEqual } from 'assert'
 
 describe('validation', () => {
@@ -43,5 +43,32 @@ describe('validation', () => {
       const actual = await schema(<const>{ properties: { a: 'string' } }).validate({ a: 'asdf' })
       assertEqual(actual, { a: 'asdf' })
     })
+  })
+})
+
+describe('struct', () => {
+  class Person extends Struct({
+    firstName: 'string',
+    lastName: 'string'
+  }) {}
+
+  it('should validate a valid struct', async () => {
+    const sam = await Person.validate({ firstName: 'sam', lastName: 'yo' })
+    assertEqual(sam, { firstName: 'sam', lastName: 'yo' })
+  })
+
+  it('should validate an invalid struct', async () => {
+    const { errors } = await Person.validate({ firstName: 14, lastName: 'yo' }).catch(errors => errors)
+    assertEqual(errors, [
+      {
+        dataPath: ".firstName",
+        keyword: "type",
+        message: "should be string",
+        params: {
+          type: "string"
+        },
+        schemaPath: "#/properties/firstName/type"
+      }
+    ])
   })
 })

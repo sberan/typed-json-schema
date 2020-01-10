@@ -1,6 +1,5 @@
-import {  Union } from 'ts-toolbelt'
+import { Union } from 'ts-toolbelt'
 import Ajv from 'ajv'
-import ajv from 'ajv'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonObject = {[key: string]: AnyJson }
@@ -178,7 +177,11 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
   return schema
 }
 
-export function schema<S extends JsonSchemaInput>(schema: S): { validate(input: any): Promise<TypeOf<S>> } {
+interface Schema<S extends JsonSchemaInput> {
+  validate(input: any): Promise<TypeOf<S>> 
+}
+
+export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
   const ajv = new Ajv(),
     processedSchema = preProcessSchema(schema)
   return {
@@ -192,17 +195,24 @@ export function schema<S extends JsonSchemaInput>(schema: S): { validate(input: 
   }
 }
 
-export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties) => {
-  const structSchema = {
+export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties, options = {}) => {
+  const structInput = {
     type: 'object',
     properties,
-    additionalProperties: false
+    additionalProperties: false,
+    ...options
   } as const
-  type ObjectType = TypeOf<typeof structSchema>
+  type ObjectType = TypeOf<typeof structInput>
+  const structSchema = schema(structInput)
   return class {
     static schema = structSchema
     constructor (data: ObjectType) {
-      
+      Object.assign(this, data)
     }
-  } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType }
+
+    static validate (input: any) {
+      return structSchema.validate(input)
+    }
+
+  } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType } & Schema<ObjectType>
 }
