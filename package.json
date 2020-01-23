@@ -1,6 +1,6 @@
 {
   "name": "tjs",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "a type-level validator for json schema",
   "main": "index.js",
   "files": [
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc --declaration",
     "clean": "rimraf \"index.{d.ts,js}\"",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run test",
     "postpublish": "npm run clean",
     "test-typedefs": "typings-checker --project tsconfig.json test/typedefs.ts",
     "test-mocha": "mocha --require ts-node/register test/*.spec.ts",
