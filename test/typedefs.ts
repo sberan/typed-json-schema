@@ -437,3 +437,11 @@ Struct(<const>{
   a: 'number',
   b: 'string'
 }).validate(null)
+
+// $ExpectType Promise<JsonObject<{ properties: { a: number; b: string; }; required: "b"; additionalProperties: false; }>>
+Struct(<const>{
+  a: 'number',
+  b: 'string'
+}, {
+  optional: ['a']
+}).validate(null)

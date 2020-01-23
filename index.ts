@@ -197,8 +197,9 @@ export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
   }
 }
 
-export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties, options = {}) => {
-  const requiredKeys = Object.keys(properties) as any as Extract<keyof Properties, string>[]
+export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }, OptionalKeys extends string> (properties: Properties, options: { optional?: OptionalKeys[] } = {}) => {
+  const optionalKeys = options.optional ? options.optional : []
+  const requiredKeys = Object.keys(properties).filter(x => !(optionalKeys as string[]).includes(x)) as Exclude<Extract<keyof Properties, string>, string extends OptionalKeys ? never : OptionalKeys>[]
   const structInput = {
     type: 'object',
     properties,
