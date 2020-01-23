@@ -211,16 +211,14 @@ getType(<const>{
   properties: { a: 'string' }
 })
 
-// FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
-// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; }>
 getType(<const>{
   type: 'object',
   properties: { a: 'string', b: 'number' },
   required: ['b', 'c']
 })
 
-// FIXME $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
-// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b"; additionalProperties: false; }> | JsonObject<{ properties: { a: string; b: number; }; required: "c"; additionalProperties: false; }>
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; required: "b" | "c"; additionalProperties: false; }>
 getType(<const>{
   type: 'object',
   properties: { a: 'string', b: 'number' },
@@ -434,8 +432,8 @@ getType(<const>{
     }]
 })
 
-// $ExpectType JsonObject<{ properties: { a: number; b: string; }; additionalProperties: false; }>
+// $ExpectType Promise<JsonObject<{ properties: { a: number; b: string; }; required: "a" | "b"; additionalProperties: false; }>>
 Struct(<const>{
   a: 'number',
   b: 'string'
-}).schema
+}).validate(null)

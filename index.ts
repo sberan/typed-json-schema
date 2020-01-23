@@ -80,7 +80,7 @@ type SchemaNodeOf<S extends JsonSchemaInput> = (
 ) & (
   S extends { enum: ReadonlyArray<infer T> } ? { enum: T } : {}
 ) & (
-  S extends { required: ReadonlyArray<infer T> } ? T extends string ? { required: T } : {} : {}
+  S extends { required: ReadonlyArray<infer T> } ? { required: T extends string ? T : never } : {}
 ) & ({
   items: S extends { items: infer I } ? SchemaNodeOf<I> : SchemaNode
   properties: S extends { properties: infer T } ? {- readonly [P in keyof T]: SchemaNodeOf<T[P]> } : {}
@@ -177,9 +177,11 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
   return schema
 }
 
-interface Schema<S extends JsonSchemaInput> {
-  validate(input: any): Promise<TypeOf<S>> 
+interface Validator<T> {
+  validate(input: any): Promise<T>
 }
+
+interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> { }
 
 export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
   const ajv = new Ajv(),
@@ -196,10 +198,12 @@ export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
 }
 
 export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }> (properties: Properties, options = {}) => {
+  const requiredKeys = Object.keys(properties) as any as Extract<keyof Properties, string>[]
   const structInput = {
     type: 'object',
     properties,
     additionalProperties: false,
+    required: requiredKeys,
     ...options
   } as const
   type ObjectType = TypeOf<typeof structInput>
@@ -214,5 +218,5 @@ export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInp
       return structSchema.validate(input)
     }
 
-  } as any as { schema: ObjectType } & { new(data: ObjectType): ObjectType } & Schema<ObjectType>
+  } as any as Validator<ObjectType> & { new(data: ObjectType): ObjectType }
 }
