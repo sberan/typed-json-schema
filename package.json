@@ -1,6 +1,6 @@
 {
   "name": "tjs",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "a type-level validator for json schema",
   "main": "index.js",
   "files": [

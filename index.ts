@@ -181,7 +181,7 @@ interface Validator<T> {
   validate(input: any): Promise<T>
 }
 
-export interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> { }
+interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> { }
 
 export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
   const ajv = new Ajv(),
@@ -221,3 +221,5 @@ export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInp
 
   } as any as Validator<ObjectType> & { new(data: ObjectType): ObjectType }
 }
+
+export type schema<T> = T extends Validator<infer U> ? U : never
