@@ -179,6 +179,7 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
 
 interface Validator<T> {
   validate(input: any): Promise<T>
+  toJSON(): string
 }
 
 interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> { }
@@ -193,6 +194,10 @@ export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
         return Promise.resolve(input as TypeOf<S>)
       }
       return Promise.reject({ errors: ajv.errors })
+    },
+
+    toJSON() {
+      return processedSchema
     }
   }
 }
@@ -217,6 +222,10 @@ export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInp
 
     static validate (input: any) {
       return structSchema.validate(input)
+    }
+
+    static toJSON () {
+      return schema
     }
 
   } as any as Validator<ObjectType> & { new(data: ObjectType): ObjectType }
