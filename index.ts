@@ -12,7 +12,7 @@ type Compute<A extends any> = A extends Function ? A : {
 
 export type IntersectionOf<U extends any> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
-type CombineConstants<A, B> = AnyJson extends A ? B 
+type CombineConstants<A, B> = AnyJson extends A ? B
   : A extends B ? A
   : B extends A ? A
   : never
@@ -28,7 +28,7 @@ type CleanJson<T extends AnyJson> =
         : T
       : T
 
-export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: false }> = 
+export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: false }> =
   (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
   & {[P in Exclude<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]?: Exclude<S['properties'][P], undefined> }
   & {[P in Extract<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]: Exclude<S['properties'][P], undefined> }
@@ -120,7 +120,7 @@ type ComputedType<S extends SchemaNode> =
               : ComputedType<I>[]
             : AnyJsonArray
           : AnyJsonArray
-        object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{ 
+        object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{
           properties: {[P in keyof S['properties']]: ComputedType<S['properties'][P]> }
           required: S extends { required: infer R } ? R extends string ? R : never : never
           additionalProperties: S['additionalProperties']

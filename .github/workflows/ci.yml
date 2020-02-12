@@ -1,0 +1,21 @@
+name: TJS CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3537747
+      - name: Cache NPM
+        id: cache-npm
+        uses: actions/cache@cffae95
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('package-lock.json') }}
+      - name: Install Dependencies
+        run: |
+          npm i
+      - name: Run Tests
+        run: |
+          npm test
