@@ -43,7 +43,7 @@ type CleanJsonObjectNode<S extends { properties: AnyJsonObject, required: string
 
 type TypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
-export type JsonSchemaInput = TypeName | {
+export type JsonSchemaInput = TypeName | Validator<AnyJson> | {
   type?: TypeName | ReadonlyArray<TypeName>
   const?: AnyJson
   enum?: ReadonlyArray<AnyJson>
@@ -97,6 +97,8 @@ type SchemaNodeOf<S extends JsonSchemaInput> = (
   S extends { anyOf: infer T }
     ? Union.Merge<{[P in keyof T]: SchemaNodeOf<T[P]>}[Extract<keyof T, number>]>
     : {}
+) & (
+  S extends Schema<any> ? S['_SchemaNodeOf'] : {}
 )
 
 type ComputedType<S extends SchemaNode> =
@@ -182,12 +184,16 @@ interface Validator<T> {
   toJSON(): string
 }
 
-interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> { }
+interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
+  _SchemaNodeOf: SchemaNodeOf<S>
+ }
 
 export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
   const ajv = new Ajv(),
     processedSchema = preProcessSchema(schema)
   return {
+    _SchemaNodeOf: null as any as SchemaNodeOf<S>,
+
     validate(input: any) {
       const valid = ajv.validate(processedSchema, input)
       if (valid) {

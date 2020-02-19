@@ -1,5 +1,6 @@
 import { TypeOf, JsonSchemaInput, Struct, schema } from '..'
 import { Any } from 'ts-toolbelt'
+import { Schema } from 'inspector'
 
 const getType = <S extends JsonSchemaInput>(s: S): TypeOf<S> => { throw 'nope' }
 const pickType = <S extends JsonSchemaInput, Keys extends string>(s: S, k: Keys[]): Any.Compute<Pick<TypeOf<S>, Extract<Keys, keyof TypeOf<S>>>> => { throw 'types only' }
@@ -452,3 +453,14 @@ type ExportedType = schema<typeof ExportedType>
 
 // $ExpectType string
 identity<ExportedType>();
+
+const string = schema({ type: 'string'} as const)
+
+// $ExpectType JsonObject<{ properties: { a: string; b: number; }; }>
+getType(<const>{
+  type: 'object',
+  properties: {
+    a: string,
+    b: 'number'
+  }
+})
