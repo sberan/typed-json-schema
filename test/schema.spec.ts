@@ -1,26 +1,28 @@
 import { schema, Struct } from ".."
 import { deepStrictEqual as assertEqual } from 'assert'
 
-describe('validation', () => {
-  const obj = schema({ type: 'object', properties: { a: { type: 'number' } } })
+describe('schema', () => {
+  describe('validation', () => {
+    const obj = schema({ type: 'object', properties: { a: { type: 'number' } } })
 
-  it('should validate a schema', async () => {
-    assertEqual(await obj.validate({ a: 42 }), { a: 42 })
-  })
+    it('should validate a schema', async () => {
+      assertEqual(await obj.validate({ a: 42 }), { a: 42 })
+    })
 
-  it('should detect errors', async() => {
-    const errors = await obj.validate({ a: 'foo' }).catch(({ errors }) => errors)
-    assertEqual(errors, 
-      [{
-        dataPath: '.a',
-        keyword: 'type',
-        message: 'should be number',
-        params: {
-          type: 'number'
-        },
-        schemaPath: '#/properties/a/type'
-      }]
-    )
+    it('should detect errors', async() => {
+      const errors = await obj.validate({ a: 'foo' }).catch(({ errors }) => errors)
+      assertEqual(errors, 
+        [{
+          dataPath: '.a',
+          keyword: 'type',
+          message: 'should be number',
+          params: {
+            type: 'number'
+          },
+          schemaPath: '#/properties/a/type'
+        }]
+      )
+    })
   })
 
   describe('expansion', () => {
@@ -44,8 +46,33 @@ describe('validation', () => {
       assertEqual(actual, { a: 'asdf' })
     })
   })
-})
 
+  describe('nesting', () => {
+    it('should allow nesting of schemas', () => {
+      const inner = schema(<const>{ type: 'array', items: { type: ['string', 'number']} })
+      const outer = schema({
+        type: 'object',
+        properties: {
+          a: 'string',
+          b: inner
+        }
+      })
+
+      assertEqual(outer.toJSON(), {
+        type: 'object',
+        properties: {
+          a: { type: 'string' },
+          b: {
+            type: 'array',
+            items: {
+              type: ['string', 'number']
+            }
+          }
+        }
+      })
+    })
+  })
+})
 describe('struct', () => {
   class Person extends Struct({
     firstName: 'string',

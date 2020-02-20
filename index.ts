@@ -163,6 +163,10 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
     return schema.map(x => preProcessSchema(x))
   }
 
+  if (typeof schema.validate === 'function' && typeof schema.toJSON === 'function') {
+    return schema.toJSON()
+  }
+
   if (typeof schema === 'object') {
     schemaKeys.forEach(key => {
       if (key in schema) {
