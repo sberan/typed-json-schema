@@ -45,6 +45,11 @@ describe('schema', () => {
       const actual = await schema(<const>{ properties: { a: 'string' } }).validate({ a: 'asdf' })
       assertEqual(actual, { a: 'asdf' })
     })
+
+    it('should stringify RegExp instances', async () => {
+      const pattern = schema(<const>{ type: 'string', pattern: /asdf/ })
+      assertEqual(await pattern.validate('asdf'), 'asdf')
+    })
   })
 
   describe('nesting', () => {
@@ -73,6 +78,7 @@ describe('schema', () => {
     })
   })
 })
+
 describe('struct', () => {
   class Person extends Struct({
     firstName: 'string',

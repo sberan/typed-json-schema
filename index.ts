@@ -54,6 +54,7 @@ export type JsonSchemaInput = TypeName | Validator<AnyJson> | {
   properties?: {[key: string]: JsonSchemaInput}
   required?: ReadonlyArray<string>
   additionalProperties?: boolean
+  pattern?: RegExp | string
 }
 
 type SingleTypeName<S extends TypeName> = { type: S }
@@ -179,6 +180,9 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
         schema[key] = preProcessSchema(value, Object.keys(value), [])
       }
     })
+    if (schema.pattern instanceof RegExp) {
+      schema.pattern = schema.pattern.source
+    }
   }
   return schema
 }
