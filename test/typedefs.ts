@@ -277,12 +277,12 @@ getType(<const>{
 
 // $ExpectType number
 getType(<const>{
-  allOf: [{ 
+  allOf: [{
     oneOf: [
       { type: 'number' },
       { type: 'string' }
     ],
-  }, { 
+  }, {
     oneOf: [
       { type: 'number' },
       { type: 'object' }
@@ -308,12 +308,12 @@ getType(<const>{
 
 // FIXME $ExpectType AnyJsonObject
 getType(<const>{
-  allOf: [{ 
+  allOf: [{
     oneOf: [
       { const: 1 },
       { type: 'object' }
     ],
-  }, { 
+  }, {
     oneOf: [
       { type: 'array', items: { const: 3 } },
       { type: 'object' }
@@ -325,7 +325,7 @@ getType(<const>{
 getType(<const>{
   allOf: [
     { },
-    { 
+    {
       type: 'object',
       required: ['a'],
       properties: {
@@ -338,7 +338,7 @@ getType(<const>{
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "a" | "b"; }>
 getType(<const>{
   allOf: [
-    { 
+    {
       type: 'object',
       required: ['a'],
       properties: {
@@ -346,7 +346,7 @@ getType(<const>{
         b: { const: 52 }
       }
     },
-    { 
+    {
       type: 'object',
       required: ['b'],
       properties: {
@@ -360,14 +360,14 @@ getType(<const>{
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: never; c: 42; }; required: "b"; }>
 getType(<const>{
   allOf: [
-    { 
+    {
       type: 'object',
       properties: {
         a: { const: 1 },
         b: { const: 52 }
       }
     },
-    { 
+    {
       type: 'object',
       required: ['b'],
       properties: {
@@ -381,7 +381,7 @@ getType(<const>{
 // FIXME $ExpectType [JsonObject<{ properties: { a: 1; b: 52; }; }>, JsonObject<{ properties: { a: 1; b: 52; }; }>]
 getType(<const>{
   allOf: [
-    { 
+    {
       type: 'object',
       properties: {
         a: { const: 1 },
@@ -395,7 +395,7 @@ getType(<const>{
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; b: 52; }; additionalProperties: false; }>
 getType(<const>{
   allOf: [
-    { 
+    {
       type: 'object',
       additionalProperties: false,
       properties: {
@@ -403,7 +403,7 @@ getType(<const>{
         b: { const: 52 }
       }
     },
-    { 
+    {
       type: 'object',
       properties: {
         a: { const: 1 },
@@ -416,7 +416,7 @@ getType(<const>{
 // FIXME $ExpectType JsonObject<{ properties: { a: 1; }; additionalProperties: false; }>
 getType(<const>{
   allOf: [
-    { 
+    {
       type: 'object',
       additionalProperties: false,
       properties: {
@@ -424,7 +424,7 @@ getType(<const>{
         b: { const: 52 }
       }
     },
-    { 
+    {
       type: 'object',
       additionalProperties: false,
       properties: {
