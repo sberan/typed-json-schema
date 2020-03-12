@@ -12,7 +12,7 @@ type Compute<A extends any> = A extends Function ? A : {
 
 export type IntersectionOf<U extends any> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
-type CombineConstants<A, B> = AnyJson extends A ? B 
+type CombineConstants<A, B> = AnyJson extends A ? B
   : A extends B ? A
   : B extends A ? A
   : never
@@ -28,7 +28,7 @@ type CleanJson<T extends AnyJson> =
         : T
       : T
 
-export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: false }> = 
+export type JsonObject<S extends { properties: AnyJsonObject, required?: string, additionalProperties?: false }> =
   (S extends { additionalProperties: false } ? { } : { [key: string]: AnyJson })
   & {[P in Exclude<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]?: Exclude<S['properties'][P], undefined> }
   & {[P in Extract<keyof S['properties'], NonNullable<S extends { required: infer R} ? NonNullable<R> : never>>]: Exclude<S['properties'][P], undefined> }
@@ -123,7 +123,7 @@ type ComputedType<S extends SchemaNode> =
               : ComputedType<I>[]
             : AnyJsonArray
           : AnyJsonArray
-        object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{ 
+        object: {} extends S['properties'] ? AnyJsonObject : JsonObject<CleanJsonObjectNode<{
           properties: {[P in keyof S['properties']]: ComputedType<S['properties'][P]> }
           required: S extends { required: infer R } ? R extends string ? R : never : never
           additionalProperties: S['additionalProperties']
@@ -196,22 +196,24 @@ interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
   _SchemaNodeOf: SchemaNodeOf<S>
  }
 
-export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
-  const ajv = new Ajv(),
-    processedSchema = preProcessSchema(schema)
+export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
+  const expectedSchema = preProcessSchema(schema),
+    validate = new Ajv(options).compile(expectedSchema)
   return {
     _SchemaNodeOf: null as any as SchemaNodeOf<S>,
 
     validate(input: any) {
-      const valid = ajv.validate(processedSchema, input)
+      const valid = validate(input)
       if (valid) {
         return Promise.resolve(input as TypeOf<S>)
       }
-      return Promise.reject({ errors: ajv.errors })
+      const errors = validate.errors
+      delete validate.errors
+      return Promise.reject({ errors })
     },
 
     toJSON() {
-      return processedSchema
+      return expectedSchema
     }
   }
 }

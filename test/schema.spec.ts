@@ -11,7 +11,7 @@ describe('schema', () => {
 
     it('should detect errors', async() => {
       const errors = await obj.validate({ a: 'foo' }).catch(({ errors }) => errors)
-      assertEqual(errors, 
+      assertEqual(errors,
         [{
           dataPath: '.a',
           keyword: 'type',
