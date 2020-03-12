@@ -196,22 +196,24 @@ interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
   _SchemaNodeOf: SchemaNodeOf<S>
  }
 
-export function schema<S extends JsonSchemaInput>(schema: S): Schema<S> {
-  const ajv = new Ajv(),
-    processedSchema = preProcessSchema(schema)
+export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
+  const expectedSchema = preProcessSchema(schema),
+    validate = new Ajv(options).compile(expectedSchema)
   return {
     _SchemaNodeOf: null as any as SchemaNodeOf<S>,
 
     validate(input: any) {
-      const valid = ajv.validate(processedSchema, input)
+      const valid = validate(input)
       if (valid) {
         return Promise.resolve(input as TypeOf<S>)
       }
-      return Promise.reject({ errors: ajv.errors })
+      const errors = validate.errors
+      delete validate.errors
+      return Promise.reject({ errors })
     },
 
     toJSON() {
-      return processedSchema
+      return expectedSchema
     }
   }
 }
