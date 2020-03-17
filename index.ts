@@ -194,7 +194,7 @@ interface Validator<T> {
 
 interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
   _SchemaNodeOf: SchemaNodeOf<S>
- }
+}
 
 export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
   const expectedSchema = preProcessSchema(schema),
