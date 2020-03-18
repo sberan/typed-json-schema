@@ -1,5 +1,6 @@
 import { schema, Struct } from ".."
-import { deepStrictEqual as assertEqual } from 'assert'
+import { reflectAnnotations, createAnnotationFactory } from "reflect-annotations";
+import { deepStrictEqual as assertEqual, notEqual as assertNotEqual} from 'assert'
 
 describe('schema', () => {
   describe('validation', () => {
@@ -76,6 +77,28 @@ describe('schema', () => {
         }
       })
     })
+  })
+})
+
+describe('decorator metadata', () => {
+  it('should emit decorator metadata at compile time', () => {
+    const Thing = schema({
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        }
+      },
+      required: ['name']
+    } as const)
+    type Thing = schema<typeof Thing>
+    const Random = createAnnotationFactory(class {})
+    class SomeClass {
+      @Random()
+      method (thing: Thing) {}
+    }
+    const annotations = reflectAnnotations(SomeClass)
+    assertEqual(annotations[0]?.types?.parameters?.slice().pop(), Thing)
   })
 })
 

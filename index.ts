@@ -192,16 +192,15 @@ interface Validator<T> {
   toJSON(): string
 }
 
-interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
+export interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> {
   _SchemaNodeOf: SchemaNodeOf<S>
- }
+  new (...args: any[]): never
+}
 
 export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
   const expectedSchema = preProcessSchema(schema),
     validate = new Ajv(options).compile(expectedSchema)
   return {
-    _SchemaNodeOf: null as any as SchemaNodeOf<S>,
-
     validate(input: any) {
       const valid = validate(input)
       if (valid) {
@@ -215,7 +214,7 @@ export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Optio
     toJSON() {
       return expectedSchema
     }
-  }
+  } as Schema<S>
 }
 
 export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInput }, OptionalKeys extends string> (properties: Properties, options: { optional?: OptionalKeys[], description?: string } = {}) => {
