@@ -98,7 +98,7 @@ describe('decorator metadata', () => {
       method (thing: Thing) {}
     }
     const annotations = reflectAnnotations(SomeClass)
-    assertNotEqual(annotations[0]?.types?.parameters?.slice().pop(), Object)
+    assertEqual(annotations[0]?.types?.parameters?.slice().pop(), Thing)
   })
 })
 
