@@ -189,6 +189,7 @@ function preProcessSchema (schema: any, schemaKeys = schemaValueKeys, schemaObje
 
 interface Validator<T> {
   validate(input: any): Promise<T>
+  validateSync(input: any): T
   toJSON(): string
 }
 
@@ -197,20 +198,31 @@ export interface Schema<S extends JsonSchemaInput> extends Validator<TypeOf<S>> 
   new (...args: any[]): never
 }
 
+export class ValidationError extends Error {
+  public name = 'ValidationError'
+  constructor(public errors: Ajv.ErrorObject[]) {
+    super('Error validation object')
+    Error.captureStackTrace(this, ValidationError)
+  }
+}
+
 export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
   const expectedSchema = preProcessSchema(schema),
-    validate = new Ajv(options).compile(expectedSchema)
-  return {
-    validate(input: any) {
+    validate = new Ajv(options).compile(expectedSchema),
+    validateSync = function (input: any): TypeOf<S> {
       const valid = validate(input)
       if (valid) {
-        return Promise.resolve(input as TypeOf<S>)
+        return input as TypeOf<S>
       }
-      const errors = validate.errors
+      const errors = validate.errors!
       delete validate.errors
-      return Promise.reject({ errors })
+      throw new ValidationError(errors)
+    }
+  return {
+    async validate(input: any) {
+      return validateSync(input)
     },
-
+    validateSync,
     toJSON() {
       return expectedSchema
     }
@@ -233,6 +245,10 @@ export const Struct = <Properties extends {readonly [key: string]: JsonSchemaInp
     static schema = structSchema
     constructor (data: ObjectType) {
       Object.assign(this, data)
+    }
+
+    static validateSync(input: any) {
+      return structSchema.validateSync(input)
     }
 
     static validate (input: any) {

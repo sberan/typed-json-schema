@@ -1,6 +1,6 @@
-import { schema, Struct } from ".."
+import { schema, Struct, ValidationError } from ".."
 import { reflectAnnotations, createAnnotationFactory } from "reflect-annotations";
-import { deepStrictEqual as assertEqual, notEqual as assertNotEqual} from 'assert'
+import { deepStrictEqual as assertEqual, ok as assertTruthy } from 'assert'
 
 describe('schema', () => {
   describe('validation', () => {
@@ -113,6 +113,11 @@ describe('struct', () => {
     assertEqual(sam, { firstName: 'sam', lastName: 'yo' })
   })
 
+  it('should validate a valid struct (sync)', async () => {
+    const sam = Person.validateSync({ firstName: 'sam', lastName: 'yo' })
+    assertEqual(sam, { firstName: 'sam', lastName: 'yo' })
+  })
+
   it('should validate an invalid struct', async () => {
     const { errors } = await Person.validate({ firstName: 14, lastName: 'yo' }).catch(errors => errors)
     assertEqual(errors, [
@@ -126,5 +131,24 @@ describe('struct', () => {
         schemaPath: "#/properties/firstName/type"
       }
     ])
+  })
+
+  it('should validate an invalid struct (sync)', async () => {
+    try {
+      Person.validateSync({ firstName: 14, lastName: 'yo' })
+    } catch(error) {
+      assertTruthy(error instanceof ValidationError)
+      assertEqual(error.errors, [
+        {
+          dataPath: ".firstName",
+          keyword: "type",
+          message: "should be string",
+          params: {
+            type: "string"
+          },
+          schemaPath: "#/properties/firstName/type"
+        }
+      ])
+    }
   })
 })
