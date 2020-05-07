@@ -207,17 +207,17 @@ export class ValidationError extends Error {
 }
 
 export function schema<S extends JsonSchemaInput>(schema: S, options?: Ajv.Options): Schema<S> {
-  const expectedSchema = preProcessSchema(schema),
-    validate = new Ajv(options).compile(expectedSchema),
-    validateSync = function (input: any): TypeOf<S> {
-      const valid = validate(input)
-      if (valid) {
-        return input as TypeOf<S>
-      }
-      const errors = validate.errors!
-      delete validate.errors
-      throw new ValidationError(errors)
+  const expectedSchema = preProcessSchema(schema)
+  let validator: null | Ajv.ValidateFunction = null
+  function validateSync(input: any): TypeOf<S> {
+    const validate = validator || (validator = new Ajv(options).compile(expectedSchema)),
+      valid = validate(input)
+    if (valid) {
+      return input as TypeOf<S>
     }
+    const errors = validate.errors?.slice() ?? []
+    throw new ValidationError(errors)
+  }
   return {
     async validate(input: any) {
       return validateSync(input)
