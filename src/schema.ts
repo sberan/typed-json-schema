@@ -1,28 +1,8 @@
 import { Object } from 'ts-toolbelt'
+import { JSONTypes, AnyJSON } from './json'
+
+export { AnyJSONObject } from './json'
 type OmitKeyIf<T extends object, P extends keyof T, TestEmpty> = TestEmpty extends T[P] ? Object.Omit<T, P> : T
-
-
-export type JSONPrimitive = string | number | boolean | null
-export interface JSONArray extends Array<AnyJSON> {} // tslint:disable-line:no-empty-interface
-export type AnyJSON = JSONPrimitive | JSONArray | JSONObject<{}>
-
-interface JSONObjectType {
-  properties?: {[key:string] : AnyJSON}
-}
-
-
-export type JSONObject<T extends JSONObjectType> = {
-  [key:string]: AnyJSON
-}
-
-type JSONTypes<ObjectType> = {
-  'null': null
-  'string': string
-  'number': number
-  'boolean': boolean
-  'object': JSONObject<ObjectType>
-  'array': JSONArray
-}
 
 interface Keywords {
   type: keyof JSONTypes<{}>

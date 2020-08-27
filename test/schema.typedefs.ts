@@ -16,16 +16,18 @@ schema('number')._T
 // $ExpectType boolean
 schema('boolean')._T
 
-// $ExpectType JSONArray
+// $ExpectType AnyJSONArray
 schema('array')._T
 
-// $ExpectType JSONObject<{}>
+//TODO would be nice to get AnyJSONObject here
+// $ExpectType { [key: string]: AnyJSON; }
 schema('object')._T
 
 // $ExpectType string | number
 schema(['string', 'number'])._T
 
-// $ExpectType number | JSONArray | JSONObject<{}>
+//TODO would be nice to get AnyJSONObject here
+// $ExpectType number | AnyJSONArray | { [key: string]: AnyJSON; }
 schema(['object', 'array', 'number'])._T
 
 // $ExpectType JSONObject<{ properties: { a: number; b: string; }; }>
