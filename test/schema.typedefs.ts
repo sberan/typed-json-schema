@@ -29,7 +29,17 @@ schema(['object', 'array', 'number'])._T
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
 schema(['object'])
-    .properties({
-        a: schema('number'),
-        b: schema('string')
-    })._T
+  .properties({
+      a: schema('number'),
+      b: schema('string')
+  })
+  ._T
+
+// $ExpectType number | JsonObject<{ properties: { a: number; b: string; }; required: "a" | "c"; }>
+schema(['number', 'object'])
+  .properties({
+      a: schema('number'),
+      b: schema('string')
+  })
+  .required(['a', 'c'])
+  ._T
