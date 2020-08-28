@@ -1,7 +1,8 @@
 import { Object } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
-export type AnyJsonObject = {[key: string]: AnyJson }
+export type AnyJsonValue = AnyJson | undefined
+export type AnyJsonObject = {[key: string]: AnyJsonValue}
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
@@ -11,8 +12,8 @@ interface JSONObjectType {
 
 //TODO can we make this just JSONObject<{}> for consumers?
 export type JsonObject<T extends JSONObjectType> = {
-  [key:string]: AnyJson
-} & ('properties' extends keyof T ? T['properties'] : {})
+  [key:string]: AnyJsonValue
+} & ('properties' extends keyof T ? Partial<T['properties']> : {})
 
 export type JSONTypes<ObjectType extends JSONObjectType> = {
   'null': null
