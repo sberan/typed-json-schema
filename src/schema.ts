@@ -1,7 +1,28 @@
 import { Object } from 'ts-toolbelt'
-import { JSONTypes, AnyJSON } from './json'
 
-export { AnyJSONObject } from './json'
+export type AnyJsonPrimitive = string | number | boolean | null
+export type AnyJsonObject = {[key: string]: AnyJson }
+export type AnyJsonArray = AnyJson[]
+export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
+
+interface JSONObjectType {
+  properties?: {[key:string] : AnyJson}
+}
+
+//TODO can we make this just JSONObject<{}> for consumers?
+export type JsonObject<T extends JSONObjectType> = {
+  [key:string]: AnyJson
+} & ('properties' extends keyof T ? T['properties'] : {})
+
+export type JSONTypes<ObjectType extends JSONObjectType> = {
+  'null': null
+  'string': string
+  'number': number
+  'boolean': boolean
+  'object': {} extends ObjectType ? AnyJsonObject: JsonObject<ObjectType>
+  'array': AnyJsonArray
+}
+
 type OmitKeyIf<T extends object, P extends keyof T, TestEmpty> = TestEmpty extends T[P] ? Object.Omit<T, P> : T
 
 interface Keywords {
@@ -9,7 +30,7 @@ interface Keywords {
   properties: {[key: string]: Keywords }
 }
 
-type TypeOf<K extends Keywords> = Keywords extends K ? AnyJSON : JSONTypes<OmitKeyIf<{ properties: {[P in keyof K['properties']]: TypeOf<K['properties'][P]>}}, 'properties', {}>>[K['type']]
+type TypeOf<K extends Keywords> = Keywords extends K ? AnyJson : JSONTypes<OmitKeyIf<{ properties: {[P in keyof K['properties']]: TypeOf<K['properties'][P]>}}, 'properties', {}>>[K['type']]
 
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>

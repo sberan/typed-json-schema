@@ -1,7 +1,6 @@
 import { schema } from '../src/schema'
 
-
-// $ExpectType AnyJSON
+// $ExpectType AnyJson
 schema()._T
 
 // $ExpectType null
@@ -16,21 +15,19 @@ schema('number')._T
 // $ExpectType boolean
 schema('boolean')._T
 
-// $ExpectType AnyJSONArray
+// $ExpectType AnyJsonArray
 schema('array')._T
 
-//TODO would be nice to get AnyJSONObject here
-// $ExpectType { [key: string]: AnyJSON; }
+// $ExpectType AnyJsonObject
 schema('object')._T
 
 // $ExpectType string | number
 schema(['string', 'number'])._T
 
-//TODO would be nice to get AnyJSONObject here
-// $ExpectType number | AnyJSONArray | { [key: string]: AnyJSON; }
+// $ExpectType number | AnyJsonObject | AnyJsonArray
 schema(['object', 'array', 'number'])._T
 
-// $ExpectType JSONObject<{ properties: { a: number; b: string; }; }>
+// $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
 schema(['object'])
     .properties({
         a: schema('number'),
