@@ -43,3 +43,18 @@ schema(['number', 'object'])
   })
   .required(['a', 'c'])
   ._T
+
+// $ExpectType number | JsonObject<{ properties: { a: JsonObject<{ properties: { c: AnyJson; }; }>; b: JsonObject<{ properties: { a: number; b: string; }; required: "a" | "d"; }>; }; required: "a" | "c"; additionalProperties: false; }>
+schema(['number', 'object'])
+  .properties({
+      a: schema('object').properties({c: schema()}),
+      b: schema('object')
+        .properties({
+            a: schema('number'),
+            b: schema('string')
+        })
+        .required(['a', 'd'])
+    })
+  .required(['a', 'c'])
+  .additionalProperties(false)
+  ._T

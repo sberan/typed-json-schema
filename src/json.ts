@@ -15,7 +15,7 @@ interface ObjectSpec {
 type MinimalObjectSpec<T extends ObjectSpec> = {'1': {[P in 
   ('properties' extends keyof T ? {} extends T['properties'] ? never : 'properties' : never)
   | ('required' extends keyof T ? (T['required'] extends never ? never : 'required') : never)
-  | ('additionalProperties' extends keyof T ? 'additionalProperties' : never)
+  | ('additionalProperties' extends keyof T ? (T['additionalProperties'] extends never ? never : 'additionalProperties') : never)
 ]: T[P]}}['1']
 
 type DefinedProperties<T extends ObjectSpec> =

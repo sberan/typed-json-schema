@@ -21,3 +21,4 @@ let someStrictObject: JsonObject<{properties: {a: 24, b: 'asdf' }, required: 'a'
 someStrictObject.a // $ExpectType 24
 someStrictObject.b // $ExpectType "asdf" | undefined
 someStrictObject.c // $ExpectError Property 'c' does not exist on type 'JsonObject<{ properties: { a: 24; b: "asdf"; }; required: "a"; additionalProperties: false; }>'.
+
