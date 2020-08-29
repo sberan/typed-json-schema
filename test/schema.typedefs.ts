@@ -67,3 +67,9 @@ schema('object').additionalProperties(true)._T
 
 // $ExpectType number[]
 schema('array').items(schema('number'))._T
+
+// $ExpectType [number, string]
+schema('array').items(schema('number'), schema('string'))._T
+
+// // $ExpectType [number]
+// schema('array').items([schema('number')])._T
