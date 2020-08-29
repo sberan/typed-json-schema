@@ -5,7 +5,7 @@ interface Keywords {
   type: JSONTypeName
   properties: {[key: string]: Keywords }
   required: string
-  additionalProperties: false
+  additionalProperties: boolean
   items: Keywords
 }
 
@@ -17,7 +17,8 @@ type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
   items: never
 }
 
-type TypeOf<K extends Keywords> = InitialKeywords extends K ? AnyJson : JSONTypeOf<K['type'], {
+type TypeOf<K extends Keywords> = JSONTypeOf<{
+  type: K['type']
   properties: {[P in keyof K['properties']]: TypeOf<K['properties'][P]>}
   required: K['required']
   additionalProperties: K['additionalProperties']
@@ -32,7 +33,7 @@ interface Schema<K extends Keywords> {
 
   required<Keys extends string>(k: Keys[]): Schema<Object.Overwrite<K, {required: Keys}>>
 
-  additionalProperties<T extends boolean>(additionalProperties: T): T extends false ? Schema<Object.Overwrite<K, {additionalProperties: T}>> : Schema<K>
+  additionalProperties<T extends boolean>(additionalProperties: T): Schema<Object.Overwrite<K, {additionalProperties: T}>>
 
   items<Items extends Keywords>(items: Schema<Items>): Schema<Object.Overwrite<K, {items: Items}>>
 }
