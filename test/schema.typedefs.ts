@@ -3,6 +3,9 @@ import { schema } from '../src/schema'
 // $ExpectType AnyJson
 schema()._T
 
+// $ExpectType never
+schema([])._T
+
 // $ExpectType null
 schema('null')._T
 
