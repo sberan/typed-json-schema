@@ -61,3 +61,9 @@ schema(['number', 'object'])
   .required(['a', 'c'])
   .additionalProperties(false)
   ._T
+
+// $ExpectType AnyJsonObject
+schema('object').additionalProperties(true)._T
+
+// $ExpectType number[]
+schema('array').items(schema('number'))._T

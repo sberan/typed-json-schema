@@ -10,6 +10,7 @@ interface ObjectSpec {
   properties?: {[key:string] : AnyJson}
   required?: string
   additionalProperties?: boolean
+  items?: AnyJsonArray
 }
 
 type MinimalObjectSpec<T extends ObjectSpec> = {'1': {[P in 
@@ -42,6 +43,6 @@ export type JSONTypeOf<T extends JSONTypeName, ObjectType extends ObjectSpec> = 
     'number': number
     'boolean': boolean
     'object': {} extends MinimalObjectSpec<ObjectType> ? AnyJsonObject: JsonObject<MinimalObjectSpec<ObjectType>>
-    'array': AnyJsonArray
+    'array': 'items' extends keyof ObjectType ? ObjectType['items'] : AnyJsonArray
   }[T]
 }['1']
