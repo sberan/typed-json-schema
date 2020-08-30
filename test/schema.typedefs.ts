@@ -78,9 +78,9 @@ schema().oneOf(schema().const(4), schema().const(5))._T
 schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
 
 // $ExpectType JsonObject<{ properties: { a: number; }; }> | JsonObject<{ properties: { b: string; }; }>
-schema().oneOf(
-  schema('object').properties({ a: schema('number') }),
-  schema('object').properties({ b: schema('string') })
+schema('object').oneOf(
+  schema().properties({ a: schema('number') }),
+  schema().properties({ b: schema('string') })
 )._T
 
 //TODO combine each keyword with embedded oneOf / allOf / anyOf
