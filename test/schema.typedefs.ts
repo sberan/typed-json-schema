@@ -58,3 +58,9 @@ schema('array').items(schema('number'), schema('string'))._T
 
 // // $ExpectType [number]
 // schema('array').items([schema('number')])._T // tuple with a single item
+
+// $ExpectType 42
+schema().const(42)._T
+
+// // $ExpectType 1 | 2 | 3
+// schema().enum(1, 2, 3)._T

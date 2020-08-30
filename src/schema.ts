@@ -1,8 +1,9 @@
 import { Object } from 'ts-toolbelt'
-import { JSONTypeName, JSONTypeOf, AnyJsonArray } from './json'
+import { JSONTypeName, JSONTypeOf, AnyJsonArray, AnyJson } from './json'
 
 interface Keywords {
   type: JSONTypeName
+  const: AnyJson
   properties: {[key: string]: Keywords }
   required: string
   additionalProperties: boolean | Keywords
@@ -11,6 +12,7 @@ interface Keywords {
 
 type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
   type: T
+  const: never
   properties: {}
   required: never
   additionalProperties: never
@@ -31,18 +33,21 @@ type AdditionalPropertiesTypeOf<K extends Keywords> =
       ? { type: TypeOf<K['additionalProperties']>}
       : true
 
-type TypeOf<K extends Keywords> = JSONTypeOf<{
+type TypeOf<K extends Keywords> = K['const'] extends never ? JSONTypeOf<{
   type: K['type']
   properties: PropertiesTypeOf<K>
   required: K['required']
   additionalProperties: AdditionalPropertiesTypeOf<K>
   items: ItemsTypeOf<K>
 }>
+: K['const']
 
 type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0][] : T
 
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
+
+  const<Const extends AnyJson>(c: Const): Schema<Object.Overwrite<K, { const: Const }>>
 
   properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
     : Schema<Object.Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>>
