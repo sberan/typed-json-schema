@@ -52,6 +52,18 @@ type TypeOf<K extends Keywords> = SpecificTypeOf<K, JSONTypeOf<{
 
 type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0][] : T
 
+type OneOfKeywords<Ks extends Keywords[]> = {
+  type: {[P in keyof Ks]: Ks[P] extends Keywords ? Ks[P]['type'] : never}[number]
+  const: never
+  enum: never
+  properties: {}
+  required: never
+  additionalProperties: never
+  items: never
+}
+
+type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]: Schemas[P] extends Schema<infer T> ? T extends Keywords ? T : never : never}
+
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
 
@@ -68,7 +80,12 @@ interface Schema<K extends Keywords> {
     : Schema<Object.Overwrite<K, {additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never}>>
 
   items<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Schema<Object.Overwrite<K, {items: FirstKeywordsAsArray<{[P in keyof Schemas]: Schemas[P] extends Schema<infer T> ? T : never}>}>>
+    : Schema<Object.Overwrite<K, {items: FirstKeywordsAsArray<KeywordsFromSchemas<Schemas>>}>>
+
+  oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
+    : Schema<OneOfKeywords<[K, ...KeywordsFromSchemas<Schemas>]>>
+
+  
 }
 
 export function schema(): Schema<InitialKeywords> ;

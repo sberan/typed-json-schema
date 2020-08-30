@@ -64,3 +64,6 @@ schema().const(42)._T
 
 // $ExpectType 1 | 2 | 3
 schema().enum(1, 2, 3)._T
+
+// $ExpectType string | number | boolean
+schema('number').oneOf(schema('string'), schema('boolean'))._T
