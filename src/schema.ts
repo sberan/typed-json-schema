@@ -52,10 +52,12 @@ type TypeOf<K extends Keywords> = SpecificTypeOf<K, JSONTypeOf<{
 
 type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0][] : T
 
+type KeywordPropertiesToUnion<Ks extends Keywords[], P extends keyof Keywords> = {[I in keyof Ks]: Ks[I] extends Keywords ? Ks[I][P] : never}[number]
+
 type OneOfKeywords<Ks extends Keywords[]> = {
-  type: {[P in keyof Ks]: Ks[P] extends Keywords ? Ks[P]['type'] : never}[number]
-  const: {[P in keyof Ks]: Ks[P] extends Keywords ? Ks[P]['const'] : never}[number]
-  enum: never
+  type: KeywordPropertiesToUnion<Ks, 'type'>
+  const: KeywordPropertiesToUnion<Ks, 'const'>
+  enum: KeywordPropertiesToUnion<Ks, 'enum'>
   properties: {}
   required: never
   additionalProperties: never

@@ -68,6 +68,8 @@ schema().enum(1, 2, 3)._T
 // $ExpectType string | number | boolean
 schema('number').oneOf(schema('string'), schema('boolean'))._T
 
-
 // $ExpectType 3 | 4 | 5
-schema().const(3).oneOf(schema().const(4), schema().const(5))._T
+schema().const(3).oneOf(schema().const(4), schema().const(5), schema())._T
+
+// $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+schema().enum(1,2,3).oneOf(schema().enum(4,5,6), schema().enum(7,8,9), schema())._T
