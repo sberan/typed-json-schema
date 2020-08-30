@@ -22,3 +22,9 @@ someStrictObject.a // $ExpectType 24
 someStrictObject.b // $ExpectType "asdf" | undefined
 someStrictObject.c // $ExpectError Property 'c' does not exist on type 'JsonObject<{ properties: { a: 24; b: "asdf"; }; required: "a"; additionalProperties: false; }>'.
 
+let allowAdditionalProperties: JsonObject<{ properties: { a: 1 }, additionalProperties: true }> = { 1: 2, d: 4 }
+allowAdditionalProperties.asdf // $ExpectType AnyJsonValue
+
+let typedAdditionalProperties: JsonObject<{ properties: { a: 1 }, additionalProperties: { type: string } }> = { a: 1, d: '4' } as any
+typedAdditionalProperties.a // $ExpectType 1 | undefined
+typedAdditionalProperties.asdf // $ExpectType string
