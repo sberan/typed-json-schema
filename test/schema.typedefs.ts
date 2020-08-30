@@ -30,6 +30,9 @@ schema(['string', 'number'])._T
 // $ExpectType number | AnyJsonObject | AnyJsonArray
 schema(['object', 'array', 'number'])._T
 
+// $ExpectType string | number | boolean | AnyJsonArray | JsonObject<{ properties: { a: number; }; }> | null
+schema().properties({ a: schema('number') })._T
+
 // $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
 schema(['object'])
   .properties({
@@ -65,11 +68,19 @@ schema().const(42)._T
 // $ExpectType 1 | 2 | 3
 schema().enum(1, 2, 3)._T
 
-// $ExpectType string | number | boolean
-schema('number').oneOf(schema('string'), schema('boolean'))._T
+// $ExpectType string | boolean
+schema().oneOf(schema('string'), schema('boolean'))._T
 
-// $ExpectType 3 | 4 | 5
-schema().const(3).oneOf(schema().const(4), schema().const(5), schema())._T
+// $ExpectType 4 | 5
+schema().oneOf(schema().const(4), schema().const(5))._T
 
 // $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-schema().enum(1,2,3).oneOf(schema().enum(4,5,6), schema().enum(7,8,9), schema())._T
+schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
+
+// $ExpectType JsonObject<{ properties: { a: number; }; }> | JsonObject<{ properties: { b: string; }; }>
+schema().oneOf(
+  schema('object').properties({ a: schema('number') }),
+  schema('object').properties({ b: schema('string') })
+)._T
+
+//TODO combine each keyword with embedded oneOf / allOf / anyOf

@@ -9,6 +9,7 @@ interface Keywords {
   required: string
   additionalProperties: boolean | Keywords
   items: Keywords[]
+  oneOf: Keywords[]
 }
 
 type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
@@ -19,6 +20,7 @@ type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
   required: never
   additionalProperties: never
   items: never
+  oneOf: never
 }
 
 type EnsureJsonArray<T> = T extends AnyJsonArray ? T : AnyJsonArray
@@ -52,22 +54,12 @@ type TypeOf<K extends Keywords> = SpecificTypeOf<K, JSONTypeOf<{
 
 type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0][] : T
 
-type KeywordPropertiesToUnion<Ks extends Keywords[], P extends keyof Keywords> = {[I in keyof Ks]: Ks[I] extends Keywords ? Ks[I][P] : never}[number]
-
-type OneOfKeywords<Ks extends Keywords[]> = {
-  type: KeywordPropertiesToUnion<Ks, 'type'>
-  const: KeywordPropertiesToUnion<Ks, 'const'>
-  enum: KeywordPropertiesToUnion<Ks, 'enum'>
-  properties: {}
-  required: never
-  additionalProperties: never
-  items: never
-}
-
 type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]: Schemas[P] extends Schema<infer T> ? T extends Keywords ? T : never : never}
 
+type OneOfKeywords<K extends Keywords[]> = {[P in keyof K]: K[P] extends Keywords ? TypeOf<K[P]> : never}[number]
+
 interface Schema<K extends Keywords> {
-  _T: TypeOf<K>
+  _T: K['oneOf'] extends never ? TypeOf<K> : OneOfKeywords<K['oneOf']>
 
   const<Const extends AnyJson>(c: Const): Schema<Object.Overwrite<K, { const: Const }>>
 
@@ -85,7 +77,7 @@ interface Schema<K extends Keywords> {
     : Schema<Object.Overwrite<K, {items: FirstKeywordsAsArray<KeywordsFromSchemas<Schemas>>}>>
 
   oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Schema<OneOfKeywords<[K, ...KeywordsFromSchemas<Schemas>]>>
+    : Schema<Object.Overwrite<K, { oneOf: KeywordsFromSchemas<Schemas>}>>
 
   
 }

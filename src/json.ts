@@ -50,13 +50,14 @@ export type JsonObject<T extends ObjectSpec> =
   & Omit<Partial<DefinedProperties<T>>, RequiredKeys<T>>
   & {[P in RequiredUnknownKeys<T>]: AnyJson}
 
-type AnyJsonDefault<T> = AnyJson extends T ? AnyJson : T
 
-export type JSONTypeOf<ObjectType extends JsonSpec> = AnyJsonDefault<{
-  'null': null
-  'string': string
-  'number': number
-  'boolean': boolean
-  'object': {} extends MinimalObjectSpec<ObjectType> ? AnyJsonObject: JsonObject<MinimalObjectSpec<ObjectType>>
-  'array': 'items' extends keyof ObjectType ? ObjectType['items'] : AnyJsonArray
-}[ObjectType['type']]>
+export type JSONTypeOf<ObjectType extends JsonSpec> = {
+  '1': {
+    'null': null
+    'string': string
+    'number': number
+    'boolean': boolean
+    'object': {} extends MinimalObjectSpec<ObjectType> ? AnyJsonObject: JsonObject<MinimalObjectSpec<ObjectType>>
+    'array': 'items' extends keyof ObjectType ? ObjectType['items'] : AnyJsonArray
+  }[ObjectType['type']]
+}['1']
