@@ -4,9 +4,6 @@ import { schema } from '../src/schema'
 // $ExpectType string | number | boolean | AnyJsonObject | AnyJsonArray | null
 schema()._T
 
-// $ExpectType never
-schema([])._T
-
 // $ExpectType null
 schema('null')._T
 
@@ -26,16 +23,16 @@ schema('array')._T
 schema('object')._T
 
 // $ExpectType string | number
-schema(['string', 'number'])._T
+schema('string', 'number')._T
 
 // $ExpectType number | AnyJsonObject | AnyJsonArray
-schema(['object', 'array', 'number'])._T
+schema('object', 'array', 'number')._T
 
 // $ExpectType string | number | boolean | AnyJsonArray | JsonObject<{ properties: { a: number; }; }> | null
 schema().properties({ a: schema('number') })._T
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
-schema(['object'])
+schema('object')
   .properties({
       a: schema('number'),
       b: schema('string')
@@ -43,7 +40,7 @@ schema(['object'])
   ._T
 
 // $ExpectType JsonObject<{ required: "a" | "c"; }>
-schema(['object']).required(['a', 'c'])._T
+schema('object').required('a', 'c')._T
 
 // $ExpectType JsonObject<{ additionalProperties: false; }>
 schema('object').additionalProperties(false)._T
@@ -89,3 +86,9 @@ schema('object').properties({ a: schema('number') }).oneOf(
   schema().properties({ b: schema('number') }),
   schema().properties({ c: schema('number') })
 )._T  
+
+// $ExpectType JsonObject<{ required: "a" | "b"; }> | JsonObject<{ required: "a" | "c"; }>
+schema('object').required('a').oneOf(
+  schema('object').required('b'),
+  schema('object').required('c')
+)._T

@@ -33,7 +33,7 @@ type CombineKeywords<K extends Keywords[]> = {
   const: K[number]['const'] extends never ? never : IntersectValues<K[number]['const']>
   enum: K[number]['enum'] extends never ? never : IntersectValues<K[number]['enum']>
   properties: {[P in PropertyKeys<K>]: PropertyValue<K, P>}
-  required: K[1]['required']
+  required: K[number]['required']
   additionalProperties: K[1]['additionalProperties']
   items: K[1]['items']
   oneOf: K[1]['oneOf']
@@ -86,7 +86,7 @@ interface Schema<K extends Keywords> {
   properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
     : Schema<Object.Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>>
 
-  required<Keys extends string>(k: Keys[]): Schema<Object.Overwrite<K, {required: Keys}>>
+  required<Keys extends string>(...k: Keys[]): Schema<Object.Overwrite<K, {required: Keys}>>
 
   additionalProperties<T extends boolean | Schema<any>>(additionalProperties: T)
     : Schema<Object.Overwrite<K, {additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never}>>
@@ -99,7 +99,6 @@ interface Schema<K extends Keywords> {
 }
 
 export function schema(): Schema<InitKeywords> ;
-export function schema<T extends Keywords['type']>(spec: T): Schema<InitKeywords<{ type: T }>> ;
-export function schema<T extends Keywords['type']>(spec: T[]): Schema<InitKeywords<{ type: T }>> ;
+export function schema<T extends Keywords['type']>(...spec: T[]): Schema<InitKeywords<{ type: T }>> ;
 export function schema<K extends Keywords>(spec?: Keywords['type'] | Keywords['type'][]): Schema<K>
 { throw 'nope' }
