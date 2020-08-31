@@ -1,6 +1,7 @@
 import { schema } from '../src/schema'
 
-// $ExpectType AnyJson
+// TODO $ExpectType AnyJson
+// $ExpectType string | number | boolean | AnyJsonObject | AnyJsonArray | null
 schema()._T
 
 // $ExpectType never
@@ -79,6 +80,9 @@ schema().const(1).oneOf(schema().const(4))._T
 
 // $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
+
+// $ExpectType 2
+schema().enum(1,2).oneOf(schema().enum(2,3), schema().enum(2, 4))._T
 
 // $ExpectType JsonObject<{ properties: { a: number; }; }> | JsonObject<{ properties: { b: string; }; }>
 schema('object').oneOf(

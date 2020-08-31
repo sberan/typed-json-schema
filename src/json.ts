@@ -58,6 +58,6 @@ export type JSONTypeOf<ObjectType extends JsonSpec> = {
     'number': number
     'boolean': boolean
     'object': {} extends MinimalObjectSpec<ObjectType> ? AnyJsonObject: JsonObject<MinimalObjectSpec<ObjectType>>
-    'array': 'items' extends keyof ObjectType ? ObjectType['items'] : AnyJsonArray
+    'array': ObjectType['items']
   }[ObjectType['type']]
 }['1']

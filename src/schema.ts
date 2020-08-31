@@ -4,7 +4,7 @@ import { JSONTypeName, JSONTypeOf, AnyJsonArray, AnyJson } from './json'
 interface Keywords {
   type: JSONTypeName
   const: { value: AnyJson }
-  enum: AnyJson[]
+  enum: { value: AnyJson }
   properties: {[key: string]: Keywords }
   required: string
   additionalProperties: boolean | Keywords
@@ -23,10 +23,12 @@ type InitKeywords<T extends Partial<Keywords> = {} > = Object.Overwrite<{
   oneOf: never
 }, T>
 
+type IntersectValues<V extends {value: AnyJson }> = Union.IntersectOf<V> extends { value: AnyJson} ? { value: Union.IntersectOf<V>['value'] } : never
+
 type CombineKeywords<K extends Keywords[]> = {
   type: Exclude<JSONTypeName, {[P in keyof K]: K[P] extends Keywords ? Exclude<JSONTypeName, K[P]['type']> : never }[number]>
-  const: K[number]['const'] extends never ? never : { value: Extract<Union.IntersectOf<{[P in keyof K]: K[P] extends Keywords ? K[P]['const'] : never }[number]['value']>, AnyJson> }
-  enum: K[1]['enum']
+  const: K[number]['const'] extends never ? never : IntersectValues<K[number]['const']>
+  enum: K[number]['enum'] extends never ? never : IntersectValues<K[number]['enum']>
   properties: K[1]['properties']
   required: K[1]['required']
   additionalProperties: K[1]['additionalProperties']
@@ -52,7 +54,7 @@ type SpecificTypeOf<K extends Keywords, Default extends AnyJson> =
   K['const'] extends never
     ? K['enum'] extends never
       ? Default
-      : (K['enum'] extends Array<infer T> ? T extends AnyJson ? T : never : never)
+      : K['enum']['value']
     : K['const']['value']
 
 type TypeOf<K extends Keywords> = SpecificTypeOf<K, JSONTypeOf<{
@@ -74,7 +76,7 @@ interface Schema<K extends Keywords> {
 
   const<Const extends AnyJson>(c: Const): Schema<Object.Overwrite<K, { const: { value: Const } }>>
 
-  enum<Enum extends AnyJsonArray>(...items: Enum): Schema<Object.Overwrite<K, { enum: Enum }>>
+  enum<Enum extends AnyJsonArray>(...items: Enum): Schema<Object.Overwrite<K, { enum: { value: Enum[number] } }>>
 
   properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
     : Schema<Object.Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>>
