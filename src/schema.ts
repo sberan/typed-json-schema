@@ -1,9 +1,9 @@
-import { Object } from 'ts-toolbelt'
+import { Object, Union } from 'ts-toolbelt'
 import { JSONTypeName, JSONTypeOf, AnyJsonArray, AnyJson } from './json'
 
 interface Keywords {
   type: JSONTypeName
-  const: AnyJson
+  const: { value: AnyJson }
   enum: AnyJson[]
   properties: {[key: string]: Keywords }
   required: string
@@ -12,8 +12,8 @@ interface Keywords {
   oneOf: Keywords[]
 }
 
-type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
-  type: T
+type InitKeywords<T extends Partial<Keywords> = {} > = Object.Overwrite<{
+  type: JSONTypeName
   const: never
   enum: never
   properties: {}
@@ -21,11 +21,11 @@ type InitialKeywords<T extends JSONTypeName = JSONTypeName> = {
   additionalProperties: never
   items: never
   oneOf: never
-}
+}, T>
 
 type CombineKeywords<K extends Keywords[]> = {
   type: Exclude<JSONTypeName, {[P in keyof K]: K[P] extends Keywords ? Exclude<JSONTypeName, K[P]['type']> : never }[number]>
-  const: K[1]['const']
+  const: K[number]['const'] extends never ? never : { value: Extract<Union.IntersectOf<{[P in keyof K]: K[P] extends Keywords ? K[P]['const'] : never }[number]['value']>, AnyJson> }
   enum: K[1]['enum']
   properties: K[1]['properties']
   required: K[1]['required']
@@ -53,7 +53,7 @@ type SpecificTypeOf<K extends Keywords, Default extends AnyJson> =
     ? K['enum'] extends never
       ? Default
       : (K['enum'] extends Array<infer T> ? T extends AnyJson ? T : never : never)
-    : K['const']
+    : K['const']['value']
 
 type TypeOf<K extends Keywords> = SpecificTypeOf<K, JSONTypeOf<{
   type: K['type']
@@ -72,7 +72,7 @@ type OneOfKeywords<Parent extends Keywords, K extends Keywords[]> = {[P in keyof
 interface Schema<K extends Keywords> {
   _T: K['oneOf'] extends never ? TypeOf<K> : OneOfKeywords<K, K['oneOf']>
 
-  const<Const extends AnyJson>(c: Const): Schema<Object.Overwrite<K, { const: Const }>>
+  const<Const extends AnyJson>(c: Const): Schema<Object.Overwrite<K, { const: { value: Const } }>>
 
   enum<Enum extends AnyJsonArray>(...items: Enum): Schema<Object.Overwrite<K, { enum: Enum }>>
 
@@ -91,8 +91,8 @@ interface Schema<K extends Keywords> {
     : Schema<Object.Overwrite<K, { oneOf: KeywordsFromSchemas<Schemas>}>>
 }
 
-export function schema(): Schema<InitialKeywords> ;
-export function schema<T extends Keywords['type']>(spec: T): Schema<InitialKeywords<T>> ;
-export function schema<T extends Keywords['type']>(spec: T[]): Schema<InitialKeywords<T>> ;
+export function schema(): Schema<InitKeywords> ;
+export function schema<T extends Keywords['type']>(spec: T): Schema<InitKeywords<{ type: T }>> ;
+export function schema<T extends Keywords['type']>(spec: T[]): Schema<InitKeywords<{ type: T }>> ;
 export function schema<K extends Keywords>(spec?: Keywords['type'] | Keywords['type'][]): Schema<K>
 { throw 'nope' }

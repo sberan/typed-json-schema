@@ -74,6 +74,9 @@ schema().oneOf(schema('string'), schema('boolean'))._T
 // $ExpectType 4 | 5
 schema().oneOf(schema().const(4), schema().const(5))._T
 
+// $ExpectType never
+schema().const(1).oneOf(schema().const(4))._T
+
 // $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
 
@@ -81,6 +84,6 @@ schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))
 schema('object').oneOf(
   schema().properties({ a: schema('number') }),
   schema().properties({ b: schema('string') })
-)._T
+)._T  
 
 //TODO combine each keyword with embedded oneOf / allOf / anyOf
