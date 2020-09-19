@@ -1,4 +1,4 @@
-import { Any, Object, Union } from 'ts-toolbelt'
+import { Any, Object, Union, List } from 'ts-toolbelt'
 import { JSONTypeName, JSONTypeOf, AnyJsonArray, AnyJson } from './json'
 
 interface Keywords {
@@ -28,6 +28,8 @@ type IntersectValues<V extends {value: AnyJson }> = Union.IntersectOf<V> extends
 type PropertyKeys<K extends Keywords[]> = {[P in keyof K]: K[P] extends Keywords ? Extract<keyof K[P]['properties'], string> : never}[number]
 type PropertyValue<K extends Keywords[], Prop extends string> = {[P in keyof K]: K[P] extends Keywords ? Prop extends keyof K[P]['properties']  ? K[P]['properties'][Prop] : never : never}[number]
 
+type X = PropertyValue<[InitKeywords, InitKeywords<{ properties: { a : InitKeywords<{ type: 'string' }>}}>, InitKeywords<{ properties: { a : InitKeywords<{ type: 'number' }>}}>], 'a'>
+
 type CombineKeywords<K extends Keywords[]> = {
   type: Exclude<JSONTypeName, {[P in keyof K]: K[P] extends Keywords ? Exclude<JSONTypeName, K[P]['type']> : never }[number]>
   const: K[number]['const'] extends never ? never : IntersectValues<K[number]['const']>
@@ -39,7 +41,6 @@ type CombineKeywords<K extends Keywords[]> = {
   oneOf: K[1]['oneOf']
 }
 
-type X = CombineKeywords<[InitKeywords, InitKeywords<{ properties: { a : InitKeywords<{ type: 'number' }>}}>, InitKeywords<{ properties: { b : InitKeywords<{ type: 'number' }>}}>]>
 
 type EnsureJsonArray<T> = T extends AnyJsonArray ? T : AnyJsonArray
 type KeywordsArrayTypeOf<K extends Keywords[]> = {[P in keyof K]: K[P] extends Keywords ? TypeOf<K[P]> : AnyJsonArray}
