@@ -1,3 +1,4 @@
+
 import { Any, Object } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
@@ -8,56 +9,53 @@ export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
 export type JSONTypeName = 'null' |'string' |'number' |'boolean' |'object' |'array'
 
-interface JsonSpec {
-  type: JSONTypeName
-  properties: {[key:string] : AnyJson}
-  required: string
-  additionalProperties: boolean | { type: AnyJson }
-  items: AnyJsonArray
-}
+type Lookup<T, P, Default> = P extends keyof T ? NonNullable<T[P]> : Default
+type Lookup2<T, P1, P2, Default> = Lookup<Lookup<T, P1, Default>, P2, Default>
 
-interface ObjectSpec {
+type JsonSpec = {
   properties?: {[key:string] : AnyJson}
   required?: string
   additionalProperties?: boolean | { type: AnyJson }
+  items?: AnyJsonArray
+  type?: JSONTypeName
 }
 
-type MinimalObjectSpec<T extends ObjectSpec> = {'1': {[P in 
-  ('properties' extends keyof T ? {} extends T['properties'] ? never : 'properties' : never)
-  | ('required' extends keyof T ? (T['required'] extends never ? never : 'required') : never)
-  | ('additionalProperties' extends keyof T ? (true extends T['additionalProperties'] ? never : 'additionalProperties') : never)
-]: T[P]}}['1']
+type ObjectSpecProperties<Spec extends JsonSpec> = 
+  ({} extends Lookup<Spec, 'properties', {}> ? never : 'properties')
+  | (Lookup<Spec, 'required', never> extends never ? never : 'required')
+  | (true extends Lookup<Spec, 'additionalProperties', true> ? never : 'additionalProperties')
 
-type DefinedProperties<T extends ObjectSpec> =
-  'properties' extends keyof T ? NonNullable<T['properties']> : {}
+type DefinedProperties<T extends JsonSpec> =
+  Lookup<T, 'properties', {}>
 
-type RequiredUnknownKeys<T extends ObjectSpec> =
-  Exclude<RequiredKeys<T>, keyof DefinedProperties<T>>
+type RequiredUnknownKeys<T extends JsonSpec> =
+  Exclude<RequiredKeys<T>, keyof DefinedProperties<T>> 
 
-type RequiredKeys<T extends ObjectSpec> =
-  'required' extends keyof T ? NonNullable<T['required']> : never
+type RequiredKeys<T extends JsonSpec> =
+  Lookup<T, 'required', never>
 
-export type JsonObject<T extends ObjectSpec> = 
-  ('additionalProperties' extends keyof T 
-    ? false extends T['additionalProperties'] 
-      ? {} 
-      : 'type' extends keyof T['additionalProperties']
-        ? {[key:string]: T['additionalProperties']['type']}
-        : {[key: string]: AnyJsonValue}
-    : {[key: string]: AnyJsonValue}
-  )
+export type JsonObject<T extends JsonSpec> = 
+  AdditionalPropertiesTypeOf<T>
   & Object.Pick<DefinedProperties<T>, RequiredKeys<T>>
   & Omit<Partial<DefinedProperties<T>>, RequiredKeys<T>>
   & {[P in RequiredUnknownKeys<T>]: AnyJson}
 
+type AdditionalPropertiesTypeOf<Spec extends JsonSpec> =
+  false extends Lookup<Spec, 'additionalProperties', true> ? {} : {
+    [key: string]: Lookup2<Spec, 'additionalProperties', 'type', AnyJsonValue>
+  }
 
-export type JSONTypeOf<ObjectType extends JsonSpec> = {
+type JsonObjectTypeOf<Spec extends JsonSpec> =
+  ObjectSpecProperties<Spec> extends never ? AnyJsonObject: JsonObject<{[P in ObjectSpecProperties<Spec>]: Spec[P]}>
+
+export type JSONTypeOf<Spec extends JsonSpec> = {
   '1': {
-    'null': null
-    'string': string
-    'number': number
-    'boolean': boolean
-    'object': {} extends MinimalObjectSpec<ObjectType> ? AnyJsonObject: JsonObject<MinimalObjectSpec<ObjectType>>
-    'array': ObjectType['items']
-  }[ObjectType['type']]
+    null: null
+    string: string
+    number: number
+    boolean: boolean
+    object: JsonObjectTypeOf<Spec>
+    array: Lookup<Spec, 'items', AnyJsonArray>
+    any: AnyJson
+  }[Lookup<Spec, 'type', 'any'>]
 }['1']
