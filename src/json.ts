@@ -53,8 +53,12 @@ type PropertiesKeyword<Properties extends {[key: string]: Keywords}> = { propert
 type RequiredKeyword<Required extends string> = { required: Required }
 type AdditionalPropertiesKeyword<AdditionalProperties extends false | Keywords> = { additionalProperties: AdditionalProperties }
 
-type PropertiesSpec<Properties extends {[key: string]: Keywords}> = {calc: {[P in keyof Properties]: JsonValue<Properties[P]>['calc']} }
-type AdditionalPropertiesSpec<AdditionalProperties extends false | Keywords> = AdditionalProperties extends Keywords ? { type: JsonValue<AdditionalProperties>['calc'] } : false
+type PropertiesSpec<Properties extends {[key: string]: Keywords}> = {
+  calc: {[P in keyof Properties]: JsonValue<Properties[P]>['calc']}
+}
+
+type AdditionalPropertiesSpec<AdditionalProperties extends false | Keywords> =
+  AdditionalProperties extends Keywords ? { type: JsonValue<AdditionalProperties>['calc'] } : false
 
 type JsonObjectSpecValue<K extends Keywords> = OmitUndefined<{
   properties: K extends PropertiesKeyword<infer Properties> ? PropertiesSpec<Properties>['calc'] : undefined
@@ -63,11 +67,8 @@ type JsonObjectSpecValue<K extends Keywords> = OmitUndefined<{
 }>
 
 type JsonString<K extends Keywords> = 'string' extends TypeKeyword<K> ? string : never
-
 type JsonNumber<K extends Keywords> = 'number' extends TypeKeyword<K> ? number : never
-
 type JsonBoolean<K extends Keywords> = 'boolean' extends TypeKeyword<K> ? boolean : never
-
 type JsonNull<K extends Keywords> = 'null' extends TypeKeyword<K> ? null : never
 
 type JsonObjectValue<K extends Keywords> =
@@ -85,7 +86,7 @@ type JsonArray<K extends Keywords> =
     : never
   
 type JsonValue<K extends Keywords> = {
-  calc: JsonString<K> | JsonBoolean<K> | JsonNumber<K> | JsonNull<K> | JsonObjectValue<K> | JsonArray<K>
+  calc: keyof K extends null ? AnyJson : JsonString<K> | JsonBoolean<K> | JsonNumber<K> | JsonNull<K> | JsonObjectValue<K> | JsonArray<K>
 }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>['calc']
