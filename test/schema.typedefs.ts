@@ -1,6 +1,6 @@
 import { schema } from '../src/schema'
 
-// TODO $ExpectType AnyJson
+//TODO: $ExpectType AnyJson
 // $ExpectType string | number | boolean | AnyJsonObject | AnyJsonArray | null
 schema()._T
 
@@ -57,7 +57,7 @@ schema('array').items(schema('number'))._T
 // $ExpectType [number, string]
 schema('array').items(schema('number'), schema('string'))._T
 
-// // $ExpectType [number]
+//TODO: $ExpectType [number]
 // schema('array').items([schema('number')])._T // tuple with a single item
 
 // $ExpectType 42

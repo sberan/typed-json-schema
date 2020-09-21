@@ -1,16 +1,16 @@
 import { Any, Object, Union, List } from 'ts-toolbelt'
-import { JSONTypeName, JSONTypeOf, AnyJsonArray, AnyJson, TypeOf } from './json'
+import { JSONTypeName, TypeOf, AnyJsonArray, AnyJson, Keywords } from './json'
 
-interface Keywords {
-  type?: JSONTypeName
-  const?: { value: AnyJson }
-  enum?: { value: AnyJson }
-  properties?: {[key: string]: Keywords }
-  required?: string
-  additionalProperties?: boolean | Keywords
-  items?: Keywords[]
-  oneOf?: Keywords[]
-}
+// interface Keywords {
+//   type?: JSONTypeName
+//   const?: { value: AnyJson }
+//   enum?: { value: AnyJson }
+//   properties?: {[key: string]: Keywords }
+//   required?: string
+//   additionalProperties?: boolean | Keywords
+//   items?: Keywords[]
+//   oneOf?: Keywords[]
+// }
 
 // type InitKeywords<T extends Partial<Keywords> = {} > = Object.Overwrite<{
 //   type: JSONTypeName
@@ -71,35 +71,34 @@ interface Keywords {
 //   items: ItemsTypeOf<K>
 // }>>
 
-type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0][] : T
+type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0] : T
 
 type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]: Schemas[P] extends Schema<infer T> ? T extends Keywords ? T : never : never}
 
 // type OneOfKeywords<Parent extends Keywords, K extends Keywords[]> = {[P in keyof K]: K[P] extends Keywords ? TypeOf<CombineKeywords<[Parent, K[P]]>> : never}[number]
 
-type Overwrite<T, U> = {'1': Schema<{[P in (keyof T | keyof U)]: P extends keyof U ? U[P] : P extends keyof T ? T[P] : never }> }
+type Overwrite<T, U> = Schema<{[P in (keyof T | keyof U)]: P extends keyof U ? U[P] : P extends keyof T ? T[P] : never }>
 
-const c = schema().properties({ a: schema('number') })
 interface Schema<K extends Keywords> {
-  _T: TypeOf<K>
+  _T: TypeOf<K>['type']
 
-  const<Const extends AnyJson>(c: Const): Overwrite<K, { const: { value: Const } }>['1']
+  const<Const extends AnyJson>(c: Const): Overwrite<K, { const: { value: Const } }>
 
-  enum<Enum extends AnyJsonArray>(...items: Enum): Overwrite<K, { enum: { value: Enum[number] } }>['1']
+  enum<Enum extends AnyJsonArray>(...items: Enum): Overwrite<K, { enum: { value: Enum[number] } }>
 
   properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
-    : Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>['1']
+    : Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>
 
-  required<Keys extends string>(...k: Keys[]): Overwrite<K, {required: Keys}>['1']
+  required<Keys extends string>(...k: Keys[]): Overwrite<K, {required: Keys}>
 
   additionalProperties<T extends boolean | Schema<any>>(additionalProperties: T)
-    : Overwrite<K, {additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never}>['1']
+    : Overwrite<K, {additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never}>
 
   items<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Overwrite<K, {items: FirstKeywordsAsArray<KeywordsFromSchemas<Schemas>>}>['1']
+    : Overwrite<K, {items: FirstKeywordsAsArray<KeywordsFromSchemas<Schemas>>}>
 
   oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Overwrite<K, { oneOf: KeywordsFromSchemas<Schemas>}>['1']
+    : Overwrite<K, { oneOf: KeywordsFromSchemas<Schemas>}>
 }
 
 export function schema(): Schema<{}> ;

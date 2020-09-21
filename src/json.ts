@@ -1,6 +1,5 @@
 
-import { Key } from 'Iteration/Key'
-import { Any, Object } from 'ts-toolbelt'
+import { Object } from 'ts-toolbelt'
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonValue = AnyJson | undefined
@@ -13,7 +12,7 @@ export type JSONTypeName = 'null' |'string' |'number' |'boolean' |'object' |'arr
 type Lookup<T, P, Default> = P extends keyof T ? NonNullable<T[P]> : Default
 type Lookup2<T, P1, P2, Default> = Lookup<Lookup<T, P1, Default>, P2, Default>
 
-type Keywords = {
+export type Keywords = {
   type?: JSONTypeName
   const?: AnyJson
   properties?: {[key: string]: Keywords }
@@ -34,7 +33,7 @@ type DefinedProperties<T extends JsonObjectSpec> =
 type RequiredUnknownKeys<T extends JsonObjectSpec> =
   Exclude<RequiredKeys<T>, keyof DefinedProperties<T>>
 
-type RequiredKeys<T extends JsonObjectSpec> =
+type RequiredKeys<T extends { required?: string }> =
   Lookup<T, 'required', never>
 
 type AdditionalPropertiesTypeOf<Spec extends JsonObjectSpec> =
@@ -48,86 +47,47 @@ export type JsonObject<T extends JsonObjectSpec> =
   & Omit<Partial<DefinedProperties<T>>, RequiredKeys<T>>
   & {[P in RequiredUnknownKeys<T>]: AnyJson}
 
-type JsonString<K extends Keywords> = 'string' extends Lookup<K, 'type', 'string'> ? string : never
+type OmitUndefined<T> = Omit<T, {[P in keyof T]: T[P] extends undefined ? P : never }[keyof T]>
 
-type JsonNumber<K extends Keywords> = 'number' extends Lookup<K, 'type', 'number'> ? number : never
+type ItemsKeyword<Items extends Keywords> = { items: Items }
+type TypeKeyword<K extends Keywords> = K extends { type: JSONTypeName } ? K['type'] : JSONTypeName
+type PropertiesKeyword<Properties extends {[key: string]: Keywords}> = { properties: {} extends Properties ? never : Properties }
+type RequiredKeyword<Required extends string> = { required: Required }
+type AdditionalPropertiesKeyword<AdditionalProperties extends false | Keywords> = { additionalProperties: AdditionalProperties }
 
-type JsonBoolean<K extends Keywords> = 'boolean' extends Lookup<K, 'type', 'boolean'> ? boolean : never
+type PropertiesSpec<Properties extends {[key: string]: Keywords}> = {calc: {[P in keyof Properties]: JsonValue<Properties[P]>['type']} }
+type AdditionalPropertiesSpec<AdditionalProperties extends false | Keywords> = AdditionalProperties extends Keywords ? { type: JsonValue<AdditionalProperties>['type'] } : false
 
-type JsonNull<K extends Keywords> = 'null' extends Lookup<K, 'type', 'null'> ? null : never
+type JsonObjectSpecValue<K extends Keywords> = OmitUndefined<{
+  properties: K extends PropertiesKeyword<infer Properties> ? PropertiesSpec<Properties>['calc'] : undefined
+  required: K extends RequiredKeyword<infer Required> ? Required : undefined
+  additionalProperties: K extends AdditionalPropertiesKeyword<infer AdditionalProperties> ? AdditionalPropertiesSpec<AdditionalProperties> : undefined
+}>
 
-type JsonObjProperty<K extends Keywords, P extends string> =
-  'properties' extends keyof K ? P extends keyof K['properties'] ? K['properties'][P] : {} : {}
+type JsonString<K extends Keywords> = 'string' extends TypeKeyword<K> ? string : never
 
-type JsonObjAdditionalType<K extends boolean | Keywords> =
-  false extends K ? {} : {[key: string]: K extends Keywords ? JsonValue<K>['type'] : AnyJson }
+type JsonNumber<K extends Keywords> = 'number' extends TypeKeyword<K> ? number : never
 
-type JsonObjAdditional<K extends Keywords> = {
-  type: JsonObjAdditionalType<Lookup<K, 'additionalProperties', true>>
-}
+type JsonBoolean<K extends Keywords> = 'boolean' extends TypeKeyword<K> ? boolean : never
 
-type JsonObjRequired<K extends Keywords> = {
-  type: {[P in Lookup<K, 'required', never>]: JsonValue<JsonObjProperty<K, P>>['type'] }
-}
-    
-type JsonObjOptional<K extends Keywords> = {
-  type: {[P in Extract<Exclude<keyof Lookup<K, 'properties', {}>, Lookup<K, 'required', never>>, string>]?: JsonObjProperty<K, P> }
-}
+type JsonNull<K extends Keywords> = 'null' extends TypeKeyword<K> ? null : never
 
-type JsonObjProperties<K extends Keywords> = {
-  type: JsonObjRequired<K>['type'] & JsonObjOptional<K>['type'] & JsonObjAdditional<K>['type']
-}
+type JsonObjectValue<K extends Keywords> =
+  'object' extends TypeKeyword<K>
+    ? keyof JsonObjectSpecValue<K> extends never
+      ? AnyJsonObject
+      : JsonObject<{[P in keyof JsonObjectSpecValue<K>]: JsonObjectSpecValue<K>[P]}>
+    : never
 
-type JsonObjectAdditionalSpec<K extends Keywords | boolean> =
-  K extends Keywords ? { type: JsonValue<K>['type'] } : K
-
-type JsonObjectPropertiesSpec<Properties extends {[key: string]: Keywords}> = {
-  calc: {[P in keyof Properties]: JsonValue<Properties[P]>['type']}
-}
-
-
-// type JsonObjectSpecValue<K extends Keywords> = {
-//   'calc': {
-//     required: Lookup<K, 'required', never>
-//     additionalProperties: false//JsonObjectAdditionalSpec<Lookup<K, 'additionalProperties', true>>
-//     properties: J['calc']
-//   }
-// }
-
-
-type JsonObjectSpecValue<K extends Keywords> = {
-  properties: JsonObjectPropertiesSpec<Lookup<K, 'properties', {}>>
-  required: Lookup<K, 'required', never>
-  additionalProperties: JsonObjectAdditionalSpec<Lookup<K, 'additionalProperties', true>>
-}
-
-type JsonObjectValue<K extends Keywords> = 'object' extends Lookup<K, 'type', 'object'>
-  ? JsonObject<JsonObjectSpecValue<K>>
-  : never
-
+type JsonArray<K extends Keywords> =
+  'array' extends TypeKeyword<K>
+    ? K extends ItemsKeyword<infer Items>
+      ? JsonValue<Items>['type'][]
+      : AnyJsonArray
+    : never
+  
 type JsonValue<K extends Keywords> = {
-  type: JsonString<K> | JsonNumber<K> | JsonBoolean<K> | JsonNull<K> | JsonArray<K> | JsonObjectValue<K>
+  type: JsonString<K> | JsonBoolean<K> | JsonNumber<K> | JsonNull<K> | JsonObjectValue<K> | JsonArray<K>
 }
-
-type JsonArray<K extends Keywords> = 'array' extends Lookup<K, 'type', 'array'>
-  ? Lookup<K, 'items', never> extends never ? AnyJsonArray : JsonValue<Lookup<K, 'items', never>>['type'][]
-  : never
-
-
-type A = JsonValue<{ type: 'array', items: { type: 'string' } }>['type']
-type O = JsonValue<{ type: 'number' | 'string' | 'array' | 'object', properties: { a: { type: 'string' }, b: {} }, required: 'a' | 'c', additionalProperties: { type: 'string' }}>['type']
-// enum: AnyJson
-// oneOf: Keywords[]
-// anyOf: Keywords[]
-// allOf: Keywords[]
-
-// type ToPropertiesSpec<Properties extends {[key: string]: Keywords}> = {'1': {[P in keyof Properties]: TypeOf<Properties[P]>}}
-
-// type ToAdditionalPropertiesSpec<AdditionalProperties extends boolean | Keywords> = AdditionalProperties extends Keywords ? { type: TypeOf<AdditionalProperties>} : Extract<AdditionalProperties, boolean>
-
-// type ToSpec<K extends Keywords> = {'1': {[P in keyof K]: 
-//   P extends 'properties' ? ToPropertiesSpec<Lookup<K, 'properties', {}>>['1']
-//   : P extends 'additionalProperties' ? ToAdditionalPropertiesSpec<Lookup<K, 'additionalProperties', true>>
-//   : NonNullable<K[P]> } }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>

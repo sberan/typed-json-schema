@@ -1,4 +1,4 @@
-import { AnyJson, JsonObject, JSONTypeOf } from '../src/json'
+import { AnyJson, JsonObject } from '../src/json'
 
 const allow:AnyJson[] = [3, 'asdf', null, false, null, {a: 42, b: 'asdf', z: ['boink', [1]]}, [1,2,3,'asdf']]
 
