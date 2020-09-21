@@ -8,7 +8,7 @@ type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]:
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
 
-  const<Const extends AnyJson>(c: Const): Overwrite<K, { const: { value: Const } }>
+  const<Const extends AnyJson>(c: Const): Overwrite<K, { const: Const }>
 
   enum<Enum extends AnyJsonArray>(...items: Enum): Overwrite<K, { enum: { value: Enum[number] } }>
 

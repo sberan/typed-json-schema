@@ -18,6 +18,7 @@ type TypeKeyword<K extends Keywords> = K extends { type: JSONTypeName } ? K['typ
 type PropertiesKeyword<Properties extends {[key: string]: Keywords}> = { properties: {} extends Properties ? never : Properties }
 type RequiredKeyword<Required extends string> = { required: Required }
 type AdditionalPropertiesKeyword<AdditionalProperties extends false | Keywords> = { additionalProperties: AdditionalProperties }
+type ConstKeyword<T extends AnyJson> = { const: T }
 
 type PropertiesSpec<Properties extends {[key: string]: Keywords}> = {
   calc: {[P in keyof Properties]: JsonValue<Properties[P]>['calc']}
@@ -26,7 +27,7 @@ type PropertiesSpec<Properties extends {[key: string]: Keywords}> = {
 type AdditionalPropertiesSpec<AdditionalProperties extends false | Keywords> =
   AdditionalProperties extends Keywords ? { type: JsonValue<AdditionalProperties>['calc'] } : false
 
-type JsonObjectSpecValue<K extends Keywords> = OmitUndefined<{
+type JsonObjectSpec<K extends Keywords> = OmitUndefined<{
   properties: K extends PropertiesKeyword<infer Properties> ? PropertiesSpec<Properties>['calc'] : undefined
   required: K extends RequiredKeyword<infer Required> ? Required : undefined
   additionalProperties: K extends AdditionalPropertiesKeyword<infer AdditionalProperties> ? AdditionalPropertiesSpec<AdditionalProperties> : undefined
@@ -42,9 +43,9 @@ type NullValue<K extends Keywords> = 'null' extends TypeKeyword<K> ? null : neve
 
 type ObjectValue<K extends Keywords> =
   'object' extends TypeKeyword<K>
-    ? keyof JsonObjectSpecValue<K> extends never
+    ? keyof JsonObjectSpec<K> extends never
       ? AnyJsonObject
-      : JsonObject<{[P in keyof JsonObjectSpecValue<K>]: JsonObjectSpecValue<K>[P]}>
+      : JsonObject<{[P in keyof JsonObjectSpec<K>]: JsonObjectSpec<K>[P]}>
     : never
 
 type ArrayValue<K extends Keywords> =
@@ -55,7 +56,9 @@ type ArrayValue<K extends Keywords> =
     : never
   
 type JsonValue<K extends Keywords> = {
-  calc: keyof K extends never ? AnyJson : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
+  calc: keyof K extends never ? AnyJson
+  : K extends ConstKeyword<infer Const> ? Const
+  : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
 }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>['calc']
