@@ -80,7 +80,7 @@ type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]:
 type Overwrite<T, U> = Schema<{[P in (keyof T | keyof U)]: P extends keyof U ? U[P] : P extends keyof T ? T[P] : never }>
 
 interface Schema<K extends Keywords> {
-  _T: TypeOf<K>['type']
+  _T: TypeOf<K>
 
   const<Const extends AnyJson>(c: Const): Overwrite<K, { const: { value: Const } }>
 
