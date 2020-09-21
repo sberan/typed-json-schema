@@ -1,7 +1,7 @@
 import { schema } from '../src/schema'
 
 // TODO $ExpectType AnyJson
-// $ExpectType AnyJson
+// $ExpectType string | number | boolean | AnyJsonObject | AnyJsonArray | null
 schema()._T
 
 // $ExpectType null
