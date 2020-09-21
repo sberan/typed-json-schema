@@ -1,6 +1,4 @@
 
-import { Object } from 'ts-toolbelt'
-
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonValue = AnyJson | undefined
 export type AnyJsonObject = {[key: string]: AnyJsonValue}
@@ -8,9 +6,6 @@ export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
 export type JSONTypeName = 'null' |'string' |'number' |'boolean' |'object' |'array'
-
-type Lookup<T, P, Default> = P extends keyof T ? NonNullable<T[P]> : Default
-type Lookup2<T, P1, P2, Default> = Lookup<Lookup<T, P1, Default>, P2, Default>
 
 export type Keywords = {
   type?: JSONTypeName
@@ -27,25 +22,28 @@ type JsonObjectSpec = {
   additionalProperties?: boolean | { type: AnyJson }
 }
 
-type DefinedProperties<T extends JsonObjectSpec> =
-  Lookup<T, 'properties', {}>
+type DefinedProperties<T extends {[key:string]: AnyJson }> = { properties: T }
 
-type RequiredUnknownKeys<T extends JsonObjectSpec> =
-  Exclude<RequiredKeys<T>, keyof DefinedProperties<T>>
+type RequiredKeys<T extends string> = { required: T }
 
-type RequiredKeys<T extends { required?: string }> =
-  Lookup<T, 'required', never>
+type AdditionalPropertiesType<T extends AnyJson> = { additionalProperties: { type: T } }
 
 type AdditionalPropertiesTypeOf<Spec extends JsonObjectSpec> =
-  false extends Lookup<Spec, 'additionalProperties', true> ? {} : {
-    [key: string]: Lookup2<Spec, 'additionalProperties', 'type', AnyJsonValue>
-  }
+  Spec extends { additionalProperties: false }
+    ? {}
+    : {[key: string]: Spec extends AdditionalPropertiesType<infer T> ? T : AnyJsonValue }
 
-export type JsonObject<T extends JsonObjectSpec> = 
-  AdditionalPropertiesTypeOf<T>
-  & Object.Pick<DefinedProperties<T>, RequiredKeys<T>>
-  & Omit<Partial<DefinedProperties<T>>, RequiredKeys<T>>
-  & {[P in RequiredUnknownKeys<T>]: AnyJson}
+type PropertiesTypeOf<Properties extends {[key:string]: AnyJson}, Required extends string> =
+  {[P in Extract<keyof Properties, Required>]: Properties[P]}
+  & {[P in Exclude<keyof Properties, Required>]?: Properties[P]}
+  & {[P in Exclude<Required, keyof Properties>]: AnyJson}
+
+export type JsonObject<Spec extends JsonObjectSpec> = 
+  PropertiesTypeOf<
+    Spec extends DefinedProperties<infer P> ? P : {}, 
+    Spec extends RequiredKeys<infer R> ? R : never
+  >
+  & AdditionalPropertiesTypeOf<Spec>
 
 type OmitUndefined<T> = Omit<T, {[P in keyof T]: T[P] extends undefined ? P : never }[keyof T]>
 
