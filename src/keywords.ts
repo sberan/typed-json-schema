@@ -11,7 +11,36 @@ export type Keywords = {
   required?: string
   additionalProperties?: boolean | Keywords
   items?: Keywords
+  oneOf?: Keywords[]
 }
+
+// type PopulatedElementIndexes<Ks extends Keywords[], Key extends keyof Keywords> = {[I in keyof Ks]: Key extends keyof Ks[I] ? I : never}[number]
+// type KeywordValues<Ks extends Keywords[], Key extends keyof Keywords> =
+//   {[I in PopulatedElementIndexes<Ks, Key>]: 42}
+
+// type TypeIntersection<T extendsasdf
+type CombineTypes<Ks extends Keywords[]> =
+  Exclude<JSONTypeName, {[I in keyof Ks]: Ks[I] extends { type: infer T } ? Exclude<JSONTypeName, T> : never }[number]>
+
+type ConstValues<Ks extends Keywords[]> =
+  {[I in keyof Ks]: Ks[I] extends { const: infer C } ? C : never }
+
+type Equals<A, B> = A extends never ? never 
+  : B extends never ? never 
+  : A extends B
+    ? B extends A 
+      ? true 
+      : false
+    : false
+
+type AllEquals<Ks extends AnyJson[]> = {[I in keyof Ks]: {[J in keyof Ks]: Equals<Ks[I], Ks[J]> }[number]}[number]
+type CombineConsts<Ks extends AnyJson[]> = false extends AllEquals<Ks> ? never : Ks[number]
+
+type AllKeywords<Ks extends Keywords[]> = {
+  type: CombineTypes<Ks>
+  const: CombineConsts<ConstValues<Ks>>
+}
+
 
 type ItemsKeyword<Items extends Keywords> = { items: Items }
 type TypeKeyword<K extends Keywords> = K extends { type: JSONTypeName } ? K['type'] : JSONTypeName
@@ -54,7 +83,7 @@ type ArrayValue<K extends Keywords> =
       ? JsonValue<Items>['calc'][]
       : AnyJsonArray
     : never
-  
+
 type JsonValue<K extends Keywords> = {
   calc: keyof K extends never ? AnyJson
   : K extends ConstKeyword<infer Const> ? Const
