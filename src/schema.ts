@@ -31,3 +31,6 @@ export function schema(): Schema<{}> ;
 export function schema<T extends Keywords['type']>(...spec: T[]): Schema<{ type: T }> ;
 export function schema<K extends Keywords>(spec?: Keywords['type'] | Keywords['type'][]): Schema<K>
 { throw 'nope' }
+
+
+const x = schema('string').const('a')._T
