@@ -80,6 +80,10 @@ schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))
 // $ExpectType 2
 schema().enum(1,2).oneOf(schema().enum(2,3), schema().enum(2, 4))._T
 
+
+// $ExpectType string | number
+schema().oneOf(schema('string'), schema('number'))._T
+
 //TODO: $ExpectType JsonObject<{ properties: { a: number; b: number; }; }> | JsonObject<{ properties: { a: number; c: number; }; }>
 schema('object').properties({ a: schema('number') }).oneOf(
   schema().properties({ a: schema('string', 'number') }),

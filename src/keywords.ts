@@ -22,11 +22,6 @@ type RequiredKeyword<Required extends string> = { required: Required }
 type AdditionalPropertiesKeyword<AdditionalProperties extends false | Keywords> = { additionalProperties: AdditionalProperties }
 type ConstKeyword<T extends AnyJson> = { const: T }
 
-// type PopulatedElementIndexes<Ks extends Keywords[], Key extends keyof Keywords> = {[I in keyof Ks]: Key extends keyof Ks[I] ? I : never}[number]
-// type KeywordValues<Ks extends Keywords[], Key extends keyof Keywords> =
-//   {[I in PopulatedElementIndexes<Ks, Key>]: 42}
-
-// type TypeIntersection<T extendsasdf
 type CombineTypes<Ks extends Keywords[]> =
   Exclude<JSONTypeName, {[I in keyof Ks]: Ks[I] extends { type: infer T } ? Exclude<JSONTypeName, T> : never }[number]>
 
@@ -54,13 +49,16 @@ type CombinePropertyValues<Ks extends Keywords[], Key extends string> =
 type CombineRequired<Ks extends Keywords[]> =
   {[I in keyof Ks]: Ks[I] extends RequiredKeyword<infer R> ? R : never}[number]
 
+type CombineAdditionalProperties<Ks extends Keywords[]> =
+  {[I in keyof Ks]: Ks[I] extends AdditionalPropertiesKeyword<infer R> ? R : never}[number]
+
 type AllKeywords<Ks extends Keywords[]> = {
   'calc': Pick<{
     type: CombineTypes<Ks>
     const: CombineConsts<ConstValues<Ks>>
     properties: {[P in AllPropertyKeys<Ks>]: CombinePropertyValues<Ks, P>}
     required: CombineRequired<Ks>
-    additionalProperties: Ks[0]['additionalProperties']
+    additionalProperties: CombineAdditionalProperties<Ks>
     items: Ks[0]['items']
     oneOf: Ks[0]['oneOf']
   }, {[I in keyof Ks]: Extract<keyof Ks[I], keyof Keywords>}[number]>
@@ -110,9 +108,15 @@ type OneOfKeyword<OneOf extends Keywords[]> = { oneOf: OneOf }
 type OneOfValue<K extends Keywords> =
   K extends OneOfKeyword<infer OneOf> ? {[I in keyof OneOf]: AllKeywords<[K, OneOf[I]]>['calc']}[number] : K
 
+
+type AnyOfKeyword<AnyOf extends Keywords[]> = { anyOf: AnyOf }
+
+type AnyOfValue<K extends Keywords> =
+  K extends AnyOfKeyword<infer AnyOf> ? {[I in keyof AnyOf]: AllKeywords<[K, AnyOf[I]]>['calc']}[number] : K
+
 type JsonValue<K extends Keywords> = {
   calc: keyof K extends never ? AnyJson
-  : RootValue<OneOfValue<K>>
+  : RootValue<AnyOfValue<OneOfValue<K>>>
 }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>['calc']
