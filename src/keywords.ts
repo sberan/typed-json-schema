@@ -44,16 +44,22 @@ type Equals<A, B> = A extends never ? never
 type AllEquals<Ks extends AnyJson[]> = {[I in keyof Ks]: {[J in keyof Ks]: Equals<Ks[I], Ks[J]> }[number]}[number]
 type CombineConsts<Ks extends AnyJson[]> = false extends AllEquals<Ks> ? never : Ks[number]
 
-type AllPropertyKeys<Ks extends Keywords[]> = {[I in keyof Ks]: Ks[I] extends PropertiesKeyword<infer Props> ? Extract<keyof Props, string> : never}[number]
+type AllPropertyKeys<Ks extends Keywords[]> = {
+  [I in keyof Ks]: Ks[I] extends PropertiesKeyword<infer Props> ? Extract<keyof Props, string> : never
+}[number]
 
-type CombinePropertyValues<Ks extends Keywords[], Key extends string> = AllKeywords<{[I in keyof Ks]: Ks[I] extends PropertyValue<Key, infer Value> ? Value : {} }>['calc']
+type CombinePropertyValues<Ks extends Keywords[], Key extends string> =
+  AllKeywords<{[I in keyof Ks]: Ks[I] extends PropertyValue<Key, infer Value> ? Value : {} }>['calc']
+
+type CombineRequired<Ks extends Keywords[]> =
+  {[I in keyof Ks]: Ks[I] extends RequiredKeyword<infer R> ? R : never}[number]
 
 type AllKeywords<Ks extends Keywords[]> = {
   'calc': Pick<{
     type: CombineTypes<Ks>
     const: CombineConsts<ConstValues<Ks>>
     properties: {[P in AllPropertyKeys<Ks>]: CombinePropertyValues<Ks, P>}
-    required: Ks[0]['required']
+    required: CombineRequired<Ks>
     additionalProperties: Ks[0]['additionalProperties']
     items: Ks[0]['items']
     oneOf: Ks[0]['oneOf']
