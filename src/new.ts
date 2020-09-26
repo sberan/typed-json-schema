@@ -66,12 +66,24 @@ type AllProperties<Ks extends Keywords> = {
   }
 }
 
+type AdditionalPropertiesValue<Ks extends boolean | Keywords> =
+  false extends Ks ? false
+  : Ks extends Keywords ? AllKeywords<Ks>['calc']
+  : never
+
+type AllAdditionalProperties<Ks extends Keywords> = {
+  [P in PopulatedKey<Ks, 'additionalProperties'>]: false extends AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>> ? false : {
+    [P in keyof AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>]: AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>[P]
+  }
+}
+
 type AllKeywords<Ks extends Keywords> = {
   'calc': IntersectKeyword<Ks, 'type'>
   & IntersectKeyword<Ks, 'const'>
   & UnionValues<Ks, 'required'>
   & AllItems<Ks>
   & AllProperties<Ks>
+  & AllAdditionalProperties<Ks>
 }
 
 type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
@@ -84,4 +96,6 @@ type ConstNever = AllOf<{ const: 42 } | { const: { a: 52 } } | {}>
 type RequiredABCD = AllOf<{ required: 'a' | 'b' } | { required: 'c' | 'd' } | { }>
 type ItemsString = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'string' | 'number' } }>
 type ItemsNever = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'number' } }>
-type AStringBBoleanCNever = AllProperties<{ properties: { a: { type: 'string' }, c: { type: 'number' }  } } | {} | { properties: { a: { type: 'string' | 'number' }, b: { type: 'boolean' }, c: { type: 'string' } } }>
+type AStringBBoleanCNever = AllOf<{type: 'object', properties: { a: { type: 'string' }, c: { type: 'number' }  } } | {} | { properties: { a: { type: 'string' | 'number' }, b: { type: 'boolean' }, c: { type: 'string' } } }>
+type AdditionalPropertiesFalse = AllOf<{ additionalProperties: false } | { additionalProperties: { type: 'string' }}>
+type AdditionalPropertiesString = AllOf<{ additionalProperties: true } | { additionalProperties: { type: 'string' }}>
