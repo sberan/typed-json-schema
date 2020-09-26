@@ -27,12 +27,18 @@ type IntersectKeyword<Ks extends Keywords, Key extends keyof Keywords> =
 
 type UnionValues<Ks extends Keywords, Key extends keyof Keywords> = {[K in PopulatedKey<Ks, Key>]: PopulatedValue<Ks, Key>}
 
-type AllKeywords<Ks extends Keywords> =
-    IntersectKeyword<Ks, 'type'>
+type AllItemValues<Ks extends Keywords> = AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] extends Keywords ? AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] : {}
+
+type AllItems<Ks extends Keywords> = {[P in PopulatedKey<Ks, 'items'>]: {[AI in keyof AllItemValues<Ks>]: AllItemValues<Ks>[AI] } }
+
+type AllKeywords<Ks extends Keywords> = {
+  'calc': IntersectKeyword<Ks, 'type'>
   & IntersectKeyword<Ks, 'const'>
   & UnionValues<Ks, 'required'>
+  & AllItems<Ks>
+}
 
-type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>]: AllKeywords<Ks>[P]}
+type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
 
 type TypeString = AllOf<{ type:'number' | 'string' } | { type: 'string' } | { const: 42 } | {}>
 type TypeNever = AllOf<{ type:'number' } | { type: 'string' } >
