@@ -1,24 +1,22 @@
-export type JSONPrimitive = string | number | boolean | null
-export interface JSONArray extends Array<AnyJSON> {} // tslint:disable-line:no-empty-interface
-export interface JSONObject { [key: string]: AnyJSON }
-export type AnyJSON = JSONPrimitive | JSONArray | JSONObject
+import { AnyJson, AnyJsonArray } from "./json";
 
-export function copyJson<T> (json: T) {
-  return JSON.parse(JSON.stringify(json)) as T
-}
+type IndexesOf<T extends any[]> = Exclude<keyof T, keyof any[]>
+type BoxedTupleTypes<T extends any[]> =
+  { [P in keyof T]: [T[P]] }[IndexesOf<T>]
+export type UnionToIntersection<U> =
+  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+type UnboxIntersection<T> = T extends { 0: infer U } ? U : never;
+type Intersect<T extends any[]> = CleanJson<UnboxIntersection<UnionToIntersection<BoxedTupleTypes<T>>>>
+type Union<T extends AnyJson> = {[P in keyof T]: T[P]}[Exclude<keyof T, keyof AnyJson>]
+// type Q = Y<'a', never, 'b'>
+// type X = ['a', 1, 'b'] extends Y<infer A, infer N, infer B> ? [A, N, B] : 'nope'
 
-// tslint:disable-next-line:ban-types
-export function callableInstance <T extends { [P in K]: Function }, K extends keyof T> (obj: T, key: K): T & T[K] {
-  const
-    boundMethod: T[K] = (obj[key] as Function).bind(obj), // tslint:disable-line:ban-types
-    merged = Object.assign(boundMethod, obj)
+type ExcludeIntersections<T extends Super, Super extends AnyJson> = Exclude<keyof T, keyof Super> extends never ? T : never
 
-  // tslint:disable-next-line:align
-  ; (boundMethod as any).__proto__ = (obj as any).__proto__
-  return merged
-}
-
-export type Diff<T extends string, U extends string>
-    = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
-export type Overwrite<T, U> = { [P in Diff<keyof T, keyof U>]: T[P] } & U
-export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
+export type CleanJson<T> = T extends string ? ExcludeIntersections<T, string>
+  : T extends number ? ExcludeIntersections<T, number>
+  : T extends boolean ? ExcludeIntersections<T, boolean>
+  : T extends null ? ExcludeIntersections<T, null>
+  : T extends AnyJsonArray ? ExcludeIntersections<T, AnyJsonArray>
+  : T extends AnyJson ? T
+  : never

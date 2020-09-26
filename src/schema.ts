@@ -28,6 +28,9 @@ interface Schema<K extends Keywords> {
 
   anyOf<Schemas extends Schema<any>[]>(...items: Schemas)
     : Overwrite<K, { anyOf: KeywordsFromSchemas<Schemas>}>
+
+  allOf<Schemas extends Schema<any>[]>(...items: Schemas)
+  : Overwrite<K, { allOf: KeywordsFromSchemas<Schemas>}>
 }
 
 export function schema(): Schema<{}> ;

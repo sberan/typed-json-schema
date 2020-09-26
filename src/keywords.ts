@@ -99,24 +99,11 @@ type ArrayValue<K extends Keywords> =
       : AnyJsonArray
     : never
 
-type RootValue<K extends Keywords> =
-  K extends ConstKeyword<infer Const> ? Const
-    : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
-
-type OneOfKeyword<OneOf extends Keywords[]> = { oneOf: OneOf }
-
-type OneOfValue<K extends Keywords> =
-  K extends OneOfKeyword<infer OneOf> ? {[I in keyof OneOf]: AllKeywords<[K, OneOf[I]]>['calc']}[number] : K
-
-
-type AnyOfKeyword<AnyOf extends Keywords[]> = { anyOf: AnyOf }
-
-type AnyOfValue<K extends Keywords> =
-  K extends AnyOfKeyword<infer AnyOf> ? {[I in keyof AnyOf]: AllKeywords<[K, AnyOf[I]]>['calc']}[number] : K
 
 type JsonValue<K extends Keywords> = {
-  calc: keyof K extends never ? AnyJson
-  : RootValue<AnyOfValue<OneOfValue<K>>>
+  calc: K extends ConstKeyword<infer Const>
+    ? Const
+    : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
 }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>['calc']
