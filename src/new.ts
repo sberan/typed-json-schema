@@ -13,29 +13,65 @@ type Keywords = {
 
 type Keyword<Key extends keyof Keywords> = {[P in Key]: NonNullable<Keywords[Key]>}
 
-type PopulatedKey<Ks extends Keywords, Key extends keyof Keywords> = Ks extends Keyword<Key> ? Key : never
+type PopulatedKey<Ks extends Keywords, Key extends keyof Keywords> =
+  Ks extends Keyword<Key> ? Key : never
 
-type PopulatedValue<Ks extends Keywords, Key extends keyof Keywords> = Ks extends Keyword<Key> ? Ks[Key] : never
+type PopulatedValue<Ks extends Keywords, Key extends keyof Keywords> =
+  Ks extends Keyword<Key> ? NonNullable<Ks[Key]> : never
 
-type PopulatedKeyword<Ks extends Keywords, Key extends keyof Keywords> = Ks extends Keyword<Key> ? {[P in Key]: Ks[P]} : never
+type PopulatedKeyword<Ks extends Keywords, Key extends keyof Keywords> =
+  Ks extends Keyword<Key> ? {[P in Key]: NonNullable<Ks[P]>} : never
 
-type IntersectValue<Ks extends Keywords, Key extends keyof Keywords>
-  = UnionToIntersection<PopulatedKeyword<Ks, Key>> extends Keyword<Key> ? UnionToIntersection<PopulatedKeyword<Ks, Key>>[Key] : never
+type IntersectValue<Ks extends Keywords, Key extends keyof Keywords> =
+  UnionToIntersection<PopulatedKeyword<Ks, Key>> extends Keyword<Key>
+    ? UnionToIntersection<PopulatedKeyword<Ks, Key>>[Key]
+    : never
 
-type IntersectKeyword<Ks extends Keywords, Key extends keyof Keywords> =
-  {[P in PopulatedKey<Ks, Key>]: IntersectValue<Ks, Key> }
+type IntersectKeyword<Ks extends Keywords, Key extends keyof Keywords> = {
+  [P in PopulatedKey<Ks, Key>]: IntersectValue<Ks, Key>
+}
 
-type UnionValues<Ks extends Keywords, Key extends keyof Keywords> = {[K in PopulatedKey<Ks, Key>]: PopulatedValue<Ks, Key>}
+type UnionValues<Ks extends Keywords, Key extends keyof Keywords> = {
+  [K in PopulatedKey<Ks, Key>]: PopulatedValue<Ks, Key>
+}
 
-type AllItemValues<Ks extends Keywords> = AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] extends Keywords ? AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] : {}
+type AllItemValues<Ks extends Keywords> =
+  AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] extends Keywords
+    ? AllKeywords<PopulatedValue<Ks, 'items'>>['calc']
+    : {}
 
-type AllItems<Ks extends Keywords> = {[P in PopulatedKey<Ks, 'items'>]: {[AI in keyof AllItemValues<Ks>]: AllItemValues<Ks>[AI] } }
+type AllItems<Ks extends Keywords> = {
+  [P in PopulatedKey<Ks, 'items'>]: {
+    [AI in keyof AllItemValues<Ks>]: AllItemValues<Ks>[AI]
+  }
+}
+
+type AllPropertyKeys<Ks extends Keywords> =
+  Ks extends PopulatedKeyword<Ks, 'properties'>
+    ? Extract<keyof Ks['properties'], string>
+    : never
+
+type PopulatedPropertyValue<Key extends string, Value extends Keywords> = {
+  properties: {[P in Key]: Value }
+}
+
+type AllPropertyValues<Ks extends Keywords, Key extends string> =
+  Ks extends PopulatedPropertyValue<Key, infer Value> ? Value : never
+
+type AllProperties<Ks extends Keywords> = {
+  [P in PopulatedKey<Ks, 'properties'>]: {
+    [PK in AllPropertyKeys<Ks>]: {
+      [P in keyof AllKeywords<AllPropertyValues<Ks, PK>>['calc']]: AllKeywords<AllPropertyValues<Ks, PK>>['calc'][P]
+    }
+  }
+}
 
 type AllKeywords<Ks extends Keywords> = {
   'calc': IntersectKeyword<Ks, 'type'>
   & IntersectKeyword<Ks, 'const'>
   & UnionValues<Ks, 'required'>
   & AllItems<Ks>
+  & AllProperties<Ks>
 }
 
 type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
@@ -48,3 +84,4 @@ type ConstNever = AllOf<{ const: 42 } | { const: { a: 52 } } | {}>
 type RequiredABCD = AllOf<{ required: 'a' | 'b' } | { required: 'c' | 'd' } | { }>
 type ItemsString = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'string' | 'number' } }>
 type ItemsNever = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'number' } }>
+type AStringBBoleanCNever = AllProperties<{ properties: { a: { type: 'string' }, c: { type: 'number' }  } } | {} | { properties: { a: { type: 'string' | 'number' }, b: { type: 'boolean' }, c: { type: 'string' } } }>
