@@ -21,6 +21,7 @@ type PropertyValue<Key extends string, Value extends Keywords> = { properties: {
 type RequiredKeyword<Required extends string> = { required: Required }
 type AdditionalPropertiesKeyword<AdditionalProperties extends false | Keywords> = { additionalProperties: AdditionalProperties }
 type ConstKeyword<T extends AnyJson> = { const: T }
+type EnumKeyword<T extends AnyJson> = { enum: T }
 
 type CombineTypes<Ks extends Keywords[]> =
   Exclude<JSONTypeName, {[I in keyof Ks]: Ks[I] extends { type: infer T } ? Exclude<JSONTypeName, T> : never }[number]>
@@ -103,7 +104,9 @@ type ArrayValue<K extends Keywords> =
 type JsonValue<K extends Keywords> = {
   calc: K extends ConstKeyword<infer Const>
     ? Const
-    : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
+    : K extends EnumKeyword<infer Enum>
+      ? Enum
+      : StringValue<K> | BooleanValue<K> | NumberValue<K> | NullValue<K> | ObjectValue<K> | ArrayValue<K>
 }
 
 export type TypeOf<K extends Keywords> = JsonValue<K>['calc']

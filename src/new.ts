@@ -83,16 +83,14 @@ type AllAdditionalProperties<Ks extends Keywords> = {
     : {[P in keyof AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>> ]: AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>[P]}
 }
 
-type AllEnums<Ks extends Keywords> = {}
-
 type AllKeywords<Ks extends Keywords> = {
   'calc': IntersectKeyword<Ks, 'type'>
     & IntersectKeyword<Ks, 'const'>
+    & IntersectKeyword<Ks, 'enum'>
     & UnionValues<Ks, 'required'>
     & AllItems<Ks>
     & AllProperties<Ks>
     & AllAdditionalProperties<Ks>
-    & AllEnums<Ks>
 }
 
 export type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
