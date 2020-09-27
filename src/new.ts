@@ -1,10 +1,11 @@
 import { AnyJson } from "./json"
 import { JSONTypeName } from "./keywords"
-import { CleanJson, UnionToIntersection } from './util'
+import { UnionToIntersection } from './util'
 
-type Keywords = {
+export type Keywords = {
   type?: JSONTypeName
   const?: AnyJson 
+  enum?: AnyJson
   required?: string
   items?: Keywords
   properties?:  {[key: string]: Keywords } 
@@ -66,27 +67,35 @@ type AllProperties<Ks extends Keywords> = {
   }
 }
 
+type Default<T, U> = NonNullable<T> extends never ? U : T
+
 type AdditionalPropertiesValue<Ks extends boolean | Keywords> =
-  false extends Ks ? false
-  : Ks extends Keywords ? AllKeywords<Ks>['calc']
-  : never
+  false extends Extract<Ks, false>
+    ? false
+    : keyof Default<Exclude<Ks, boolean>, {}> extends never
+      ? true
+      : Ks extends Keywords ? AllKeywords<Ks>['calc'] : never
+
 
 type AllAdditionalProperties<Ks extends Keywords> = {
-  [P in PopulatedKey<Ks, 'additionalProperties'>]: false extends AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>> ? false : {
-    [P in keyof AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>]: AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>[P]
-  }
+  [P in PopulatedKey<Ks, 'additionalProperties'>]: 
+    AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>> extends boolean ? AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>
+    : {[P in keyof AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>> ]: AdditionalPropertiesValue<PopulatedValue<Ks, 'additionalProperties'>>[P]}
 }
+
+type AllEnums<Ks extends Keywords> = {}
 
 type AllKeywords<Ks extends Keywords> = {
   'calc': IntersectKeyword<Ks, 'type'>
-  & IntersectKeyword<Ks, 'const'>
-  & UnionValues<Ks, 'required'>
-  & AllItems<Ks>
-  & AllProperties<Ks>
-  & AllAdditionalProperties<Ks>
+    & IntersectKeyword<Ks, 'const'>
+    & UnionValues<Ks, 'required'>
+    & AllItems<Ks>
+    & AllProperties<Ks>
+    & AllAdditionalProperties<Ks>
+    & AllEnums<Ks>
 }
 
-type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
+export type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
 
 type TypeString = AllOf<{ type:'number' | 'string' } | { type: 'string' } | { const: 42 } | {}>
 type TypeNever = AllOf<{ type:'number' } | { type: 'string' } >
@@ -98,4 +107,5 @@ type ItemsString = AllOf<{ items: { type: 'string' } } | {} | { items: { type: '
 type ItemsNever = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'number' } }>
 type AStringBBoleanCNever = AllOf<{type: 'object', properties: { a: { type: 'string' }, c: { type: 'number' }  } } | {} | { properties: { a: { type: 'string' | 'number' }, b: { type: 'boolean' }, c: { type: 'string' } } }>
 type AdditionalPropertiesFalse = AllOf<{ additionalProperties: false } | { additionalProperties: { type: 'string' }}>
+type AdditionalPropertiesTrue = AllOf<{ } | { additionalProperties: true }>
 type AdditionalPropertiesString = AllOf<{ additionalProperties: true } | { additionalProperties: { type: 'string' }}>

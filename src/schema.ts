@@ -1,42 +1,38 @@
 import { AnyJsonArray, AnyJson } from './json'
-import { Keywords, TypeOf } from './keywords'
+import { TypeOf } from './keywords'
+import { Keywords, AllOf } from './new'
 
-type Overwrite<T, U> = Schema<{[P in (keyof T | keyof U)]: P extends keyof U ? U[P] : P extends keyof T ? T[P] : never }>
-type FirstKeywordsAsArray<T extends Keywords[]> = T extends [Keywords] ? T[0] : T
-type KeywordsFromSchemas<Schemas extends Schema<any>[]> = {[P in keyof Schemas]: Schemas[P] extends Schema<infer T> ? T extends Keywords ? T : never : never}
+type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<{[P in keyof AllOf<K | U>]: AllOf<K | U>[P]}>}
 
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
 
-  const<Const extends AnyJson>(c: Const): Overwrite<K, { const: Const }>
+  const<Const extends AnyJson>(c: Const): Update<K, { const: Const }>['calc']
 
-  enum<Enum extends AnyJsonArray>(...items: Enum): Overwrite<K, { enum: { value: Enum[number] } }>
+  enum<Enum extends AnyJsonArray>(...items: Enum): Update<K, { enum: Enum[number] }>['calc']
 
   properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
-    : Overwrite<K, { properties: {[P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never}}>
+    : Update<K, { properties: { [P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never } }>['calc']
 
-  required<Keys extends string>(...k: Keys[]): Overwrite<K, {required: Keys}>
+  required<Keys extends string>(...k: Keys[]): Update<K, { required: Keys }>['calc']
 
   additionalProperties<T extends boolean | Schema<any>>(additionalProperties: T)
-    : Overwrite<K, {additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never}>
+    : Update<K, { additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never }>['calc']
 
-  items<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Overwrite<K, {items: FirstKeywordsAsArray<KeywordsFromSchemas<Schemas>>}>
+  items<Ks extends Keywords>(items: Schema<Ks>, ...rest: Schema<any>[])
+    : Update<K, { items: Ks }>['calc']
 
   oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Overwrite<K, { oneOf: KeywordsFromSchemas<Schemas>}>
+    : Update<K, {}>['calc']
 
   anyOf<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Overwrite<K, { anyOf: KeywordsFromSchemas<Schemas>}>
+    : Update<K, {}>['calc']
 
   allOf<Schemas extends Schema<any>[]>(...items: Schemas)
-  : Overwrite<K, { allOf: KeywordsFromSchemas<Schemas>}>
+  : Update<K, {}>['calc']
 }
 
 export function schema(): Schema<{}> ;
 export function schema<T extends Keywords['type']>(...spec: T[]): Schema<{ type: T }> ;
 export function schema<K extends Keywords>(spec?: Keywords['type'] | Keywords['type'][]): Schema<K>
 { throw 'nope' }
-
-
-const x = schema('string').const('a')._T
