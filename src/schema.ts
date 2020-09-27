@@ -1,6 +1,6 @@
 import { AnyJsonArray, AnyJson } from './json'
-import { TypeOf } from './keywords'
-import { Keywords, AllOf } from './new'
+import { TypeOf } from './json-type-of'
+import { Keywords, AllOf } from './keywords'
 
 type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<{[P in keyof AllOf<K | U>]: AllOf<K | U>[P]}>}
 
