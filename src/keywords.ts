@@ -7,8 +7,8 @@ export type Keywords = {
   const?: AnyJson 
   enum?: AnyJson
   required?: string
-  items?: Keywords
-  properties?:  {[key: string]: Keywords } 
+  items?: Keywords | Keywords[]
+  properties?:  { [key: string]: Keywords } 
   additionalProperties?: boolean | Keywords
 }
 
@@ -36,15 +36,16 @@ type UnionValues<Ks extends Keywords, Key extends keyof Keywords> = {
   [K in PopulatedKey<Ks, Key>]: PopulatedValue<Ks, Key>
 }
 
-type AllItemValues<Ks extends Keywords> =
-  AllKeywords<PopulatedValue<Ks, 'items'>>['calc'] extends Keywords
-    ? AllKeywords<PopulatedValue<Ks, 'items'>>['calc']
-    : {}
+type AllKeywordValues<Ks extends Keywords> =
+  AllKeywords<Ks>['calc'] extends Keywords ? {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P] }: {}
+
+type AllKeywordTupleValues<Ks extends Keywords[]> = {[I in keyof Ks]: AllKeywordValues<Ks[I]>}
 
 type AllItems<Ks extends Keywords> = {
-  [P in PopulatedKey<Ks, 'items'>]: {
-    [AI in keyof AllItemValues<Ks>]: AllItemValues<Ks>[AI]
-  }
+  [P in PopulatedKey<Ks, 'items'>]:
+    PopulatedValue<Ks, 'items'> extends Keywords ? AllKeywordValues<PopulatedValue<Ks, 'items'>>
+    : PopulatedValue<Ks, 'items'> extends Keywords[] ? AllKeywordTupleValues<PopulatedValue<Ks, 'items'>>
+    : never
 }
 
 type AllPropertyKeys<Ks extends Keywords> =

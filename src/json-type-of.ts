@@ -6,6 +6,7 @@ type OmitUndefined<T> = Omit<T, {[P in keyof T]: T[P] extends undefined ? P : ne
 export type JSONTypeName = 'null' |'string' |'number' |'boolean' |'object' |'array'
 
 type ItemsKeyword<Items extends Keywords> = { items: Items }
+type ItemsTupleKeyword<Items extends Keywords[]> = { items: {[P in keyof Items]: Items[P]} }
 type TypeKeyword<K extends Keywords> = K extends { type: JSONTypeName } ? K['type'] : JSONTypeName
 type PropertiesKeyword<Properties extends {[key: string]: Keywords}> = { properties: {} extends Properties ? never : Properties }
 type RequiredKeyword<Required extends string> = { required: Required }
@@ -45,9 +46,19 @@ type ArrayValue<K extends Keywords> =
   'array' extends TypeKeyword<K>
     ? K extends ItemsKeyword<infer Items>
       ? JsonValue<Items>['calc'][]
-      : AnyJsonArray
+      : K extends ItemsTupleKeyword<infer ItemsTuple>
+        ? {[I in keyof ItemsTuple]: JsonValue<ItemsTuple[I]>['calc']}
+        : AnyJsonArray
     : never
 
+type X = ArrayValue<{
+  type: "array";
+  items: [{
+      type: "number";
+  }, {
+      type: "string";
+  }];
+}>
 type JsonValue<K extends Keywords> = {
   calc: K extends ConstKeyword<infer Const>
     ? Const

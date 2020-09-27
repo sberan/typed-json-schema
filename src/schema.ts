@@ -3,10 +3,13 @@ import { TypeOf } from './json-type-of'
 import { Keywords, AllOf } from './keywords'
 
 type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<{[P in keyof AllOf<K | U>]: AllOf<K | U>[P]}>}
+type SchemaKeywords<Schemas extends Schema<any>[]> = {[I in keyof Schemas]: Schemas[I] extends Schema<infer Ks> ? Ks : never }
+type FirstItem<Ks extends Keywords[]> = Ks extends [Keywords] ? Ks[0] : Ks
 
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
-
+  _K: K
+  
   const<Const extends AnyJson>(c: Const): Update<K, { const: Const }>['calc']
 
   enum<Enum extends AnyJsonArray>(...items: Enum): Update<K, { enum: Enum[number] }>['calc']
@@ -19,8 +22,8 @@ interface Schema<K extends Keywords> {
   additionalProperties<T extends boolean | Schema<any>>(additionalProperties: T)
     : Update<K, { additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never }>['calc']
 
-  items<Ks extends Keywords>(items: Schema<Ks>, ...rest: Schema<any>[])
-    : Update<K, { items: Ks }>['calc']
+  items<Schemas extends Schema<any>[]>(...items: Schemas)
+    : Update<K, { items: FirstItem<SchemaKeywords<Schemas>> }>['calc']
 
   oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
     : Update<K, {}>['calc']
