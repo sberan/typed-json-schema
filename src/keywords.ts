@@ -94,6 +94,13 @@ type AllKeywords<Ks extends Keywords> = {
 
 export type AllOf<Ks extends Keywords> = {[P in keyof AllKeywords<Ks>['calc']]: AllKeywords<Ks>['calc'][P]}
 
+export type BothOf<Ks1 extends Keywords, Ks2 extends Keywords> =
+  Ks1 extends Keywords
+    ? Ks2 extends Keywords
+      ? {[P in keyof AllKeywords<Ks1 | Ks2>['calc']]: AllKeywords<Ks1 | Ks2>['calc'][P]}
+      : never
+    : never
+
 type TypeString = AllOf<{ type:'number' | 'string' } | { type: 'string' } | { const: 42 } | {}>
 type TypeNever = AllOf<{ type:'number' } | { type: 'string' } >
 type TypeNumber = AllOf<{ type:'number' | 'string' } | { type: 'number' }>

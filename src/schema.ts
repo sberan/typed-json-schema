@@ -1,8 +1,8 @@
 import { AnyJsonArray, AnyJson } from './json'
 import { TypeOf } from './json-type-of'
-import { Keywords, AllOf } from './keywords'
+import { Keywords, AllOf, BothOf } from './keywords'
 
-type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<{[P in keyof AllOf<K | U>]: AllOf<K | U>[P]}>}
+type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<BothOf<K, U>>}
 type SchemaKeywords<Schemas extends Schema<any>[]> = {[I in keyof Schemas]: Schemas[I] extends Schema<infer Ks> ? Ks : never }
 type FirstItem<Ks extends Keywords[]> = Ks extends [Keywords] ? Ks[0] : Ks
 
@@ -26,7 +26,7 @@ interface Schema<K extends Keywords> {
     : Update<K, { items: FirstItem<SchemaKeywords<Schemas>> }>['calc']
 
   oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
-    : Update<K, {}>['calc']
+    : Update<K, SchemaKeywords<Schemas>[keyof Schemas]>['calc']
 
   anyOf<Schemas extends Schema<any>[]>(...items: Schemas)
     : Update<K, {}>['calc']
