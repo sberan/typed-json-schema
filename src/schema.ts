@@ -1,9 +1,18 @@
 import { AnyJsonArray, AnyJson } from './json'
-import { TypeOf } from './json-type-of'
-import { Keywords, AllOf, BothOf } from './keywords'
+import { JSONTypeName, TypeOf } from './json-type-of'
+import { Keywords, BothOf } from './keywords'
+
+type SchemaInput = Schema<any> | JSONTypeName | JSONTypeName[]
+type SchemaKeyword<S extends SchemaInput> = S extends Schema<infer K>
+  ? K
+  : S extends JSONTypeName
+    ? { type: S }
+    : S extends JSONTypeName[]
+      ? { type: S[number]}
+      : never
 
 type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<BothOf<K, U>>}
-type SchemaKeywords<Schemas extends Schema<any>[]> = {[I in keyof Schemas]: Schemas[I] extends Schema<infer Ks> ? Ks : never }
+type SchemaKeywords<Schemas extends SchemaInput[]> = {[I in keyof Schemas]: Schemas[I] extends SchemaInput ? SchemaKeyword<Schemas[I]> : never }
 type FirstItem<Ks extends Keywords[]> = Ks extends [Keywords] ? Ks[0] : Ks
 
 interface Schema<K extends Keywords> {
@@ -14,24 +23,24 @@ interface Schema<K extends Keywords> {
 
   enum<Enum extends AnyJsonArray>(...items: Enum): Update<K, { enum: Enum[number] }>['calc']
 
-  properties<Properties extends {[key: string]: Schema<any>}>(props: Properties)
-    : Update<K, { properties: { [P in keyof Properties]: Properties[P] extends Schema<infer T> ? T : never } }>['calc']
+  properties<Properties extends {[key: string]: SchemaInput}>(props: Properties)
+    : Update<K, { properties: { [P in keyof Properties]: SchemaKeyword<Properties[P]> } }>['calc']
 
   required<Keys extends string>(...k: Keys[]): Update<K, { required: Keys }>['calc']
 
-  additionalProperties<T extends boolean | Schema<any>>(additionalProperties: T)
-    : Update<K, { additionalProperties: T extends Schema<infer I> ? I : T extends boolean ? T : never }>['calc']
+  additionalProperties<T extends boolean | SchemaInput>(additionalProperties: T)
+    : Update<K, { additionalProperties: T extends SchemaInput ? SchemaKeyword<T> : T extends boolean ? T : never }>['calc']
 
-  items<Schemas extends Schema<any>[]>(...items: Schemas)
+  items<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, { items: FirstItem<SchemaKeywords<Schemas>> }>['calc']
 
-  oneOf<Schemas extends Schema<any>[]>(...items: Schemas)
+  oneOf<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, SchemaKeywords<Schemas>[keyof Schemas]>['calc']
 
-  anyOf<Schemas extends Schema<any>[]>(...items: Schemas)
+  anyOf<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, {}>['calc']
 
-  allOf<Schemas extends Schema<any>[]>(...items: Schemas)
+  allOf<Schemas extends SchemaInput[]>(...items: Schemas)
   : Update<K, {}>['calc']
 }
 

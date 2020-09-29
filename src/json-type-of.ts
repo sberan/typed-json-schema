@@ -51,14 +51,6 @@ type ArrayValue<K extends Keywords> =
         : AnyJsonArray
     : never
 
-type X = ArrayValue<{
-  type: "array";
-  items: [{
-      type: "number";
-  }, {
-      type: "string";
-  }];
-}>
 type JsonValue<K extends Keywords> = {
   calc: K extends ConstKeyword<infer Const>
     ? Const

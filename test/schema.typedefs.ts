@@ -28,15 +28,10 @@ schema('string', 'number')._T
 schema('object', 'array', 'number')._T
 
 // $ExpectType string | number | boolean | AnyJsonArray | JsonObject<{ properties: { a: number; }; }> | null
-schema().properties({ a: schema('number') })._T
+schema().properties({ a: 'number' })._T
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
-schema('object')
-  .properties({
-      a: schema('number'),
-      b: schema('string')
-  })
-  ._T
+schema('object').properties({ a: 'number', b: 'string'})._T
 
 // $ExpectType JsonObject<{ required: "a" | "c"; }>
 schema('object').required('a', 'c')._T
@@ -48,16 +43,16 @@ schema('object').additionalProperties(false)._T
 schema('object').additionalProperties(true)._T
 
 // $ExpectType JsonObject<{ additionalProperties: { type: string; }; }>
-schema('object').additionalProperties(schema('string'))._T
+schema('object').additionalProperties('string')._T
 
 // $ExpectType number[]
-schema('array').items(schema('number'))._T
+schema('array').items('number')._T
 
 // $ExpectType [number, string]
-schema('array').items(schema('number'), schema('string'))._T
+schema('array').items('number', 'string')._T
 
 //TODO: $ExpectType [number]
-// schema('array').items([schema('number')])._T // tuple with a single item
+// schema('array').items(['number'])._T // tuple with a single item
 
 // $ExpectType 42
 schema().const(42)._T
@@ -66,7 +61,7 @@ schema().const(42)._T
 schema().enum(1, 2, 3)._T
 
 // $ExpectType string | boolean
-schema().oneOf(schema('string'), schema('boolean'))._T
+schema().oneOf('string', 'boolean')._T
 
 // $ExpectType 4 | 5
 schema().oneOf(schema().const(4), schema().const(5))._T
@@ -81,12 +76,12 @@ schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))
 schema().enum(1,2).oneOf(schema().enum(2,3), schema().enum(2, 4))._T
 
 // $ExpectType string | number
-schema().oneOf(schema('string'), schema('number'))._T
+schema().oneOf('string', 'number')._T
 
 //TODO: $ExpectType JsonObject<{ properties: { a: number; b: number; }; }> | JsonObject<{ properties: { a: number; c: number; }; }>
-schema('object').properties({ a: schema('number') }).oneOf(
-  schema().properties({ a: schema('string', 'number') }),
-  schema().properties({ c: schema('number') })
+schema('object').properties({ a: 'number' }).oneOf(
+  schema().properties({ a: ['string', 'number'] }),
+  schema().properties({ c: 'number' })
 )._T  
 
 // $ExpectType JsonObject<{ required: "a" | "b"; }> | JsonObject<{ required: "a" | "c"; }>
