@@ -1,6 +1,6 @@
 import { AnyJsonArray, AnyJson } from './json'
 import { JSONTypeName, TypeOf } from './json-type-of'
-import { Keywords, BothOf } from './keywords'
+import { Keywords, BothOf, AllOf } from './keywords'
 
 type SchemaInput = Schema<any> | JSONTypeName | JSONTypeName[]
 type SchemaKeyword<S extends SchemaInput> = S extends Schema<infer K>
@@ -41,7 +41,7 @@ interface Schema<K extends Keywords> {
     : Update<K, {}>['calc']
 
   allOf<Schemas extends SchemaInput[]>(...items: Schemas)
-  : Update<K, {}>['calc']
+  : Update<K, AllOf<SchemaKeywords<Schemas>[number]>>['calc']
 }
 
 export function schema(): Schema<{}> ;

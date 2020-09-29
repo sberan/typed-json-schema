@@ -89,3 +89,64 @@ schema('object').required('a').oneOf(
   schema('object').required('b'),
   schema('object').required('c')
 )._T
+
+// $ExpectType string
+schema().allOf(['number', 'string'], 'string')._T
+
+// $ExpectType never
+schema().allOf('number', 'string')._T
+
+// $ExpectType number
+schema().allOf(['number', 'string'], 'number')._T
+
+// $ExpectType 42
+schema().allOf(schema().const(42))._T
+
+// $ExpectType 42 & { a: number; }
+schema().allOf(
+  schema().const(42),
+  schema().const({ a: 52 })
+)._T
+
+// $ExpectType JsonObject<{ required: "a" | "b" | "c" | "d"; }>
+schema('object').allOf(
+  schema().required('a', 'b'),
+  schema().required('c', 'd')
+)._T
+
+// TODO $ExpectType ItemsString
+// schema().allOf(schema().items('string'), schema().items(schema().oneOf('string', 'number']))._T
+
+// $ExpectType never[]
+schema('array').allOf(
+  schema().items('string'),
+  schema().items('number')
+)._T
+
+// $ExpectType JsonObject<{ properties: { a: string; b: boolean; c: never; }; }>
+schema('object').allOf(
+  schema().properties({ a: 'string', c: 'number' }),
+  schema().properties({
+    a: ['string', 'number'],
+    b: 'boolean', 
+    c: 'string'
+  })
+)._T
+
+// $ExpectType JsonObject<{ additionalProperties: false; }>
+schema('object').allOf(
+  schema().additionalProperties(false),
+  schema().additionalProperties('string')
+)._T
+
+// $ExpectType AnyJsonObject
+schema().allOf(
+  schema('object').additionalProperties(true),
+  schema()
+)._T
+
+// $ExpectType JsonObject<{ additionalProperties: { type: string; }; }>
+schema('object').allOf(
+  schema().additionalProperties(true),
+  schema().additionalProperties('string')
+)._T

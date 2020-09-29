@@ -27,8 +27,7 @@
     "url": "git@github.com:sberan/typed-json-schema.git"
   },
   "dependencies": {
-    "ajv": "5.2.2",
-    "ts-toolbelt": "8.0.3"
+    "ajv": "5.2.2"
   },
   "devDependencies": {
     "@types/ajv": "^1.0.0",

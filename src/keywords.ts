@@ -100,16 +100,3 @@ export type BothOf<Ks1 extends Keywords, Ks2 extends Keywords> =
       ? {[P in keyof AllKeywords<Ks1 | Ks2>['calc']]: AllKeywords<Ks1 | Ks2>['calc'][P]}
       : never
     : never
-
-type TypeString = AllOf<{ type:'number' | 'string' } | { type: 'string' } | { const: 42 } | {}>
-type TypeNever = AllOf<{ type:'number' } | { type: 'string' } >
-type TypeNumber = AllOf<{ type:'number' | 'string' } | { type: 'number' }>
-type Const42 = AllOf<{ const: 42 } | {}>
-type ConstNever = AllOf<{ const: 42 } | { const: { a: 52 } } | {}>
-type RequiredABCD = AllOf<{ required: 'a' | 'b' } | { required: 'c' | 'd' } | { }>
-type ItemsString = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'string' | 'number' } }>
-type ItemsNever = AllOf<{ items: { type: 'string' } } | {} | { items: { type: 'number' } }>
-type AStringBBoleanCNever = AllOf<{type: 'object', properties: { a: { type: 'string' }, c: { type: 'number' }  } } | {} | { properties: { a: { type: 'string' | 'number' }, b: { type: 'boolean' }, c: { type: 'string' } } }>
-type AdditionalPropertiesFalse = AllOf<{ additionalProperties: false } | { additionalProperties: { type: 'string' }}>
-type AdditionalPropertiesTrue = AllOf<{ } | { additionalProperties: true }>
-type AdditionalPropertiesString = AllOf<{ additionalProperties: true } | { additionalProperties: { type: 'string' }}>
