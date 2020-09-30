@@ -1,8 +1,6 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject } from "./json"
 import { Keywords } from './keywords'
-
-type OmitUndefined<T> = Omit<T, {[P in keyof T]: T[P] extends undefined ? P : never }[keyof T]>
-
+import { OmitUndefined } from './util'
 export type JSONTypeName = 'null' |'string' |'number' |'boolean' |'object' |'array'
 
 type ItemsKeyword<Items extends Keywords> = { items: Items }

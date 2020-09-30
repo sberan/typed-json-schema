@@ -14,3 +14,5 @@ export type CleanJson<T> = T extends string ? ExcludeIntersections<T, string>
   : never
 
 export type Default<T, U> = NonNullable<T> extends never ? U : T
+
+export type OmitUndefined<T> = Omit<T, {[P in keyof T]: T[P] extends undefined ? P : never }[keyof T]>

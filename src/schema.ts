@@ -13,7 +13,6 @@ type SchemaKeyword<S extends SchemaInput> = S extends Schema<infer K>
 
 type Update<K extends Keywords, U extends Keywords> = {'calc': Schema<BothOf<K, U>>}
 type SchemaKeywords<Schemas extends SchemaInput[]> = {[I in keyof Schemas]: Schemas[I] extends SchemaInput ? SchemaKeyword<Schemas[I]> : never }
-type FirstItem<Ks extends Keywords[]> = Ks extends [Keywords] ? Ks[0] : Ks
 
 interface Schema<K extends Keywords> {
   _T: TypeOf<K>
@@ -31,8 +30,11 @@ interface Schema<K extends Keywords> {
   additionalProperties<T extends boolean | SchemaInput>(additionalProperties: T)
     : Update<K, { additionalProperties: T extends SchemaInput ? SchemaKeyword<T> : T extends boolean ? T : never }>['calc']
 
+  items<Schema extends SchemaInput>(items: Schema)
+  : Update<K, { items: SchemaKeyword<Schema> }>['calc']
+
   items<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Update<K, { items: FirstItem<SchemaKeywords<Schemas>> }>['calc']
+    : Update<K, { items: SchemaKeywords<Schemas> }>['calc']
 
   oneOf<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, SchemaKeywords<Schemas>[keyof Schemas]>['calc']

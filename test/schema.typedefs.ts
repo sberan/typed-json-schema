@@ -90,6 +90,14 @@ schema('object').required('a').oneOf(
   schema('object').required('c')
 )._T
 
+// $ExpectType JsonObject<{ a: string | number }>
+schema('object').properties({
+  a: schema().oneOf('string', 'number')
+})._T
+
+// $ExpectType (string | number)[]
+schema('array').items(schema().oneOf('string', 'number'))._T
+
 // $ExpectType string
 schema().allOf(['number', 'string'], 'string')._T
 

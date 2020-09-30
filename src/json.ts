@@ -27,7 +27,7 @@ type PropertiesTypeOf<Properties extends {[key:string]: AnyJson}, Required exten
   & {[P in Exclude<keyof Properties, Required>]?: Properties[P]}
   & {[P in Exclude<Required, keyof Properties>]: AnyJson}
 
-export type JsonObject<Spec extends JsonObjectSpec> = 
+export type JsonObject<Spec extends JsonObjectSpec> =
   PropertiesTypeOf<
     Spec extends DefinedProperties<infer P> ? P : {}, 
     Spec extends RequiredKeys<infer R> ? R : never
