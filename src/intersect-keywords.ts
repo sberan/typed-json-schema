@@ -28,7 +28,7 @@ export type PropertiesKeyword<Properties extends { [key: string]: Keywords }> =
   { properties: Properties }
 
 export type RequiredKeyword<Required extends string> =
-  { required: { [P in Required]: true } }
+  { required: { [P in Required]?: true } }
 
 export type ItemsKeyword<Items extends Keywords | Keywords[]> =
   { items: Items }
@@ -40,21 +40,26 @@ export type AdditionalPropertiesKeywordType<Type extends Keywords> =
   { additionalProperties: { type: Type } }
 
 type JsonObjectSpec<T extends Keywords> =
-  Extract<keyof T, 'properties' | 'additionalProperties' | 'required'> extends never
-  ? AnyJsonObject
-  : JsonObject<
+  (
     T extends PropertiesKeyword<infer Properties>
       ? { properties: { [P in keyof Properties]: TypeOf<Properties[P]> } }
       : { }
-    &  T extends RequiredKeyword<infer Required>
+  ) & (
+    T extends RequiredKeyword<infer Required>
       ? { required: Required }
       : { }
-    & T extends AdditionalPropertiesKeywordFalse
+  ) & (
+    T extends AdditionalPropertiesKeywordFalse
       ? { additionalProperties: false }
       : T extends AdditionalPropertiesKeywordType<infer K>
         ? { additionalProperties: K extends Keywords ? { type: TypeOf<K> } : never }
         : { }
-  >
+  )
+
+type JsonObjectValue<T extends Keywords> =
+  Extract<keyof T, 'properties' | 'additionalProperties' | 'required'> extends never
+  ? AnyJsonObject
+  : JsonObject<{ [P in keyof JsonObjectSpec<T>]: JsonObjectSpec<T>[P] }>
 
 export type TypeOf<K extends Keywords> = K extends infer Entry
   ? Entry extends never ? never
@@ -66,7 +71,7 @@ export type TypeOf<K extends Keywords> = K extends infer Entry
       : 'boolean' extends TypeName ? boolean
       : 'number' extends TypeName ? number
       : 'null' extends TypeName ? null
-      : 'object' extends TypeName ? JsonObjectSpec<K>
+      : 'object' extends TypeName ? JsonObjectValue<K>
       : 'array' extends TypeName ? AnyJsonArray
       : never
     : never
@@ -80,10 +85,3 @@ export type AllOf<K extends AnyOfKeyword<Keywords>> = //TODO I think we can grea
   UnionToIntersection<K> extends { 'anyOf': Keywords }
     ? UnionToIntersection<K>['anyOf'] extends infer I ? I extends Keywords ? {[P in keyof I]: I[P]} : never : never
     : never
-
-type StringOrNumberUnion = TypeOf<TypeKeyword<'string' | 'number'>>
-type StringOrNumberNode = TypeOf<TypeKeyword<'string'> | TypeKeyword<'number'>>
-type Const42Node = TypeOf<ConstKeyword<42> & TypeKeyword<'string'>> //TODO this should technically be never
-type Object = TypeOf<TypeKeyword<'object'>>
-type ObjectAString = TypeOf<TypeKeyword<'object'> & PropertiesKeyword<{a: TypeKeyword<'string'> }>>
-type StringByCombination = TypeOf<(TypeKeyword<'string'> | TypeKeyword<'number'>) & TypeKeyword<'string'> >
