@@ -1,11 +1,11 @@
 import { AnyJsonArray, AnyJson } from './json'
-import { JSONTypeName } from './json-type-of'
 import { 
   AllOf,
   AnyOfKeyword,
   ConstKeyword,
   EnumKeyword,
   ItemsKeyword,
+  JSONTypeName,
   Keywords,
   PropertiesKeyword,
   RequiredKeyword,

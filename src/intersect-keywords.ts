@@ -1,6 +1,7 @@
-import { AnyJson, AnyJsonArray, AnyJsonObject, AnyJsonValue, JsonObject } from "./json"
-import { JSONTypeName } from "./json-type-of"
+import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject } from "./json"
 import { UnionToIntersection } from "./util"
+
+export type JSONTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
 export type Keywords = Partial<
   TypeKeyword<JSONTypeName>
