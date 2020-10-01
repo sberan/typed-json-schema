@@ -1,5 +1,7 @@
 import { AnyJsonArray, AnyJson } from './json'
 import { 
+  AdditionalPropertiesKeywordFalse,
+  AdditionalPropertiesKeywordType,
   AllOf,
   AnyOfKeyword,
   ConstKeyword,
@@ -39,7 +41,7 @@ interface Schema<K extends Keywords> {
   required<Keys extends string>(...k: Keys[]): Update<K, RequiredKeyword<Keys>>['calc']
 
   additionalProperties<T extends boolean | SchemaInput>(additionalProperties: T)
-    : Update<K, { additionalProperties: T extends SchemaInput ? SchemaKeyword<T> : T extends boolean ? T : never }>['calc']
+    : Update<K, T extends false ? AdditionalPropertiesKeywordFalse : T extends SchemaInput ? AdditionalPropertiesKeywordType<SchemaKeyword<T>> : { }>['calc']
 
   items<Schema extends SchemaInput>(items: Schema)
   : Update<K, ItemsKeyword<SchemaKeyword<Schema>>>['calc']

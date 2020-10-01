@@ -10,9 +10,9 @@ export type Keywords = Partial<
   & PropertiesKeyword<{ [key: string]: Keywords }>
   & RequiredKeyword<string>
 > & {
-  // can't put this in the partial because circular refs (TS 4.1?)
+  // can't put these in the intersection as above because circular refs (TS 4.1?)
   items?: Keywords | Keywords[]
-  additionalProperties?: { true?: true, false?: false, keywords?: Keywords }
+  additionalProperties?: { false?: false, type?: Keywords }
 } 
 
 export type TypeKeyword<TypeName extends JSONTypeName> =
@@ -33,6 +33,12 @@ export type RequiredKeyword<Required extends string> =
 export type ItemsKeyword<Items extends Keywords | Keywords[]> =
   { items: Items }
 
+export type AdditionalPropertiesKeywordFalse =
+  { additionalProperties: { false: false } }
+
+export type AdditionalPropertiesKeywordType<Type extends Keywords> =
+  { additionalProperties: { type: Type } }
+
 type JsonObjectSpec<T extends Keywords> =
   Extract<keyof T, 'properties' | 'additionalProperties' | 'required'> extends never
   ? AnyJsonObject
@@ -43,6 +49,11 @@ type JsonObjectSpec<T extends Keywords> =
     &  T extends RequiredKeyword<infer Required>
       ? { required: Required }
       : { }
+    & T extends AdditionalPropertiesKeywordFalse
+      ? { additionalProperties: false }
+      : T extends AdditionalPropertiesKeywordType<infer K>
+        ? { additionalProperties: K extends Keywords ? { type: TypeOf<K> } : never }
+        : { }
   >
 
 export type TypeOf<K extends Keywords> = K extends infer Entry

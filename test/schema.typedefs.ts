@@ -82,7 +82,7 @@ schema().oneOf('string', 'number')._T
 schema('object').properties({ a: 'number' }).oneOf(
   schema().properties({ a: ['string', 'number'] }),
   schema().properties({ c: 'number' })
-)._T  
+)._T
 
 // $ExpectType JsonObject<{ required: "a" | "b"; }> | JsonObject<{ required: "a" | "c"; }>
 schema('object').required('a').oneOf(
