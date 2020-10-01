@@ -9,56 +9,69 @@ export type Keywords = Partial<
   & PropertiesKeyword<{ [key: string]: Keywords }>
   & RequiredKeyword<string>
 > & {
-  items?: Keywords //TODO: tuple type (with tests). can't put this in the partial because circular refs
+  // can't put this in the partial because circular refs (TS 4.1?)
+  items?: Keywords | Keywords[]
   additionalProperties?: { true?: true, false?: false, keywords?: Keywords }
 } 
 
-type TypeKeyword<TypeName extends string> =
-  { type: { [P in TypeName]?: true } }
+export type TypeKeyword<TypeName extends JSONTypeName> =
+  { type: TypeName }
 
-type ConstKeyword<Const extends AnyJson> =
+export type ConstKeyword<Const extends AnyJson> =
   { const: Const }
 
-type EnumKeyword<Enum extends AnyJson> =
+export type EnumKeyword<Enum extends AnyJson> =
   { enum: Enum }
 
-type PropertiesKeyword<Properties extends {[key: string]: Keywords }> =
+export type PropertiesKeyword<Properties extends { [key: string]: Keywords }> =
   { properties: Properties }
 
-type RequiredKeyword<Required extends string> =
+export type RequiredKeyword<Required extends string> =
   { required: { [P in Required]: true } }
 
+export type ItemsKeyword<Items extends Keywords | Keywords[]> =
+  { items: Items }
 
 type JsonObjectSpec<T extends Keywords> =
   Extract<keyof T, 'properties' | 'additionalProperties' | 'required'> extends never
   ? AnyJsonObject
-  : T extends PropertiesKeyword<infer Properties>
-    ? { [P in keyof Properties]: TypeOf<Properties[P]> }
-    : { }
+  : JsonObject<
+    T extends PropertiesKeyword<infer Properties>
+      ? { properties: { [P in keyof Properties]: TypeOf<Properties[P]> } }
+      : { }
+    &  T extends RequiredKeyword<infer Required>
+      ? { required: Required }
+      : { }
+  >
 
 export type TypeOf<K extends Keywords> = K extends infer Entry
-  ? Entry extends ConstKeyword<infer Const>
-    ? Const
-    : Entry extends TypeKeyword<infer TypeName>
-      ? TypeName extends string
-        ? 'string' extends TypeName ? string
-        : 'boolean' extends TypeName ? boolean
-        : 'number' extends TypeName ? number
-        : 'null' extends TypeName ? null
-        : 'object' extends TypeName ? JsonObjectSpec<K>
-        : 'array' extends TypeName ? AnyJsonArray
-        : never
+  ? Entry extends never ? never
+  : Entry extends ConstKeyword<infer Const> ? Const
+  : Entry extends EnumKeyword<infer Enum> ? Enum
+  : Entry extends TypeKeyword<infer TypeName>
+    ? TypeName extends string //TODO need this check?
+      ? 'string' extends TypeName ? string
+      : 'boolean' extends TypeName ? boolean
+      : 'number' extends TypeName ? number
+      : 'null' extends TypeName ? null
+      : 'object' extends TypeName ? JsonObjectSpec<K>
+      : 'array' extends TypeName ? AnyJsonArray
       : never
     : never
   : never
+: never
 
-export type AllOf<K extends Keywords> =
+export type AnyOfKeyword<AnyOf extends Keywords> =
+  { anyOf: AnyOf }
+
+export type AllOf<K extends AnyOfKeyword<Keywords>> = //TODO I think we can greatly simplify this using an array
   UnionToIntersection<K> extends { 'anyOf': Keywords }
     ? UnionToIntersection<K>['anyOf'] extends infer I ? I extends Keywords ? {[P in keyof I]: I[P]} : never : never
     : never
 
-type StringOrNumberUnion = TypeOf<{ type: {string: true} } | { type: {number: true} }>
-type StringOrNumberNode = TypeOf<{ type: {string: true, number: true} }>
-type Const42Node = TypeOf<{ const: 42, type: {string: true} }> //TODO this should technically be never
-type Object = TypeOf<{ type: { object: true }}>
-type ObjectAString = TypeOf<{ type: { object: true }, properties: { a: { type: { string: true } } } }>
+type StringOrNumberUnion = TypeOf<TypeKeyword<'string' | 'number'>>
+type StringOrNumberNode = TypeOf<TypeKeyword<'string'> | TypeKeyword<'number'>>
+type Const42Node = TypeOf<ConstKeyword<42> & TypeKeyword<'string'>> //TODO this should technically be never
+type Object = TypeOf<TypeKeyword<'object'>>
+type ObjectAString = TypeOf<TypeKeyword<'object'> & PropertiesKeyword<{a: TypeKeyword<'string'> }>>
+type StringByCombination = TypeOf<(TypeKeyword<'string'> | TypeKeyword<'number'>) & TypeKeyword<'string'> >

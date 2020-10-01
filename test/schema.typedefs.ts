@@ -90,7 +90,7 @@ schema('object').required('a').oneOf(
   schema('object').required('c')
 )._T
 
-// $ExpectType JsonObject<{ a: string | number }>
+// $ExpectType JsonObject<{ properties: { a: string | number; }; }>
 schema('object').properties({
   a: schema().oneOf('string', 'number')
 })._T
@@ -131,7 +131,7 @@ schema('array').allOf(
   schema().items('number')
 )._T
 
-// $ExpectType JsonObject<{ properties: { a: string; b: boolean; c: never; }; }>
+// $ExpectType JsonObject<{ properties: { a: string; c: never; b: boolean; }; }>
 schema('object').allOf(
   schema().properties({ a: 'string', c: 'number' }),
   schema().properties({
