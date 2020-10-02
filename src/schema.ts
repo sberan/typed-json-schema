@@ -8,19 +8,19 @@ import {
   EnumKeyword,
   ItemsKeyword,
   ItemsTupleKeyword,
-  JSONTypeName,
+  JsonTypeName,
   Keywords,
   PropertiesKeyword,
   RequiredKeyword,
   TypeOf
 } from './intersect-keywords'
 
-type SchemaInput = Schema<any> | JSONTypeName | JSONTypeName[]
+type SchemaInput = Schema<any> | JsonTypeName | JsonTypeName[]
 type SchemaKeyword<S extends SchemaInput> = S extends Schema<infer K>
   ? K
-  : S extends JSONTypeName
+  : S extends JsonTypeName
     ? { type: S }
-    : S extends JSONTypeName[]
+    : S extends JsonTypeName[]
       ? { type: S[number]}
       : never
 
@@ -63,7 +63,7 @@ interface Schema<K extends Keywords> {
   : Update<K, AllOf<{[P in keyof SchemaKeywordsArray<Schemas>]: AnyOfKeyword<SchemaKeywordsArray<Schemas>[P]> }[number]>>
 }
 
-export function schema(): Schema<{ type: JSONTypeName }> ;
-export function schema<T extends JSONTypeName>(...spec: T[]): Schema<{ type: T }> ;
-export function schema<K extends Keywords>(spec?: JSONTypeName | JSONTypeName[]): Schema<K>
+export function schema(): Schema<{ type: JsonTypeName }> ;
+export function schema<T extends JsonTypeName>(...spec: T[]): Schema<{ type: T }> ;
+export function schema<K extends Keywords>(spec?: JsonTypeName | JsonTypeName[]): Schema<K>
 { throw 'nope' }

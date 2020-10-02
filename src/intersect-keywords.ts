@@ -1,21 +1,20 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject } from "./json"
 import { UnionToIntersection } from "./util"
 
-export type JSONTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
+export type JsonTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
 export type Keywords = Partial<
-  TypeKeyword<JSONTypeName>
+  TypeKeyword<JsonTypeName>
   & ConstKeyword<AnyJson>
   & EnumKeyword<AnyJson>
-  & PropertiesKeyword<any>
+  & PropertiesKeyword<{ [key: string]: Keywords }>
   & RequiredKeyword<string>
-  & ItemsKeyword<any>
-  & ItemsTupleKeyword<any>
 > & {
+  items?: Keywords | Keywords[]
   additionalProperties?: { false?: false, type?: Keywords }
 } 
 
-export type TypeKeyword<TypeName extends JSONTypeName> =
+export type TypeKeyword<TypeName extends JsonTypeName> =
   { type: TypeName }
 
 export type ConstKeyword<Const extends AnyJson> =
@@ -41,6 +40,14 @@ export type AdditionalPropertiesKeywordFalse =
 
 export type AdditionalPropertiesKeywordType<Type extends Keywords> =
   { additionalProperties: { type: Type } }
+
+export type AnyOfKeyword<AnyOf extends Keywords> =
+  { anyOf: AnyOf }
+
+export type AllOf<K extends AnyOfKeyword<Keywords>> = //TODO I think we can greatly simplify this using an array
+  UnionToIntersection<K> extends { 'anyOf': Keywords }
+    ? UnionToIntersection<K>['anyOf'] extends infer I ? I extends Keywords ? {[P in keyof I]: I[P]} : never : never
+    : never
 
 type JsonObjectSpec<T extends Keywords> =
   (
@@ -68,7 +75,7 @@ type JsonArrayValue<K extends Keywords> =
   K extends ItemsKeyword<infer Items>
     ? TypeOf<Items>[]
     : K extends ItemsTupleKeyword<infer Items>
-      ? {[I in keyof Items]: TypeOf<Items[I]>}
+      ? { [I in keyof Items]: TypeOf<Items[I]> }
       : AnyJsonArray
   
 export type TypeOf<K extends Keywords> = K extends infer Entry
@@ -87,11 +94,3 @@ export type TypeOf<K extends Keywords> = K extends infer Entry
     : never
   : never
 : never
-
-export type AnyOfKeyword<AnyOf extends Keywords> =
-  { anyOf: AnyOf }
-
-export type AllOf<K extends AnyOfKeyword<Keywords>> = //TODO I think we can greatly simplify this using an array
-  UnionToIntersection<K> extends { 'anyOf': Keywords }
-    ? UnionToIntersection<K>['anyOf'] extends infer I ? I extends Keywords ? {[P in keyof I]: I[P]} : never : never
-    : never
