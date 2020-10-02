@@ -1,5 +1,4 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject } from "./json"
-import { UnionToIntersection } from "./util"
 
 export type JsonTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
@@ -43,11 +42,6 @@ export type AdditionalPropertiesKeywordType<Type extends Keywords> =
 
 export type AnyOfKeyword<AnyOf extends Keywords> =
   { anyOf: AnyOf }
-
-export type AllOf<K extends AnyOfKeyword<Keywords>> = //TODO I think we can greatly simplify this using an array
-  UnionToIntersection<K> extends { 'anyOf': Keywords }
-    ? UnionToIntersection<K>['anyOf'] extends infer I ? I extends Keywords ? {[P in keyof I]: I[P]} : never : never
-    : never
 
 type JsonObjectSpec<T extends Keywords> =
   (

@@ -2,8 +2,6 @@ import { AnyJsonArray, AnyJson } from './json'
 import { 
   AdditionalPropertiesKeywordFalse,
   AdditionalPropertiesKeywordType,
-  AllOf,
-  AnyOfKeyword,
   ConstKeyword,
   EnumKeyword,
   ItemsKeyword,
@@ -14,6 +12,7 @@ import {
   RequiredKeyword,
   TypeOf
 } from './intersect-keywords'
+import { IntersectItems } from './util'
 
 type SchemaInput = Schema<any> | JsonTypeName | JsonTypeName[]
 type SchemaKeyword<S extends SchemaInput> = S extends Schema<infer K>
@@ -60,7 +59,7 @@ interface Schema<K extends Keywords> {
     : Update<K, {}>
 
   allOf<Schemas extends SchemaInput[]>(...items: Schemas)
-  : Update<K, AllOf<{[P in keyof SchemaKeywordsArray<Schemas>]: AnyOfKeyword<SchemaKeywordsArray<Schemas>[P]> }[number]>>
+  : Update<K, IntersectItems<{[P in keyof SchemaKeywordsArray<Schemas>]: SchemaKeywordsArray<Schemas>[P] }>>
 }
 
 export function schema(): Schema<{ type: JsonTypeName }> ;
