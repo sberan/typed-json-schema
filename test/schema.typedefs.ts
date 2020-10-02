@@ -51,9 +51,6 @@ schema('array').items('number')._T
 // $ExpectType [number, string]
 schema('array').items('number', 'string')._T
 
-//TODO: $ExpectType [number]
-// schema('array').items(['number'])._T // tuple with a single item
-
 // $ExpectType 42
 schema().const(42)._T
 
@@ -125,8 +122,11 @@ schema('object').allOf(
   schema().required('c', 'd')
 )._T
 
-// TODO $ExpectType ItemsString
-// schema().allOf(schema().items('string'), schema().items(schema().oneOf('string', 'number']))._T
+// $ExpectType string[]
+schema('array').allOf(
+  schema().items('string'),
+  schema().items(schema().oneOf(['string', 'number']))
+)._T
 
 // $ExpectType never[]
 schema('array').allOf(

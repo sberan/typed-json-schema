@@ -18,9 +18,11 @@ someObjRequired.d // $ExpectType AnyJson
 someObjRequired.e // $ExpectType AnyJsonValue
 
 let someStrictObject: JsonObject<{properties: {a: 24, b: 'asdf' }, required: 'a', additionalProperties: false}> = {a: 24, b: 'asdf'}
+let keys: keyof typeof someStrictObject = null as any
+// $ExpectType "a" | "b"
+keys
 someStrictObject.a // $ExpectType 24
 someStrictObject.b // $ExpectType "asdf" | undefined
-someStrictObject.c // $ExpectError Property 'c' does not exist on type 'JsonObject<{ properties: { a: 24; b: "asdf"; }; required: "a"; additionalProperties: false; }>'.
 
 let allowAdditionalProperties: JsonObject<{ properties: { a: 1 }, additionalProperties: true }> = { 1: 2, d: 4 }
 allowAdditionalProperties.asdf // $ExpectType AnyJsonValue
