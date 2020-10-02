@@ -4,12 +4,13 @@ export type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
 type BoxedItem<T> = { box: T }
+
 //intersection of items in a tuple which allows for items to be union types
 export type IntersectItems<T extends any[]> =
   UnionToIntersection<{
     [P in keyof T]: BoxedItem<T[P]>
   }[number]> extends BoxedItem<infer Item>
-    ? Item extends T[0] ? Item : never : never
+    ? Item extends T[number] ? Item : never : never
 
 type ExcludeIntersections<T extends Super, Super extends AnyJson> = Exclude<keyof T, keyof Super> extends never ? T : never
 
