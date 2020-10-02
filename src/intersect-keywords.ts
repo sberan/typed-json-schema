@@ -7,11 +7,11 @@ export type Keywords = Partial<
   TypeKeyword<JSONTypeName>
   & ConstKeyword<AnyJson>
   & EnumKeyword<AnyJson>
-  & PropertiesKeyword<{ [key: string]: Keywords }>
+  & PropertiesKeyword<any>
   & RequiredKeyword<string>
+  & ItemsKeyword<any>
+  & ItemsTupleKeyword<any>
 > & {
-  // can't put these in the intersection as above because circular refs (TS 4.1?)
-  items?: Keywords | Keywords[]
   additionalProperties?: { false?: false, type?: Keywords }
 } 
 
@@ -30,8 +30,11 @@ export type PropertiesKeyword<Properties extends { [key: string]: Keywords }> =
 export type RequiredKeyword<Required extends string> =
   { required: { [P in Required]?: true } }
 
-export type ItemsKeyword<Items extends Keywords | Keywords[]> =
+export type ItemsKeyword<Items extends Keywords> =
   { items: Items }
+
+export type ItemsTupleKeyword<ItemsTuple extends Keywords[]> =
+  { items: ItemsTuple }
 
 export type AdditionalPropertiesKeywordFalse =
   { additionalProperties: { false: false } }
@@ -61,18 +64,25 @@ type JsonObjectValue<T extends Keywords> =
   ? AnyJsonObject
   : JsonObject<{ [P in keyof JsonObjectSpec<T>]: JsonObjectSpec<T>[P] }>
 
+type JsonArrayValue<K extends Keywords> =
+  K extends ItemsKeyword<infer Items>
+    ? TypeOf<Items>[]
+    : K extends ItemsTupleKeyword<infer Items>
+      ? {[I in keyof Items]: TypeOf<Items[I]>}
+      : AnyJsonArray
+  
 export type TypeOf<K extends Keywords> = K extends infer Entry
   ? Entry extends never ? never
   : Entry extends ConstKeyword<infer Const> ? Const
   : Entry extends EnumKeyword<infer Enum> ? Enum
   : Entry extends TypeKeyword<infer TypeName>
-    ? TypeName extends string //TODO need this check?
+    ? TypeName extends string
       ? 'string' extends TypeName ? string
       : 'boolean' extends TypeName ? boolean
       : 'number' extends TypeName ? number
       : 'null' extends TypeName ? null
       : 'object' extends TypeName ? JsonObjectValue<K>
-      : 'array' extends TypeName ? AnyJsonArray
+      : 'array' extends TypeName ? JsonArrayValue<K>
       : never
     : never
   : never
