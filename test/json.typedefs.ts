@@ -24,7 +24,7 @@ keys
 someStrictObject.a // $ExpectType 24
 someStrictObject.b // $ExpectType "asdf" | undefined
 
-let allowAdditionalProperties: JsonObject<{ properties: { a: 1 }, additionalProperties: true }> = { 1: 2, d: 4 }
+let allowAdditionalProperties: JsonObject<{ properties: { a: 1 } }> = { 1: 2, d: 4 }
 allowAdditionalProperties.asdf // $ExpectType AnyJsonValue
 
 let typedAdditionalProperties: JsonObject<{ properties: { a: 1 }, additionalProperties: { type: string } }> = { a: 1, d: '4' } as any

@@ -1,3 +1,4 @@
+import { KeyedObject } from "./util"
 
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonValue = AnyJson | undefined
@@ -5,22 +6,33 @@ export type AnyJsonObject = {[key: string]: AnyJsonValue}
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
-type JsonObjectSpec = {
-  required?: string
-  properties?: {[key: string]: AnyJson}
-  additionalProperties?: boolean | { type: AnyJson }
+export namespace ObjectSpec {
+
+  export type Required<Required extends string = string> =
+    { required: Required }
+
+  export type Properties<Properties extends { [key: string]: AnyJson } = { [key: string]: AnyJson }> =
+    { properties: Properties }
+
+  export type AdditionalPropertiesFalse =
+    { additionalProperties: false }
+
+  export type AdditionalPropertiesType<T extends AnyJson = AnyJson> =
+    { additionalProperties: { type: T } }
+
 }
 
-type DefinedProperties<T extends {[key:string]: AnyJson }> = { properties: T }
-
-type RequiredKeys<T extends string> = { required: T }
-
-type AdditionalPropertiesType<T extends AnyJson> = { additionalProperties: { type: T } }
+type JsonObjectSpec = KeyedObject<[
+  ObjectSpec.Required,
+  ObjectSpec.Properties,
+  ObjectSpec.AdditionalPropertiesFalse,
+  ObjectSpec.AdditionalPropertiesType
+]>
 
 type AdditionalPropertiesTypeOf<Spec extends JsonObjectSpec> =
-  Spec extends { additionalProperties: false }
+  Spec extends ObjectSpec.AdditionalPropertiesFalse
     ? {}
-    : {[key: string]: Spec extends AdditionalPropertiesType<infer T> ? T : AnyJsonValue }
+    : {[key: string]: Spec extends ObjectSpec.AdditionalPropertiesType<infer T> ? T : AnyJsonValue }
 
 type PropertiesTypeOf<Properties extends {[key:string]: AnyJson}, Required extends string> =
   {[P in Extract<keyof Properties, Required>]: Properties[P]}
@@ -29,7 +41,7 @@ type PropertiesTypeOf<Properties extends {[key:string]: AnyJson}, Required exten
 
 export type JsonObject<Spec extends JsonObjectSpec> =
   PropertiesTypeOf<
-    Spec extends DefinedProperties<infer P> ? P : {}, 
-    Spec extends RequiredKeys<infer R> ? R : never
+    Spec extends ObjectSpec.Properties<infer P> ? P : {}, 
+    Spec extends ObjectSpec.Required<infer R> ? R : never
   >
   & AdditionalPropertiesTypeOf<Spec>

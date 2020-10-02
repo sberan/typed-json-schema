@@ -58,26 +58,26 @@ schema().const(42)._T
 schema().enum(1, 2, 3)._T
 
 // $ExpectType string | boolean
-schema().oneOf('string', 'boolean')._T
+schema().anyOf('string', 'boolean')._T
 
 // $ExpectType 4 | 5
-schema().oneOf(schema().const(4), schema().const(5))._T
+schema().anyOf(schema().const(4), schema().const(5))._T
 
 // $ExpectType never
-schema().const(1).oneOf(schema().const(4))._T
+schema().const(1).anyOf(schema().const(4))._T
 
-// $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-schema().oneOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
+// $ExpectType 9 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+schema().anyOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
 
 // $ExpectType 2
-schema().enum(1,2).oneOf(schema().enum(2,3), schema().enum(2, 4))._T
+schema().enum(1,2).anyOf(schema().enum(2,3), schema().enum(2, 4))._T
 
 // $ExpectType string | number
-schema().oneOf('string', 'number')._T
+schema().anyOf('string', 'number')._T
 
-// $ExpectType JsonObject<{ properties: { a: number; } | { a: number; c: number; }; }>
-schema('object').properties({ a: 'number' }).oneOf(
-  schema().properties({ a: ['string', 'number'] }),
+// $ExpectType JsonObject<{ properties: { a: string | number; c: number; }; }>
+schema('object').anyOf(
+  schema().properties({ a: schema('string', 'number')}),
   schema().properties({ c: 'number' })
 )._T
 
@@ -85,27 +85,27 @@ schema('object').properties({ a: 'number' }).oneOf(
 schema('object').properties({ a: 'number', b: 'number' }).required('a')._T
 
 // $ExpectType JsonObject<{ required: "a" | "b" | "c"; }>
-schema('object').required('a').oneOf(
+schema('object').required('a').anyOf(
   schema().required('b'),
   schema().required('c')
 )._T
 
 // $ExpectType JsonObject<{ properties: { a: string | number; }; }>
 schema('object').properties({
-  a: schema().oneOf('string', 'number')
+  a: schema().anyOf('string', 'number')
 })._T
 
 // $ExpectType (string | number)[]
-schema('array').items(schema().oneOf('string', 'number'))._T
+schema('array').items(schema().anyOf('string', 'number'))._T
 
 // $ExpectType string
-schema().allOf(['number', 'string'], 'string')._T
+schema().allOf(schema('number', 'string'), 'string')._T
 
 // $ExpectType never
 schema().allOf('number', 'string')._T
 
 // $ExpectType number
-schema().allOf(['number', 'string'], 'number')._T
+schema().allOf(schema('number', 'string'), 'number')._T
 
 // $ExpectType 42
 schema().allOf(schema().const(42))._T
@@ -125,7 +125,7 @@ schema('object').allOf(
 // $ExpectType string[]
 schema('array').allOf(
   schema().items('string'),
-  schema().items(schema().oneOf(['string', 'number']))
+  schema().items(schema().anyOf(schema('string', 'number')))
 )._T
 
 // $ExpectType never[]
@@ -138,7 +138,7 @@ schema('array').allOf(
 schema('object').allOf(
   schema().properties({ a: 'string', c: 'number' }),
   schema().properties({
-    a: ['string', 'number'],
+    a: schema('string', 'number'),
     b: 'boolean', 
     c: 'string'
   })

@@ -1,4 +1,5 @@
-import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject } from "./json"
+import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject, ObjectSpec } from "./json"
+import { KeyedObject } from './util'
 
 export type JsonTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
@@ -32,31 +33,32 @@ export namespace Keyword {
     { additionalProperties: { type: Type } }
 }
 
-export type Keywords = Partial<
-  Keyword.Type<JsonTypeName>
-  & Keyword.Const<AnyJson>
-  & Keyword.Enum<AnyJson>
-  & Keyword.Properties<{ [key: string]: Keywords }>
-  & Keyword.Required<string>
-> & {
-  items?: Keywords | Keywords[]
-  additionalProperties?: { false?: false, type?: Keywords }
-} 
+export type Keywords = KeyedObject<[
+  Keyword.Type<JsonTypeName>,
+  Keyword.Const<AnyJson>,
+  Keyword.Enum<AnyJson>,
+  Keyword.Properties<{ [P in string]: Keywords }>,
+  Keyword.Required<string>,
+  Keyword.ItemsTuple<Keywords[]>,
+  Keyword.Items<Keywords>,
+  Keyword.AdditionalPropertiesFalse,
+  Keyword.AdditionalPropertiesType<Keywords>
+]>
 
 type JsonObjectSpec<T extends Keywords> =
   (
     T extends Keyword.Properties<infer Properties>
-      ? { properties: { [P in keyof Properties]: TypeOf<Properties[P]> } }
+      ? ObjectSpec.Properties<{ [P in keyof Properties]: TypeOf<Properties[P]> }>
       : { }
   ) & (
     T extends Keyword.Required<infer Required>
-      ? { required: Required }
+      ? ObjectSpec.Required<Required>
       : { }
   ) & (
     T extends Keyword.AdditionalPropertiesFalse
-      ? { additionalProperties: false }
+      ? ObjectSpec.AdditionalPropertiesFalse
       : T extends Keyword.AdditionalPropertiesType<infer K>
-        ? { additionalProperties: K extends Keywords ? { type: TypeOf<K> } : never }
+        ? K extends Keywords ? ObjectSpec.AdditionalPropertiesType<{ type: TypeOf<K> }> : never
         : { }
   )
 
@@ -71,13 +73,15 @@ type JsonArrayValue<K extends Keywords> =
     : K extends Keyword.ItemsTuple<infer Items>
       ? { [I in keyof Items]: TypeOf<Items[I]> }
       : AnyJsonArray
-  
+
+type TypeNameOf<K extends Keywords> = K extends Keyword.Type<infer T> ? T : JsonTypeName
+
 export type TypeOf<K extends Keywords> = K extends infer Entry
   ? Entry extends never ? never
   : Entry extends Keyword.Const<infer Const> ? Const
   : Entry extends Keyword.Enum<infer Enum> ? Enum
-  : Entry extends Keyword.Type<infer TypeName>
-    ? TypeName extends string
+  : TypeNameOf<Entry> extends infer TypeName
+    ? TypeName extends JsonTypeName
       ? 'string' extends TypeName ? string
       : 'boolean' extends TypeName ? boolean
       : 'number' extends TypeName ? number
