@@ -58,7 +58,7 @@ type JsonObjectSpec<T extends Keywords> =
     T extends Keyword.AdditionalPropertiesFalse
       ? ObjectSpec.AdditionalPropertiesFalse
       : T extends Keyword.AdditionalPropertiesType<infer K>
-        ? K extends Keywords ? ObjectSpec.AdditionalPropertiesType<{ type: TypeOf<K> }> : never
+        ? K extends Keywords ? { additionalProperties: { type: TypeOf<K> } } : never
         : { }
   )
 

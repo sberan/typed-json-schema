@@ -75,7 +75,7 @@ schema().enum(1,2).anyOf(schema().enum(2,3), schema().enum(2, 4))._T
 // $ExpectType string | number
 schema().anyOf('string', 'number')._T
 
-// $ExpectType JsonObject<{ properties: { a: string | number; c: number; }; }>
+// $ExpectType JsonObject<{ properties: { a: string | number; }; }> | JsonObject<{ properties: { c: number; }; }>
 schema('object').anyOf(
   schema().properties({ a: schema('string', 'number')}),
   schema().properties({ c: 'number' })
@@ -84,7 +84,7 @@ schema('object').anyOf(
 // $ExpectType JsonObject<{ properties: { a: number; b: number; }; required: "a"; }>
 schema('object').properties({ a: 'number', b: 'number' }).required('a')._T
 
-// $ExpectType JsonObject<{ required: "a" | "b" | "c"; }>
+// $ExpectType JsonObject<{ required: "a" | "b"; }> | JsonObject<{ required: "a" | "c"; }>
 schema('object').required('a').anyOf(
   schema().required('b'),
   schema().required('c')
