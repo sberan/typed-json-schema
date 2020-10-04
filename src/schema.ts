@@ -15,6 +15,23 @@ type SchemaKeywordsArray<Schemas extends SchemaInput[]> =
 type SchemaKeywords<Schemas extends SchemaInput[]> =
   SchemaKeywordsArray<Schemas>[number]
 
+type ExcludeObject<K1, K2> = {
+  'calc': {[P in keyof K1]: P extends keyof K2 ? Exclude<K1[P], K2[P]> : K1[P]}
+}
+
+type X = ExcludeObject<{ type: 'string' | 'number'} | { type: 'string' | 'null'}, { type: 'number' | 'boolean'} | { type: 'string' }>['calc']
+type SchemaUnion<K extends Keywords, Schemas extends SchemaInput[]> =
+  SchemaKeywords<Schemas> extends infer ItemKeyword
+    ? ItemKeyword & K
+    : never
+
+
+type SchemaDifference<K extends Keywords, Schemas extends Keywords[]> =
+  {[I in keyof Schemas]: ExcludeObject<Schemas[I] & K, {[O in keyof Schemas]: O extends I ? never : Schemas[O]}[number]>['calc'] }
+  
+type SchemaIntersection<Schemas extends SchemaInput[]> =
+  IntersectItems<SchemaKeywordsArray<Schemas>>
+
 type Update<K extends Keywords, U extends Keywords> = {
   'calc': Schema<{ [P in keyof (K & U)]: (K & U)[P] }>
 }
@@ -52,17 +69,13 @@ interface Schema<K extends Keywords> {
     : Update<K, Keyword.Items<SchemaKeywords<Schemas>>>['calc']
 
   oneOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Update<K, SchemaKeywords<Schemas>>['calc']
+    : Schema<SchemaDifference<K, SchemaKeywordsArray<Schemas>>[number]>
 
   anyOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Schema<
-      SchemaKeywords<Schemas> extends infer ItemKeyword
-        ? ItemKeyword & K
-        : never
-    >
+    : Schema<SchemaUnion<K, Schemas>>
 
   allOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Update<K, IntersectItems<SchemaKeywordsArray<Schemas>>>['calc']
+    : Update<K, SchemaIntersection<Schemas>>['calc']
 }
 
 export function schema(): Schema<{ }> ;

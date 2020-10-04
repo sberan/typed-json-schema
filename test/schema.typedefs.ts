@@ -161,3 +161,17 @@ schema('object').allOf(
   schema().additionalProperties(true),
   schema().additionalProperties('string')
 )._T
+
+// $ExpectType JsonObject<{ properties: { a: number; }; }> | JsonObject<{ properties: { b: string; }; }>
+schema('object').oneOf(
+  schema().properties({ a: 'number' }),
+  schema().properties({ b: 'string' })
+)._T
+
+// $ExpectType number | boolean | null
+schema('string', 'number', 'boolean', 'null').oneOf(
+  schema('string', 'number'),
+  schema('string', 'boolean'),
+  schema('string', 'null'),
+  schema('string', 'array')
+)._T
