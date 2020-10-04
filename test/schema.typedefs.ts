@@ -66,7 +66,7 @@ schema().anyOf(schema().const(4), schema().const(5))._T
 // $ExpectType never
 schema().const(1).anyOf(schema().const(4))._T
 
-// $ExpectType 9 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+// $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 schema().anyOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
 
 // $ExpectType 2
@@ -175,3 +175,6 @@ schema('string', 'number', 'boolean', 'null').oneOf(
   schema('string', 'null'),
   schema('string', 'array')
 )._T
+
+// $ExpectType number | boolean | AnyJsonObject | AnyJsonArray | null
+schema().not('string')._T

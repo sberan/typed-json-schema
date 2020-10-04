@@ -1,14 +1,5 @@
 import { AnyJson, AnyJsonArray } from "./json";
 
-type KeyedObjectKeys<T extends any[]> =
-  {[P in keyof T]: Extract<keyof T[P], string>}[number]
-
-type KeyedObjectValue<Key extends string, T extends any[]> =
-  {[P in keyof T]: Key extends keyof T[P] ? T[P][Key] : never}[number]
-
-export type KeyedObject<T extends { [key: string]: any }[]> =
-  {[P in KeyedObjectKeys<T>]?: KeyedObjectValue<P, T>}
-
 export type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 

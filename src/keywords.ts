@@ -1,5 +1,4 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject, ObjectSpec } from "./json"
-import { KeyedObject } from './util'
 
 export type JsonTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
 
@@ -33,17 +32,15 @@ export namespace Keyword {
     { additionalProperties: { type: Type } }
 }
 
-export type Keywords = KeyedObject<[
-  Keyword.Type<JsonTypeName>,
-  Keyword.Const<AnyJson>,
-  Keyword.Enum<AnyJson>,
-  Keyword.Properties<{ [P in string]: Keywords }>,
-  Keyword.Required<string>,
-  Keyword.ItemsTuple<Keywords[]>,
-  Keyword.Items<Keywords>,
-  Keyword.AdditionalPropertiesFalse,
-  Keyword.AdditionalPropertiesType<Keywords>
-]>
+export type Keywords = {
+  type?: JsonTypeName,
+  const?: AnyJson,
+  enum?: AnyJson,
+  properties?: { [P in string]?: Keywords },
+  required?: {[P in string]?: true},
+  items?: Keywords | Keywords[],
+  additionalProperties?: { false: false } | { type: Keywords }
+}
 
 type JsonObjectSpec<T extends Keywords> =
   (
@@ -92,3 +89,16 @@ export type TypeOf<K extends Keywords> = K extends infer Entry
     : never
   : never
 : never
+
+type Inversion<K extends Keywords> = {
+  type: Exclude<JsonTypeName, NonNullable<K['type']>>
+  propertes: Invert<NonNullable<K['properties']>>
+  items:
+    K['items'] extends Keywords
+      ? Invert<K['items']>
+      : K['items'] extends Keywords[]
+        ? {[P in keyof K['items']]: Invert<K['items'][P]> }
+        : never
+}
+
+export type Invert<K extends Keywords> = { [P in keyof K]: P extends keyof Inversion<K> ? Inversion<K>[P] : K[P] }

@@ -1,5 +1,3 @@
-import { KeyedObject } from "./util"
-
 export type AnyJsonPrimitive = string | number | boolean | null
 export type AnyJsonValue = AnyJson | undefined
 export type AnyJsonObject = {[key: string]: AnyJsonValue}
@@ -8,26 +6,25 @@ export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
 export namespace ObjectSpec {
 
-  export type Required<Required extends string = string> =
+  export type Required<Required extends string> =
     { required: Required }
 
-  export type Properties<Properties extends { [key: string]: AnyJson } = { [key: string]: AnyJson }> =
+  export type Properties<Properties extends { [key: string]: AnyJson }> =
     { properties: Properties }
 
   export type AdditionalPropertiesFalse =
     { additionalProperties: false }
 
-  export type AdditionalPropertiesType<T extends AnyJson = AnyJson> =
+  export type AdditionalPropertiesType<T extends AnyJson> =
     { additionalProperties: { type: T } }
 
 }
 
-type JsonObjectSpec = KeyedObject<[
-  ObjectSpec.Required,
-  ObjectSpec.Properties,
-  ObjectSpec.AdditionalPropertiesFalse,
-  ObjectSpec.AdditionalPropertiesType
-]>
+type JsonObjectSpec = {
+  required?: string
+  properties?: { [key: string]: AnyJson }
+  additionalProperties?: false | AnyJson
+}
 
 type AdditionalPropertiesTypeOf<Spec extends JsonObjectSpec> =
   Spec extends ObjectSpec.AdditionalPropertiesFalse

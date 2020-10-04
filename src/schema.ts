@@ -1,5 +1,5 @@
 import { AnyJsonArray, AnyJson } from './json'
-import { Keyword, JsonTypeName, Keywords, TypeOf } from './keywords'
+import { Keyword, JsonTypeName, Keywords, TypeOf, Invert } from './keywords'
 import { IntersectItems } from './util'
 
 type SchemaInput = Schema<Keywords> | JsonTypeName
@@ -19,12 +19,10 @@ type ExcludeObject<K1, K2> = {
   'calc': {[P in keyof K1]: P extends keyof K2 ? Exclude<K1[P], K2[P]> : K1[P]}
 }
 
-type X = ExcludeObject<{ type: 'string' | 'number'} | { type: 'string' | 'null'}, { type: 'number' | 'boolean'} | { type: 'string' }>['calc']
 type SchemaUnion<K extends Keywords, Schemas extends SchemaInput[]> =
   SchemaKeywords<Schemas> extends infer ItemKeyword
     ? ItemKeyword & K
     : never
-
 
 type SchemaDifference<K extends Keywords, Schemas extends Keywords[]> =
   {[I in keyof Schemas]: ExcludeObject<Schemas[I] & K, {[O in keyof Schemas]: O extends I ? never : Schemas[O]}[number]>['calc'] }
@@ -76,6 +74,8 @@ interface Schema<K extends Keywords> {
 
   allOf<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, SchemaIntersection<Schemas>>['calc']
+  
+  not<Input extends SchemaInput>(not: Input) : Schema<Invert<SchemaKeyword<Input>>>
 }
 
 export function schema(): Schema<{ }> ;
