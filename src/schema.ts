@@ -34,9 +34,11 @@ type Update<K extends Keywords, U extends Keywords> = {
   'calc': Schema<{ [P in keyof (K & U)]: (K & U)[P] }>
 }
 
-interface Schema<K extends Keywords> {
+export interface Schema<K extends Keywords> {
   _T: TypeOf<K>
   _K: K
+
+  toJSON(): AnyJson
   
   const<Const extends AnyJson>(c: Const)
     : Update<K, Keyword.Const<Const>>['calc']
@@ -82,3 +84,5 @@ export function schema(): Schema<{ }> ;
 export function schema<T extends JsonTypeName>(...spec: T[]): Schema<{ type: T }> ;
 export function schema<K extends Keywords>(spec?: JsonTypeName | JsonTypeName[]): Schema<K>
 { throw 'nope' }
+
+export type schema<T extends Schema<any>> = T['_T']

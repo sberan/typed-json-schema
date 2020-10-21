@@ -2,7 +2,6 @@
 import Ajv = require('ajv')
 import { ErrorObject } from 'ajv'
 import { Schema } from './schema'
-import { AnyJSON } from './util'
 
 export interface CustomKeyword extends Ajv.KeywordDefinition {
   name: string
@@ -55,8 +54,8 @@ export class Validator {
    */
   validateSync <T extends Schema<any>> (schema: T, obj: any)
       : { valid: false, errors: ErrorObject[], result: null }
-      | { valid: true, errors: null, result: T['TypeOf'] }  {
-    const validate = this.ajv.compile(schema.toJSON())
+      | { valid: true, errors: null, result: T['_T'] }  {
+    const validate = this.ajv.compile(schema.toJSON() as any)
     const coercedValue: { result?: T } = { }
     const isValid = validate(obj, undefined, coercedValue, 'result')
     if (isValid) {
@@ -66,8 +65,8 @@ export class Validator {
     }
   }
 
-  validate <T extends Schema<any>> (schema: T, obj: any): Promise<T['TypeOf']> {
-    const validate = this.ajv.compile(schema.toJSON())
+  validate <T extends Schema<any>> (schema: T, obj: any): Promise<T['_T']> {
+    const validate = this.ajv.compile(schema.toJSON() as any)
     const coercedValue: { result?: T } = { }
     validate(obj, undefined, coercedValue, 'result')
     if (!validate.errors) {

@@ -12,8 +12,8 @@
     "clean": "rm *.js *.d.ts; rm -rf ext/;true",
     "tsc": "tsc --declaration",
     "build": "npm run clean && npm run tsc",
-    "prepublish": "npm test && npm run build",
-    "postpublish": "npm run clean"
+    "prepublishOnly": "npm test && npm run build",
+    "postpublishOnly": "npm run clean"
   },
   "files": [
     "*.js",
