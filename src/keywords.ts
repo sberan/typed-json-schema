@@ -1,6 +1,6 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject, ObjectSpec } from "./json"
 
-export type JsonTypeName = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object'
+export type JsonTypeName = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object'
 
 export namespace Keyword {
 
@@ -82,6 +82,7 @@ export type TypeOf<K extends Keywords> = K extends infer Entry
       ? 'string' extends TypeName ? string
       : 'boolean' extends TypeName ? boolean
       : 'number' extends TypeName ? number
+      : 'integer' extends TypeName ? number
       : 'null' extends TypeName ? null
       : 'object' extends TypeName ? JsonObjectValue<K>
       : 'array' extends TypeName ? JsonArrayValue<K>

@@ -1,2 +1,2 @@
-export { schema, Schema } from './schema'
+export { is, Schema } from './schema'
 export { Validator, ValidationError } from './validator'
