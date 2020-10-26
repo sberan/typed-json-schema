@@ -6,6 +6,7 @@ export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
 export namespace ObjectSpec {
 
+  
   export type Required<Required extends string> =
     { required: Required }
 

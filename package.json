@@ -5,7 +5,7 @@
   "main": "index",
   "typings": "index.d.ts",
   "scripts": {
-    "mocha": "cross-env TS_NODE_CACHE=false mocha test/**/*.spec.ts",
+    "mocha": "ts-mocha test/**/*.spec.ts",
     "test-typedefs": "typings-checker --project test-typedefs/tsconfig.json --allow-expect-error test-typedefs/*.ts",
     "lint": "tslint --project . && tslint --project test && tslint --project test-typedefs",
     "test": "npm run mocha && npm run test-typedefs && npm run lint",
@@ -31,13 +31,11 @@
   },
   "devDependencies": {
     "@types/ajv": "^1.0.0",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^2.2.41",
-    "chai": "^4.1.0",
-    "cross-env": "^5.0.5",
-    "mocha": "^3.4.2",
-    "ts-node": "^3.3.0",
-    "tslint": "^5.7.0",
+    "@types/chai": "4.2.14",
+    "@types/mocha": "8.0.3",
+    "chai": "4.2.0",
+    "mocha": "8.2.0",
+    "ts-mocha": "8.0.0",
     "typescript": "4.0.3",
     "typings-checker": "2.0.0"
   }

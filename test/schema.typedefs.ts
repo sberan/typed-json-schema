@@ -105,7 +105,7 @@ is('array').items(is().anyOf('string', 'number'))._T
 is().allOf(is('number', 'string'), 'string')._T
 
 // $ExpectType never
-is().allOf('number', 'string')._T
+is().allOf('number', 'string')._K
 
 // $ExpectType number
 is().allOf(is('number', 'string'), 'number')._T

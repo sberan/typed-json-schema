@@ -1,4 +1,4 @@
-import { AnyJsonArray, AnyJson } from './json'
+import { AnyJsonArray, AnyJson, AnyJsonObject } from './json'
 import { Keyword, JsonTypeName, Keywords, TypeOf, Invert } from './keywords'
 import { IntersectItems } from './util'
 
@@ -34,65 +34,133 @@ type Update<K extends Keywords, U extends Keywords> = {
   'calc': Schema<{ [P in keyof (K & U)]: (K & U)[P] }>
 }
 
-export interface Schema<K extends Keywords> {
-  _T: TypeOf<K>
-  _K: K
+function jsonValue (input: SchemaInput) {
+  if (typeof input === 'string') {
+    return { type: input }
+  }
+  return input.toJSON()
+}
 
-  toJSON(): AnyJson
+function jsonPropertyValues(input: {[key: string]: SchemaInput | string[]}) {
+  const properties: {[key: string]: Keywords | string[]} = {}
+  for (let key of Object.keys(input)) {
+    const value = input[key]
+    properties[key] = Array.isArray(value) ? value : jsonValue(value)
+  }
+  return properties
+}
+
+export class Schema<K extends Keywords> {
+  // represents the TypeScript type of the schema
+  _T: TypeOf<K> = null as any
+
+  // retain Keywords used to calculate _T, useful for debugging
+  _K: K = null as any
   
+  constructor(private jsonSchema: AnyJsonObject) { }
+
+  toJSON() { return this.jsonSchema }
+  
+  update<U extends Keywords = K> ( value: AnyJsonObject): Schema<U> {
+    return new Schema<any>({ ...this.jsonSchema, ...value })
+  }
+
   /*----------------
    * Generic 
    *----------------*/
 
-  title(title: string): Schema<K>
+  title(title: string) {
+    return this.update({ title })
+  }
 
-  description(description: string): Schema<K>
+  description(description: string) {
+    return this.update({ description })
+  }
 
-  default(value: AnyJson): Schema<K>
+  default(value: AnyJson) {
+    return this.update({ default: value })
+  }
 
-  example(example: string): Schema<K>
+  example(example: string) {
+    return this.update({ example })
+  }
   
   const<Const extends AnyJson>(c: Const)
-    : Update<K, Keyword.Const<Const>>['calc']
+    : Update<K, Keyword.Const<Const>>['calc'] {
+    return this.update<any>({ const: c })
+  }
 
   enum<Enum extends AnyJsonArray>(...items: Enum)
-    : Update<K, Keyword.Enum<Enum[number]>>['calc']
+    : Update<K, Keyword.Enum<Enum[number]>>['calc'] {
+    return this.update<any>({ enum: items })
+  }
 
   oneOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Schema<SchemaDifference<K, SchemaKeywordsArray<Schemas>>[number]>
+    : Schema<SchemaDifference<K, SchemaKeywordsArray<Schemas>>[number]> {
+    return this.update<any>({ oneOf: items.map(item => jsonValue(item)) })
+  }
 
   anyOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Schema<SchemaUnion<K, Schemas>>
+    : Schema<SchemaUnion<K, Schemas>> {
+    return this.update<any>({ anyOf: items.map(item => jsonValue(item)) })
+  }
 
   allOf<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Update<K, SchemaIntersection<Schemas>>['calc']
+    : Update<K, SchemaIntersection<Schemas>>['calc'] {
+    return this.update<any>({ allOf: items.map(item => jsonValue(item)) })
+  }
   
-  not<Input extends SchemaInput>(not: Input) : Schema<Invert<SchemaKeyword<Input>>>
+  not<Input extends SchemaInput>(not: Input) : Schema<Invert<SchemaKeyword<Input>>> {
+    return this.update<any>({ not: jsonValue(not) })
+  }
 
   /*----------------
    * Object 
    *----------------*/
 
   properties<Properties extends {[key: string]: SchemaInput}>(props: Properties)
-    : Update<K, Keyword.Properties<{ [P in keyof Properties]: SchemaKeyword<Properties[P]> }>>['calc']
+    : Update<K, Keyword.Properties<{ [P in keyof Properties]: SchemaKeyword<Properties[P]> }>>['calc'] {
+    const properties: {[key: string]: Keywords} = {}
+    for (let key of Object.keys(props)) {
+      properties[key] = jsonValue(props[key])
+    }
+    return this.update<any>({ properties })
+  }
 
-  required<Keys extends string>(...k: Keys[])
-    : Update<K, Keyword.Required<Keys>>['calc']
+  required<Keys extends string>(...required: Keys[])
+    : Update<K, Keyword.Required<Keys>>['calc'] {
+    return this.update<any>({ required })
+  }
 
   additionalProperties<T extends boolean | SchemaInput>(additionalProperties: T)
     : Update<K,
       T extends false ? Keyword.AdditionalPropertiesFalse
       : T extends SchemaInput ? Keyword.AdditionalPropertiesType<SchemaKeyword<T>>
       : { }
-    >['calc']
+    >['calc'] {
+    if (typeof additionalProperties === 'boolean') {
+      return this.update<any>({ additionalProperties })
+    }
+    return this.update<any>({ additionalProperties: jsonValue(additionalProperties as SchemaInput) })
+  }
 
-  dependencies(dependencies: {[key:string]: SchemaInput | string[]}): Schema<K>
+  dependencies(props: {[key:string]: SchemaInput | string[]}) {
+    const dependencies = jsonPropertyValues(props)
+    return this.update({ dependencies })
+  }
 
-  patternProperties(values:  {[key:string]: SchemaInput | string[]}): Schema<K>
+  patternProperties(props:  {[key:string]: SchemaInput }) {
+    const patternProperties = jsonPropertyValues(props)
+    return this.update({ patternProperties })
+  }
 
-  minProperties(minProperties: number): Schema<K>
+  minProperties(minProperties: number) {
+    return this.update({ minProperties })
+  }
 
-  maxProperties(maxProperties: number): Schema<K>
+  maxProperties(maxProperties: number) {
+    return this.update({ maxProperties })
+  }
 
   /*----------------
    * Array
@@ -102,49 +170,86 @@ export interface Schema<K extends Keywords> {
 
   items<Schemas extends SchemaInput[]>(...items: Schemas)
     : Update<K, Keyword.ItemsTuple<SchemaKeywordsArray<Schemas>>>['calc']
+  
+  items(...items: SchemaInput[])  {
+    return this.update<any>({ items: items.length < 2 ? jsonValue(items[0]) : items.map(x => jsonValue(x)) })
+  }
 
-  items<Schemas extends SchemaInput[]>(...items: Schemas)
-    : Update<K, Keyword.Items<SchemaKeywords<Schemas>>>['calc']
+  maxLength(maxLength: number) {
+    return this.update({ maxLength })
+  }
 
-  maxLength(maxLength: number): Schema<K>
+  maxItems(maxItems: number) {
+    return this.update({ maxItems })
+  }
 
-  maxItems(maxItems: number): Schema<K>
+  contains(contains: SchemaInput) {
+    return this.update({ contains: jsonValue(contains) })
+  }
 
-  contains(contains: string): Schema<K>
+  uniqueItems(uniqueItems: boolean) {
+    return this.update({ uniqueItems })
+  }
 
-  uniqueItems(uniqueItems: boolean): Schema<K>
+  minItems(minItems: number) {
+    return this.update({ minItems })
+  }
 
-  minItems(minItems: number): Schema<K>
-
-  additionalItems(additionalItems: boolean | SchemaInput): Schema<K>
+  additionalItems(value: boolean | SchemaInput) {
+    return this.update({ additionalItems: typeof value === 'boolean' ? value : jsonValue(value) })
+  }
 
   /*----------------
    * Number
    *----------------*/
-  minimum(minimum: number): Schema<K>
+  minimum(minimum: number) {
+    return this.update({ minimum })
+  }
 
-  maximum(maximum: number): Schema<K>
+  maximum(maximum: number) {
+    return this.update({ maximum })
+  }
 
-  exclusiveMaximum(exclusiveMaximum: number | boolean): Schema<K>
+  exclusiveMaximum(exclusiveMaximum: number | boolean) {
+    return this.update({ exclusiveMaximum })
+  }
 
-  exclusiveMinimum(exclusiveMinimum: number | boolean): Schema<K>
+  exclusiveMinimum(exclusiveMinimum: number | boolean) {
+    return this.update({ exclusiveMinimum })
+  }
 
-  multipleOf(multipleOf: number): Schema<K>
+  multipleOf(multipleOf: number) {
+    return this.update({ multipleOf })
+  }
 
 
   /*----------------
    * String
    *----------------*/
-  format(format: string): Schema<K>
+  format(format: string) {
+    return this.update({ format })
+  }
 
-  pattern(pattern: RegExp): Schema<K>
+  pattern(pattern: RegExp) {
+    const p = pattern.toString()
+    return this.update({ pattern: p.substring(1, p.length - 1) })
+  }
 
-  minLength(minLength: number): Schema<K>
+  minLength(minLength: number) {
+    return this.update({ minLength })
+  }
 }
 
 export function is(): Schema<{ }> ;
-export function is<T extends JsonTypeName>(...spec: T[]): Schema<{ type: T }> ;
-export function is<K extends Keywords>(spec?: JsonTypeName | JsonTypeName[]): Schema<K>
-{ throw 'nope' }
+export function is<T extends JsonTypeName>(...type: T[]): Schema<{ type: T }> ;
+export function is<K extends Keywords>(...type: JsonTypeName[]): Schema<K> { 
+  if (type.length === 0) {
+    return new Schema<any>({})
+  }
+  if (type.length === 1) {
+    return new Schema<any>({ type: type[0] })
+  }
+  return new Schema<any>({ type })
+}
 
 export type is<T extends Schema<any>> = T['_T']

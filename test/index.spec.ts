@@ -356,13 +356,13 @@ describe('JSON schema', () => {
   })
 
   it('should allow enumerated values', () => {
-    const enumSchema = is().enum([[4, 5], '3', false, null])
+    const enumSchema = is().enum([4, 5], '3', false, null)
 
     expect(enumSchema.toJSON()).to.eql({
       enum: [ [4, 5], '3', false, null]
     })
 
-    const enumWithType = is('string').enum(['5', null])
+    const enumWithType = is('string').enum('5', null)
 
     expect(enumWithType.toJSON()).to.eql({
       type: 'string',
@@ -425,7 +425,7 @@ describe('JSON schema', () => {
   })
 
   it('should combine schemas using not', () => {
-    const s = is('string').not(is().enum(['fizz']))
+    const s = is('string').not(is().enum('fizz'))
 
     expect(s.toJSON()).to.eql({
       type: 'string',

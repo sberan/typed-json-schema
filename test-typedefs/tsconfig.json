@@ -4,11 +4,9 @@
     "target": "es5",
     "module": "commonjs",
     "lib": [ "es2016" ],
-    "baseDir": ".",
     "strict": true,
     "noEmitOnError": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "skipLibCheck": true
 
   },
   "include": [

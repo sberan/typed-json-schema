@@ -1,4 +1,4 @@
-import { schema } from '../src/schema'
+import { is as schema } from '../src/schema'
 
 // $ExpectType AnyJson
 schema()._T
@@ -102,7 +102,7 @@ schema('array').items(schema().anyOf('string', 'number'))._T
 schema().allOf(schema('number', 'string'), 'string')._T
 
 // $ExpectType never
-schema().allOf('number', 'string')._T
+schema().allOf('number', 'string')
 
 // $ExpectType number
 schema().allOf(schema('number', 'string'), 'number')._T
