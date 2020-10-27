@@ -1,6 +1,7 @@
 import { AnyJson, AnyJsonArray, AnyJsonObject, JsonObject, ObjectSpec } from "./json"
 
 export type JsonTypeName = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object'
+export const JsonTypeName: JsonTypeName[] = ['string', 'number', 'integer', 'boolean', 'null', 'array', 'object']
 
 export namespace Keyword {
 

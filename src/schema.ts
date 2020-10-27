@@ -1,6 +1,7 @@
 import { AnyJsonArray, AnyJson, AnyJsonObject } from './json'
 import { Keyword, JsonTypeName, Keywords, TypeOf, Invert } from './keywords'
 import { IntersectItems } from './util'
+import { Validator } from './validator'
 
 type SchemaInput = Schema<Keywords> | JsonTypeName
 
@@ -34,9 +35,6 @@ type Update<K extends Keywords, U extends Keywords> = {
   'calc': Schema<IntersectItems<[K, U]>>
 }
 
-type U<K extends Keywords, U extends Keywords> = { [P in keyof (K & U)]: 4 }
-type X = IntersectItems<[{ type: 'string' }, { type: 'number'}]>
-
 function jsonValue (input: SchemaInput) {
   if (typeof input === 'string') {
     return { type: input }
@@ -66,6 +64,19 @@ export class Schema<K extends Keywords> {
   
   update<U extends Keywords = K> ( value: AnyJsonObject): Schema<U> {
     return new Schema<any>({ ...this.jsonSchema, ...value })
+  }
+
+  check(input: any): input is this['_T'] {
+    const result = new Validator().validateSync(this, input)
+    return result.valid
+  }
+
+  parse(input: string): this['_T'] {
+    const result = new Validator().validateSync(this, JSON.parse(input))
+    if (!result.valid) {
+      throw new Error(`invalid type for schema ${JSON.stringify(this.jsonSchema)}: ${input}`)
+    }
+    return result.result
   }
 
   /*----------------

@@ -1,20 +1,38 @@
-import { expect } from 'chai'
-import { is, Validator } from '../src'
+import { is, Schema, Validator } from '../src'
+import gen from '../src/generate'
+import { AnyJson } from '../src/json'
+const { expect } = require('chai')
+
+function expectGen(input: () => Schema<any>, json: AnyJson) {
+  const expected = input()
+  expect(expected.toJSON()).to.eql(json)
+  const expectedGenText = input.toString()
+  const beginGen = expectedGenText.indexOf('.is(')
+  const endGen = expectedGenText.indexOf(';')
+  const expectedGen = expectedGenText
+    .substring(beginGen + 1, endGen)
+    .replace(/\w+\.is\(/g, 'is(')
+    .replace(/\n\s*\./g, '.')
+    .replace(/\n\s*/g, ' ')
+  expect(expectedGen).to.eql(gen(JSON.stringify(json)))
+}
 
 describe('JSON schema', () => {
   describe('number', () => {
     it('should create a number schema', () => {
-      const numberSchema = is('number')
+      const numberSchema = () =>
+       is('number')
 
-      expect(numberSchema.toJSON()).to.eql({
+      expectGen(numberSchema, {
         type: 'number'
       })
     })
 
     it('should allow min/max', () => {
-      const numberMinMax = is('number').maximum(4).minimum(3)
+      const numberMinMax = () =>
+       is('number').maximum(4).minimum(3)
 
-      expect(numberMinMax.toJSON()).to.eql({
+      expectGen(numberMinMax, {
         type: 'number',
         maximum: 4,
         minimum: 3
@@ -22,9 +40,10 @@ describe('JSON schema', () => {
     })
 
     it('should allow exclusive maximum', () => {
-      const numberWithExclusives = is('number').exclusiveMaximum(4).exclusiveMinimum(2)
+      const numberWithExclusives = () =>
+       is('number').exclusiveMaximum(4).exclusiveMinimum(2)
 
-      expect(numberWithExclusives.toJSON()).to.eql({
+      expectGen(numberWithExclusives, {
         type: 'number',
         exclusiveMaximum: 4,
         exclusiveMinimum: 2
@@ -32,13 +51,14 @@ describe('JSON schema', () => {
     })
 
     it('should allow exclusive min/max as booleans', () => {
-      const complexNumber = is('number')
+      const complexNumber = () =>
+       is('number')
         .maximum(4)
         .minimum(3)
         .exclusiveMaximum(true)
         .exclusiveMinimum(true)
 
-      expect(complexNumber.toJSON()).to.eql({
+      expectGen(complexNumber, {
         type: 'number',
         maximum: 4,
         minimum: 3,
@@ -48,18 +68,20 @@ describe('JSON schema', () => {
     })
 
     it('should support multipleOf', () => {
-      const numberWithMultiple = is('number').multipleOf(3)
+      const numberWithMultiple = () =>
+       is('number').multipleOf(3)
 
-      expect(numberWithMultiple.toJSON()).to.eql({
+      expectGen(numberWithMultiple, {
         type: 'number',
         multipleOf: 3
       })
     })
 
     it('should allow integer type', () => {
-      const integerSchema = is('integer')
+      const integerSchema = () =>
+       is('integer')
 
-      expect(integerSchema.toJSON()).to.eql({
+      expectGen(integerSchema, {
         type: 'integer'
       })
     })
@@ -67,17 +89,19 @@ describe('JSON schema', () => {
 
   describe('string', () => {
     it('should create a string schema', () => {
-      const stringSchema = is('string')
+      const stringSchema = () =>
+       is('string')
 
-      expect(stringSchema.toJSON()).to.eql({
+      expectGen(stringSchema, {
         type: 'string'
       })
     })
 
     it('should support min/max lengths', () => {
-      const stringLengths = is('string').minLength(3).maxLength(5)
+      const stringLengths = () =>
+       is('string').minLength(3).maxLength(5)
 
-      expect(stringLengths.toJSON()).to.eql({
+      expectGen(stringLengths, {
         type: 'string',
         minLength: 3,
         maxLength: 5
@@ -85,18 +109,20 @@ describe('JSON schema', () => {
     })
 
     it('should support pattern regexes', () => {
-      const stringPattern = is('string').pattern(/\w+/)
+      const stringPattern = () =>
+       is('string').pattern(/\w+/)
 
-      expect(stringPattern.toJSON()).to.eql({
+      expectGen(stringPattern, {
         type: 'string',
         pattern: '\\w+'
       })
     })
 
     it('should support format strings', () => {
-      const stringFormat = is('string').format('email')
+      const stringFormat = () =>
+       is('string').format('email')
 
-      expect(stringFormat.toJSON()).to.eql({
+      expectGen(stringFormat, {
         type: 'string',
         format: 'email'
       })
@@ -104,34 +130,38 @@ describe('JSON schema', () => {
   })
 
   it('should create a boolean schema', () => {
-    const booleanSchema = is('boolean')
+    const booleanSchema = () =>
+     is('boolean')
 
-    expect(booleanSchema.toJSON()).to.eql({
+    expectGen(booleanSchema, {
       type: 'boolean'
     })
   })
 
   it('should create a null schema', () => {
-    const nullSchema = is('null')
+    const nullSchema = () =>
+     is('null')
 
-    expect(nullSchema.toJSON()).to.eql({
+    expectGen(nullSchema, {
       type: 'null'
     })
   })
 
   describe('array schema', () => {
     it('should create a basic schema', () => {
-      const arraySchema = is('array')
+      const arraySchema = () =>
+       is('array')
 
-      expect(arraySchema.toJSON()).to.eql({
+      expectGen(arraySchema, {
         type: 'array'
       })
     })
 
     it('should allow item counts', () => {
-      const minMaxArray = is('array').minItems(3).maxItems(5)
+      const minMaxArray = () =>
+       is('array').minItems(3).maxItems(5)
 
-      expect(minMaxArray.toJSON()).to.eql({
+      expectGen(minMaxArray, {
         type: 'array',
         minItems: 3,
         maxItems: 5
@@ -139,36 +169,40 @@ describe('JSON schema', () => {
     })
 
     it('should allow unique items', () => {
-      const uniqueItems = is('array').uniqueItems(true)
+      const uniqueItems = () =>
+       is('array').uniqueItems(true)
 
-      expect(uniqueItems.toJSON()).to.eql({
+      expectGen(uniqueItems, {
         type: 'array',
         uniqueItems: true
       })
     })
 
     it('should allow items type', () => {
-      const arrayOfStrings = is('array').items('string')
+      const arrayOfStrings = () =>
+       is('array').items('string')
 
-      expect(arrayOfStrings.toJSON()).to.eql({
+      expectGen(arrayOfStrings, {
         type: 'array',
         items: { type: 'string' }
       })
     })
 
     it('should build a tuple', () => {
-      const stringTuple = is('array').items('string', 'number')
+      const stringTuple = () =>
+       is('array').items('string', 'number')
 
-      expect(stringTuple.toJSON()).to.eql({
+      expectGen(stringTuple, {
         type: 'array',
         items: [{ type: 'string' }, { type: 'number' }]
       })
     })
 
     it('should build a tuple with complex item types', () => {
-      const complexTuple = is('array').items('string', is('array').items('number'), 'number')
+      const complexTuple = () =>
+       is('array').items('string', is('array').items('number'), 'number')
 
-      expect(complexTuple.toJSON()).to.eql({
+      expectGen(complexTuple, {
         type: 'array',
         items: [
           { type: 'string' },
@@ -179,9 +213,10 @@ describe('JSON schema', () => {
     })
 
     it('should build a tuple with additional items (boolean)', () => {
-      const tupleWithAdditionalItems = is('array').items('string', is('array').items('number'), 'number').additionalItems(true)
+      const tupleWithAdditionalItems = () =>
+       is('array').items('string', is('array').items('number'), 'number').additionalItems(true)
 
-      expect(tupleWithAdditionalItems.toJSON()).to.eql({
+      expectGen(tupleWithAdditionalItems, {
         type: 'array',
         items: [
           { type: 'string' },
@@ -193,14 +228,15 @@ describe('JSON schema', () => {
     })
 
     it('should build a tuple with additional items (schema)', () => {
-      const tupleWithBooleanAdditionalItems = is('array').items(
+      const tupleWithBooleanAdditionalItems = () =>
+       is('array').items(
           'string',
           is('array').items('number'),
           'number'
         )
         .additionalItems('boolean')
 
-      expect(tupleWithBooleanAdditionalItems.toJSON()).to.eql({
+      expectGen(tupleWithBooleanAdditionalItems, {
         type: 'array', items: [
           { type: 'string' },
           { type: 'array', items: { type: 'number' } },
@@ -211,9 +247,10 @@ describe('JSON schema', () => {
     })
 
     it('should allow array contains', () => {
-      const arrayContains = is('array').items('string').contains('null')
+      const arrayContains = () =>
+       is('array').items('string').contains('null')
 
-      expect(arrayContains.toJSON()).to.eql({
+      expectGen(arrayContains, {
         type: 'array',
         items: { type: 'string' },
         contains: { type: 'null' }
@@ -222,17 +259,19 @@ describe('JSON schema', () => {
   })
 
   it('should create an object schema', () => {
-    const objectSchema = is('object')
+    const objectSchema = () =>
+     is('object')
 
-    expect(objectSchema.toJSON()).to.eql({
+    expectGen(objectSchema, {
       type: 'object'
     })
   })
 
   it('should support min/max properties', () => {
-    const minMaxProperties = is('object').maxProperties(3).minProperties(1)
+    const minMaxProperties = () =>
+     is('object').maxProperties(3).minProperties(1)
 
-    expect(minMaxProperties.toJSON()).to.eql({
+    expectGen(minMaxProperties, {
       type: 'object',
       maxProperties: 3,
       minProperties: 1
@@ -240,12 +279,13 @@ describe('JSON schema', () => {
   })
 
   it('should support properties', () => {
-    const schemaWithProperties = is('object').properties({
+    const schemaWithProperties = () =>
+     is('object').properties({
       a: 'string',
       b: is('array').items('number')
     })
 
-    expect(schemaWithProperties.toJSON()).to.eql({
+    expectGen(schemaWithProperties, {
       type: 'object',
       properties: {
         a: { type: 'string' },
@@ -255,13 +295,14 @@ describe('JSON schema', () => {
   })
 
   it('should support required properties', () => {
-    const schemaWithRequiredProperties = is('object').properties({
+    const schemaWithRequiredProperties = () =>
+     is('object').properties({
         a: 'string',
         b: is('array').items('number')
       })
       .required('a', 'b', 'c')
 
-    expect(schemaWithRequiredProperties.toJSON()).to.eql({
+    expectGen(schemaWithRequiredProperties, {
       type: 'object',
       properties: {
         a: { type: 'string' },
@@ -272,14 +313,16 @@ describe('JSON schema', () => {
   })
 
   it('can disallow additional properties', () => {
-    const schemaWithNoAdditionalProperties = is('object').required('a', 'b', 'c').properties({
+    const schemaWithNoAdditionalProperties = () =>
+      is('object').properties({
         a: 'string',
         b: is('array').items('number'),
         d: 'boolean'
       })
+      .required('a', 'b', 'c')
       .additionalProperties(false)
 
-    expect(schemaWithNoAdditionalProperties.toJSON()).to.eql({
+    expectGen(schemaWithNoAdditionalProperties, {
       type: 'object',
       properties: {
         a: { type: 'string' },
@@ -292,12 +335,13 @@ describe('JSON schema', () => {
   })
 
   it('can specify schema for additional properties type', () => {
-    const schemaWithAdditionalProperties = is('object')
+    const schemaWithAdditionalProperties = () =>
+     is('object')
       .properties({ a: 'string' })
       .required('b')
       .additionalProperties('number')
 
-    expect(schemaWithAdditionalProperties.toJSON()).to.eql({
+    expectGen(schemaWithAdditionalProperties, {
       type: 'object',
       properties: {
         a: { type: 'string' }
@@ -308,49 +352,52 @@ describe('JSON schema', () => {
   })
 
   it('should support pattern properties', () => {
-    const objectWithPatternProperties = is('object').patternProperties({
-      '$foo^': 'string',
-      '$bar^': 'number'
+    const objectWithPatternProperties = () =>
+     is('object').patternProperties({
+      '^foo$': 'string',
+      '^bar$': 'number'
     })
     .additionalProperties(false)
 
-    expect(objectWithPatternProperties.toJSON()).to.eql({
+    expectGen(objectWithPatternProperties, {
       type: 'object',
-      additionalProperties: false,
       patternProperties: {
-        '$foo^': { type: 'string' },
-        '$bar^': { type: 'number' }
-      }
+        '^foo$': { type: 'string' },
+        '^bar$': { type: 'number' }
+      },
+      additionalProperties: false
     })
   })
 
   it('should support required along with pattern properties', () => {
-    const objectWithRequiredPatternProperties = is('object').patternProperties({
-        '$foo^': 'string',
-        '$bar^': 'number'
+    const objectWithRequiredPatternProperties = () =>
+     is('object').patternProperties({
+        '^foo$': 'string',
+        '^bar$': 'number'
       })
       .required('a')
       .additionalProperties(false)
 
-    expect(objectWithRequiredPatternProperties.toJSON()).to.eql({
+    expectGen(objectWithRequiredPatternProperties, {
       type: 'object',
-      required: ['a'],
-      additionalProperties: false,
       patternProperties: {
-        '$foo^': { type: 'string' },
-        '$bar^': { type: 'number' }
-      }
+        '^foo$': { type: 'string' },
+        '^bar$': { type: 'number' }
+      },
+      required: ['a'],
+      additionalProperties: false
     })
   })
 
   it('should support dependencies', () => {
-    const objectWithDependencies = is('object').additionalProperties(false)
+    const objectWithDependencies = () =>
+     is('object').additionalProperties(false)
       .dependencies({
         a: 'string',
         b: ['c', 'd']
       })
 
-    expect(objectWithDependencies.toJSON()).to.eql({
+    expectGen(objectWithDependencies, {
       type: 'object',
       additionalProperties: false,
       dependencies: {
@@ -361,19 +408,21 @@ describe('JSON schema', () => {
   })
 
   it('should create a schema with multiple types (as an array)', () => {
-    const schemaWithMultipleTypes = is('string', 'null')
+    const schemaWithMultipleTypes = () =>
+     is('string', 'null')
 
-    expect(schemaWithMultipleTypes.toJSON()).to.eql({
+    expectGen(schemaWithMultipleTypes, {
       type: ['string', 'null']
     })
   })
 
   it('should allow any combination of keywords from different types', () => {
-    const crazySchema = is('number', 'boolean')
+    const crazySchema = () =>
+     is('number', 'boolean')
       .properties({a: 'string'})
       .maxLength(42)
 
-    expect(crazySchema.toJSON()).to.eql({
+    expectGen(crazySchema, {
       type: ['number', 'boolean'],
       properties: { a: { type: 'string' } },
       maxLength: 42
@@ -381,62 +430,69 @@ describe('JSON schema', () => {
   })
 
   it('should allow metadata values', () => {
-    const schemaWithMetadata = is().title('someTitle').description('foo')
+    const schemaWithMetadata = () =>
+     is().title('someTitle').description('foo')
 
-    expect(schemaWithMetadata.toJSON()).to.eql({
+    expectGen(schemaWithMetadata, {
       title: 'someTitle',
       description: 'foo'
     })
   })
 
   it('should allow default values', () => {
-    const schemaWithDefault = is('string').default('asdf')
+    const schemaWithDefault = () =>
+     is('string').default('asdf')
 
-    expect(schemaWithDefault.toJSON()).to.eql({
+    expectGen(schemaWithDefault, {
       type: 'string',
       default: 'asdf'
     })
   })
 
   it('should allow examples', () => {
-    const schemaWithDefault = is('string').example('fizz')
+    const schemaWithDefault = () =>
+     is('string').example('fizz')
 
-    expect(schemaWithDefault.toJSON()).to.eql({
+    expectGen(schemaWithDefault, {
       type: 'string',
       example: 'fizz'
     })
   })
 
   it('should allow enumerated values', () => {
-    const enumSchema = is().enum([4, 5], '3', false, null)
+    const enumSchema = () =>
+     is().enum([4, 5], '3', false, null)
 
-    expect(enumSchema.toJSON()).to.eql({
+    expectGen(enumSchema, {
       enum: [ [4, 5], '3', false, null]
     })
 
-    const enumWithType = is('string').enum('5', null)
+    const enumWithType = () =>
+     is('string').enum('5', null)
 
-    expect(enumWithType.toJSON()).to.eql({
+    expectGen(enumWithType, {
       type: 'string',
       enum: [ '5', null ]
     })
   })
 
-  it('should allow const values', () => {
-    const constSchema = is().const(4)
+  it.skip('should allow const values', () => {
+    const constSchema = () =>
+     is().const('\'')
 
-    expect(constSchema.toJSON()).to.eql({
-      const: 4
+    expectGen(constSchema, {
+      const: '\''
     })
   })
 
   it('should combine schemas using allOf', () => {
-    const s = is().allOf(
+    const s = () =>
+     is().allOf(
       is('array').items('string'),
-      is('number')
+      'number'
     )
 
-    expect(s.toJSON()).to.eql({
+    expectGen(s, {
       allOf: [
         { type: 'array', items: { type: 'string'} },
         { type: 'number' }
@@ -445,13 +501,14 @@ describe('JSON schema', () => {
   })
 
   it('should combine schemas using anyOf', () => {
-    const s = is().anyOf(
-      is('string'),
-      is('number'),
+    const s = () =>
+     is().anyOf(
+      'string',
+      'number',
       is('object').properties({ a: 'string' }).required('a')
     )
 
-    expect(s.toJSON()).to.eql({
+    expectGen(s, {
       anyOf: [
         { type: 'string' },
         { type: 'number' },
@@ -461,13 +518,14 @@ describe('JSON schema', () => {
   })
 
   it('should combine schemas using oneOf', () => {
-    const s = is().oneOf(
-      is('string'),
-      is('number'),
+    const s = () =>
+     is().oneOf(
+      'string',
+      'number',
       is('array').items('string')
     )
 
-    expect(s.toJSON()).to.eql({
+    expectGen(s, {
       oneOf: [
         { type: 'string' },
         { type: 'number' },
@@ -477,14 +535,26 @@ describe('JSON schema', () => {
   })
 
   it('should combine schemas using not', () => {
-    const s = is('string').not(is().enum('fizz'))
+    const s = () =>
+     is('string').not(is().enum('fizz'))
 
-    expect(s.toJSON()).to.eql({
+    expectGen(s, {
       type: 'string',
       not: {
         enum: ['fizz']
       }
     })
+  })
+
+  it('should support multiple top level types',  () => {
+    const s = () => is('string', 'number')
+
+    expectGen(s, { type: ['string', 'number']})
+  })
+
+  it('should check a schema', () => {
+    expect(is('number').check(4)).to.eql(true)
+    expect(is('string').check(4)).to.eql(false)
   })
 
   it('should validate a schema', async () => {

@@ -51,6 +51,9 @@ schema('array').items('number')._T
 // $ExpectType [number, string]
 schema('array').items('number', 'string')._T
 
+// $ExpectType string | string[]
+schema('string', 'array').items('string')._T
+
 // $ExpectType 42
 schema().const(42)._T
 
