@@ -15,6 +15,7 @@ function expectGen(input: () => Schema<any>, json: AnyJson) {
     .replace(/\n\s*\./g, '.')
     .replace(/\n\s*/g, ' ')
   expect(expectedGen).to.eql(gen(JSON.stringify(json)))
+  return expected._T
 }
 
 describe('JSON schema', () => {
@@ -258,152 +259,171 @@ describe('JSON schema', () => {
     })
   })
 
-  it('should create an object schema', () => {
-    const objectSchema = () =>
-     is('object')
+  describe('object', () => {
+    it('should create an object schema', () => {
+      const objectSchema = () =>
+      is('object')
 
-    expectGen(objectSchema, {
-      type: 'object'
-    })
-  })
-
-  it('should support min/max properties', () => {
-    const minMaxProperties = () =>
-     is('object').maxProperties(3).minProperties(1)
-
-    expectGen(minMaxProperties, {
-      type: 'object',
-      maxProperties: 3,
-      minProperties: 1
-    })
-  })
-
-  it('should support properties', () => {
-    const schemaWithProperties = () =>
-     is('object').properties({
-      a: 'string',
-      b: is('array').items('number')
+      expectGen(objectSchema, {
+        type: 'object'
+      })
     })
 
-    expectGen(schemaWithProperties, {
-      type: 'object',
-      properties: {
-        a: { type: 'string' },
-        b: { type: 'array', items: { type: 'number' }}
-      }
-    })
-  })
+    it('should support min/max properties', () => {
+      const minMaxProperties = () =>
+      is('object').maxProperties(3).minProperties(1)
 
-  it('should support required properties', () => {
-    const schemaWithRequiredProperties = () =>
-     is('object').properties({
+      expectGen(minMaxProperties, {
+        type: 'object',
+        maxProperties: 3,
+        minProperties: 1
+      })
+    })
+
+    it('should support properties', () => {
+      const schemaWithProperties = () =>
+      is('object').properties({
         a: 'string',
         b: is('array').items('number')
       })
-      .required('a', 'b', 'c')
 
-    expectGen(schemaWithRequiredProperties, {
-      type: 'object',
-      properties: {
-        a: { type: 'string' },
-        b: { type: 'array', items: { type: 'number' }}
-      },
-      required: ['a', 'b', 'c']
-    })
-  })
-
-  it('can disallow additional properties', () => {
-    const schemaWithNoAdditionalProperties = () =>
-      is('object').properties({
-        a: 'string',
-        b: is('array').items('number'),
-        d: 'boolean'
+      expectGen(schemaWithProperties, {
+        type: 'object',
+        properties: {
+          a: { type: 'string' },
+          b: { type: 'array', items: { type: 'number' }}
+        }
       })
-      .required('a', 'b', 'c')
-      .additionalProperties(false)
-
-    expectGen(schemaWithNoAdditionalProperties, {
-      type: 'object',
-      properties: {
-        a: { type: 'string' },
-        b: { type: 'array', items: { type: 'number' }},
-        d: { type: 'boolean' }
-      },
-      required: ['a', 'b', 'c'],
-      additionalProperties: false
     })
-  })
 
-  it('can specify schema for additional properties type', () => {
-    const schemaWithAdditionalProperties = () =>
-     is('object')
-      .properties({ a: 'string' })
-      .required('b')
-      .additionalProperties('number')
+    it('should support required properties', () => {
+      const schemaWithRequiredProperties = () =>
+      is('object').properties({
+          a: 'string',
+          b: is('array').items('number')
+        })
+        .required('a', 'b', 'c')
 
-    expectGen(schemaWithAdditionalProperties, {
-      type: 'object',
-      properties: {
-        a: { type: 'string' }
-      },
-      required: ['b'],
-      additionalProperties: { type: 'number' }
+      expectGen(schemaWithRequiredProperties, {
+        type: 'object',
+        properties: {
+          a: { type: 'string' },
+          b: { type: 'array', items: { type: 'number' }}
+        },
+        required: ['a', 'b', 'c']
+      })
     })
-  })
 
-  it('should support pattern properties', () => {
-    const objectWithPatternProperties = () =>
-     is('object').patternProperties({
-      '^foo$': 'string',
-      '^bar$': 'number'
+    it('can disallow additional properties', () => {
+      const schemaWithNoAdditionalProperties = () =>
+        is('object').properties({
+          a: 'string',
+          b: is('array').items('number'),
+          d: 'boolean'
+        })
+        .required('a', 'b', 'c')
+        .additionalProperties(false)
+
+      expectGen(schemaWithNoAdditionalProperties, {
+        type: 'object',
+        properties: {
+          a: { type: 'string' },
+          b: { type: 'array', items: { type: 'number' }},
+          d: { type: 'boolean' }
+        },
+        required: ['a', 'b', 'c'],
+        additionalProperties: false
+      })
     })
-    .additionalProperties(false)
 
-    expectGen(objectWithPatternProperties, {
-      type: 'object',
-      patternProperties: {
-        '^foo$': { type: 'string' },
-        '^bar$': { type: 'number' }
-      },
-      additionalProperties: false
+    it('can specify schema for additional properties type', () => {
+      const schemaWithAdditionalProperties = () =>
+      is('object')
+        .properties({ a: 'string' })
+        .required('b')
+        .additionalProperties('number')
+
+      expectGen(schemaWithAdditionalProperties, {
+        type: 'object',
+        properties: {
+          a: { type: 'string' }
+        },
+        required: ['b'],
+        additionalProperties: { type: 'number' }
+      })
     })
-  })
 
-  it('should support required along with pattern properties', () => {
-    const objectWithRequiredPatternProperties = () =>
-     is('object').patternProperties({
+    it('should support pattern properties', () => {
+      const objectWithPatternProperties = () =>
+      is('object').patternProperties({
         '^foo$': 'string',
         '^bar$': 'number'
       })
-      .required('a')
       .additionalProperties(false)
 
-    expectGen(objectWithRequiredPatternProperties, {
-      type: 'object',
-      patternProperties: {
-        '^foo$': { type: 'string' },
-        '^bar$': { type: 'number' }
-      },
-      required: ['a'],
-      additionalProperties: false
-    })
-  })
-
-  it('should support dependencies', () => {
-    const objectWithDependencies = () =>
-     is('object').additionalProperties(false)
-      .dependencies({
-        a: 'string',
-        b: ['c', 'd']
+      expectGen(objectWithPatternProperties, {
+        type: 'object',
+        patternProperties: {
+          '^foo$': { type: 'string' },
+          '^bar$': { type: 'number' }
+        },
+        additionalProperties: false
       })
+    })
 
-    expectGen(objectWithDependencies, {
-      type: 'object',
-      additionalProperties: false,
-      dependencies: {
-        a: { type: 'string' },
-        b: ['c', 'd']
-      }
+    it('should support required along with pattern properties', () => {
+      const objectWithRequiredPatternProperties = () =>
+      is('object').patternProperties({
+          '^foo$': 'string',
+          '^bar$': 'number'
+        })
+        .required('a')
+        .additionalProperties(false)
+
+      expectGen(objectWithRequiredPatternProperties, {
+        type: 'object',
+        patternProperties: {
+          '^foo$': { type: 'string' },
+          '^bar$': { type: 'number' }
+        },
+        required: ['a'],
+        additionalProperties: false
+      })
+    })
+
+    it('should support dependencies', () => {
+      const objectWithDependencies = () =>
+      is('object').additionalProperties(false)
+        .dependencies({
+          a: 'string',
+          b: ['c', 'd']
+        })
+
+      expectGen(objectWithDependencies, {
+        type: 'object',
+        additionalProperties: false,
+        dependencies: {
+          a: { type: 'string' },
+          b: ['c', 'd']
+        }
+      })
+    })
+
+    it('should create a strict object', () => {
+      const strictObject = () => is('object', { a: 'string', b: is('array').items('number') })
+
+      expectGen(strictObject, {
+        type: 'object',
+        properties: {
+          a: { type: 'string' },
+          b: {
+            type: 'array',
+            items: { type: 'number' }
+          }
+        },
+        additionalProperties: false,
+        required: ['a','b']
+      })
     })
   })
 
@@ -476,7 +496,7 @@ describe('JSON schema', () => {
     })
   })
 
-  it.skip('should allow const values', () => {
+  it('should allow const values', () => {
     const constSchema = () =>
      is().const('\'')
 

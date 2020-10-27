@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs = require('fs')
-import { AnyJson, AnyJsonObject, AnyJsonValue } from './json'
+import { AnyJson, AnyJsonValue } from './json'
 import { JsonTypeName } from './keywords'
 import { is } from './schema'
 
@@ -9,6 +9,12 @@ const subSchemaKeys = ['items', 'contains', 'additionalItems', 'additionalProper
 const schemaMapKeys = ['properties', 'patternProperties', 'dependencies']
 
 const isSubSchema = is().oneOf(is('object'), is().enum(...JsonTypeName))
+const isStrictObject = is('object', {
+  type: is().const('object'),
+  properties: 'object',
+  required: is('array').items('string'),
+  additionalProperties: is().const(false)
+})
 
 function formatJson (key: string, input: AnyJsonValue, isDeepValue = false): string {
   if (is('array').check(input)) {
@@ -24,7 +30,7 @@ function formatJson (key: string, input: AnyJsonValue, isDeepValue = false): str
     if (key === 'pattern') {
       return new RegExp(input).toString()
     }
-    return `'${input}'` //FIXME: escape single quote input
+    return `'${input.replace(/'/g, '\\\'')}'`
   }
 
   if(((schemaMapKeys.includes(key) && isDeepValue) || subSchemaKeys.includes(key)) && isSubSchema.check(input)) {
@@ -47,6 +53,10 @@ function formatSchema(input: AnyJson, root = false) {
 
   if (type.length === 1 && !root && is('object').check(input) && Object.keys(input).length <= 1) {
     return formatJson('type', type)
+  }
+
+  if (isStrictObject.check(input) && Object.keys(input.properties).every(key => input.required.includes(key))) {
+    return `is('object', ${formatJson('properties', input.properties)})`
   }
 
   let result = `is(${formatJson('type', type)})`

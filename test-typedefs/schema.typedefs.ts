@@ -1,183 +1,189 @@
-import { is as schema } from '../src/schema'
+import { is } from '../src/schema'
 
 // $ExpectType AnyJson
-schema()._T
+is()._T
 
 // $ExpectType null
-schema('null')._T
+is('null')._T
 
 // $ExpectType string
-schema('string')._T
+is('string')._T
 
 // $ExpectType number
-schema('number')._T
+is('number')._T
+
+// $ExpectType number
+is('integer')._T
 
 // $ExpectType boolean
-schema('boolean')._T
+is('boolean')._T
 
 // $ExpectType AnyJsonArray
-schema('array')._T
+is('array')._T
 
 // $ExpectType AnyJsonObject
-schema('object')._T
+is('object')._T
 
 // $ExpectType string | number
-schema('string', 'number')._T
+is('string', 'number')._T
 
 // $ExpectType number | AnyJsonObject | AnyJsonArray
-schema('object', 'array', 'number')._T
+is('object', 'array', 'number')._T
 
 // $ExpectType string | number | boolean | AnyJsonArray | JsonObject<{ properties: { a: number; }; }> | null
-schema().properties({ a: 'number' })._T
+is().properties({ a: 'number' })._T
 
 // $ExpectType JsonObject<{ properties: { a: number; b: string; }; }>
-schema('object').properties({ a: 'number', b: 'string'})._T
+is('object').properties({ a: 'number', b: 'string'})._T
 
 // $ExpectType JsonObject<{ required: "a" | "c"; }>
-schema('object').required('a', 'c')._T
+is('object').required('a', 'c')._T
 
 // $ExpectType JsonObject<{ additionalProperties: false; }>
-schema('object').additionalProperties(false)._T
+is('object').additionalProperties(false)._T
 
 // $ExpectType AnyJsonObject
-schema('object').additionalProperties(true)._T
+is('object').additionalProperties(true)._T
 
 // $ExpectType JsonObject<{ additionalProperties: { type: string; }; }>
-schema('object').additionalProperties('string')._T
+is('object').additionalProperties('string')._T
+
+// $ExpectType JsonObject<{ properties: { a: number; b: string; }; required: "a" | "b"; additionalProperties: false; }>
+is('object', { a: 'number', b: 'string' })._T
 
 // $ExpectType number[]
-schema('array').items('number')._T
+is('array').items('number')._T
 
 // $ExpectType [number, string]
-schema('array').items('number', 'string')._T
+is('array').items('number', 'string')._T
 
 // $ExpectType string | string[]
-schema('string', 'array').items('string')._T
+is('string', 'array').items('string')._T
 
 // $ExpectType 42
-schema().const(42)._T
+is().const(42)._T
 
 // $ExpectType 1 | 2 | 3
-schema().enum(1, 2, 3)._T
+is().enum(1, 2, 3)._T
 
 // $ExpectType string | boolean
-schema().anyOf('string', 'boolean')._T
+is().anyOf('string', 'boolean')._T
 
 // $ExpectType 4 | 5
-schema().anyOf(schema().const(4), schema().const(5))._T
+is().anyOf(is().const(4), is().const(5))._T
 
 // $ExpectType never
-schema().const(1).anyOf(schema().const(4))._T
+is().const(1).anyOf(is().const(4))._T
 
 // $ExpectType 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-schema().anyOf(schema().enum(1,2,3), schema().enum(4,5,6), schema().enum(7,8,9))._T
+is().anyOf(is().enum(1,2,3), is().enum(4,5,6), is().enum(7,8,9))._T
 
 // $ExpectType 2
-schema().enum(1,2).anyOf(schema().enum(2,3), schema().enum(2, 4))._T
+is().enum(1,2).anyOf(is().enum(2,3), is().enum(2, 4))._T
 
 // $ExpectType string | number
-schema().anyOf('string', 'number')._T
+is().anyOf('string', 'number')._T
 
 // $ExpectType JsonObject<{ properties: { a: string | number; }; }> | JsonObject<{ properties: { c: number; }; }>
-schema('object').anyOf(
-  schema().properties({ a: schema('string', 'number')}),
-  schema().properties({ c: 'number' })
+is('object').anyOf(
+  is().properties({ a: is('string', 'number')}),
+  is().properties({ c: 'number' })
 )._T
 
 // $ExpectType JsonObject<{ properties: { a: number; b: number; }; required: "a"; }>
-schema('object').properties({ a: 'number', b: 'number' }).required('a')._T
+is('object').properties({ a: 'number', b: 'number' }).required('a')._T
 
 // $ExpectType JsonObject<{ required: "a" | "b"; }> | JsonObject<{ required: "a" | "c"; }>
-schema('object').required('a').anyOf(
-  schema().required('b'),
-  schema().required('c')
+is('object').required('a').anyOf(
+  is().required('b'),
+  is().required('c')
 )._T
 
 // $ExpectType JsonObject<{ properties: { a: string | number; }; }>
-schema('object').properties({
-  a: schema().anyOf('string', 'number')
+is('object').properties({
+  a: is().anyOf('string', 'number')
 })._T
 
 // $ExpectType (string | number)[]
-schema('array').items(schema().anyOf('string', 'number'))._T
+is('array').items(is().anyOf('string', 'number'))._T
 
 // $ExpectType string
-schema().allOf(schema('number', 'string'), 'string')._T
+is().allOf(is('number', 'string'), 'string')._T
 
 // $ExpectType never
-schema().allOf('number', 'string')._T
+is().allOf('number', 'string')._T
 
 // $ExpectType number
-schema().allOf(schema('number', 'string'), 'number')._T
+is().allOf(is('number', 'string'), 'number')._T
 
 // $ExpectType 42
-schema().allOf(schema().const(42))._T
+is().allOf(is().const(42))._T
 
 // $ExpectType 42 & { a: number; }
-schema().allOf(
-  schema().const(42),
-  schema().const({ a: 52 })
+is().allOf(
+  is().const(42),
+  is().const({ a: 52 })
 )._T
 
 // $ExpectType JsonObject<{ required: "a" | "b" | "c" | "d"; }>
-schema('object').allOf(
-  schema().required('a', 'b'),
-  schema().required('c', 'd')
+is('object').allOf(
+  is().required('a', 'b'),
+  is().required('c', 'd')
 )._T
 
 // $ExpectType string[]
-schema('array').allOf(
-  schema().items('string'),
-  schema().items(schema().anyOf(schema('string', 'number')))
+is('array').allOf(
+  is().items('string'),
+  is().items(is().anyOf(is('string', 'number')))
 )._T
 
 // $ExpectType never[]
-schema('array').allOf(
-  schema().items('string'),
-  schema().items('number')
+is('array').allOf(
+  is().items('string'),
+  is().items('number')
 )._T
 
 // $ExpectType JsonObject<{ properties: { a: string; c: never; b: boolean; }; }>
-schema('object').allOf(
-  schema().properties({ a: 'string', c: 'number' }),
-  schema().properties({
-    a: schema('string', 'number'),
+is('object').allOf(
+  is().properties({ a: 'string', c: 'number' }),
+  is().properties({
+    a: is('string', 'number'),
     b: 'boolean', 
     c: 'string'
   })
 )._T
 
 // $ExpectType JsonObject<{ additionalProperties: false; }>
-schema('object').allOf(
-  schema().additionalProperties(false),
-  schema().additionalProperties('string')
+is('object').allOf(
+  is().additionalProperties(false),
+  is().additionalProperties('string')
 )._T
 
 // $ExpectType AnyJsonObject
-schema().allOf(
-  schema('object').additionalProperties(true),
-  schema()
+is().allOf(
+  is('object').additionalProperties(true),
+  is()
 )._T
 
 // $ExpectType JsonObject<{ additionalProperties: { type: string; }; }>
-schema('object').allOf(
-  schema().additionalProperties(true),
-  schema().additionalProperties('string')
+is('object').allOf(
+  is().additionalProperties(true),
+  is().additionalProperties('string')
 )._T
 
 // $ExpectType JsonObject<{ properties: { a: number; }; }> | JsonObject<{ properties: { b: string; }; }>
-schema('object').oneOf(
-  schema().properties({ a: 'number' }),
-  schema().properties({ b: 'string' })
+is('object').oneOf(
+  is().properties({ a: 'number' }),
+  is().properties({ b: 'string' })
 )._T
 
 // $ExpectType number | boolean | null
-schema('string', 'number', 'boolean', 'null').oneOf(
-  schema('string', 'number'),
-  schema('string', 'boolean'),
-  schema('string', 'null'),
-  schema('string', 'array')
+is('string', 'number', 'boolean', 'null').oneOf(
+  is('string', 'number'),
+  is('string', 'boolean'),
+  is('string', 'null'),
+  is('string', 'array')
 )._T
 
 // $ExpectType number | boolean | AnyJsonObject | AnyJsonArray | null
-schema().not('string')._T
+is().not('string')._T

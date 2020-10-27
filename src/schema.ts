@@ -256,14 +256,27 @@ export class Schema<K extends Keywords> {
 
 export function is(): Schema<{ }> ;
 export function is<T extends JsonTypeName>(...type: T[]): Schema<{ type: T }> ;
-export function is<K extends Keywords>(...type: JsonTypeName[]): Schema<K> { 
+export function is<Props extends {[key: string]: SchemaInput}>(type: 'object', props: Props)
+  : Schema<
+    Keyword.Type<'object'> &
+    Keyword.Properties<{[P in keyof Props]: SchemaKeyword<Props[P]>}> &
+    Keyword.Required<Extract<keyof Props, string>> &
+    Keyword.AdditionalPropertiesFalse
+  > ;
+export function is<K extends Keywords>(...type: (JsonTypeName |{[key: string]: SchemaInput}) []): Schema<K> { 
   if (type.length === 0) {
     return new Schema<any>({})
   }
-  if (type.length === 1) {
+  if (type.length === 1 && typeof type[0] === 'string') {
     return new Schema<any>({ type: type[0] })
   }
-  return new Schema<any>({ type })
+  if (type.length === 2 && type[0] === 'object' && typeof type[1] !== 'string') {
+    return new Schema<any>({ type: 'object' })
+      .properties(type[1])
+      .required(...Object.keys(type[1]))
+      .additionalProperties(false)
+  }
+  return new Schema<any>({ type: type as string[] })
 }
 
 export type is<T extends Schema<any>> = T['_T']
