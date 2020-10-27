@@ -7,7 +7,7 @@
   "scripts": {
     "mocha": "ts-mocha test/**/*.spec.ts",
     "test-typedefs": "typings-checker --project test-typedefs/tsconfig.json --allow-expect-error test-typedefs/*.ts",
-    "test": "npm run mocha && npm run test-typedefs && npm run lint",
+    "test": "npm run mocha && npm run test-typedefs",
     "clean": "rm *.js *.d.ts; rm -rf ext/;true",
     "tsc": "tsc --declaration",
     "build": "npm run clean && npm run tsc",

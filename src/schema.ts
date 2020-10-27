@@ -34,6 +34,9 @@ type Update<K extends Keywords, U extends Keywords> = {
   'calc': Schema<IntersectItems<[K, U]>>
 }
 
+type U<K extends Keywords, U extends Keywords> = { [P in keyof (K & U)]: 4 }
+type X = IntersectItems<[{ type: 'string' }, { type: 'number'}]>
+
 function jsonValue (input: SchemaInput) {
   if (typeof input === 'string') {
     return { type: input }
