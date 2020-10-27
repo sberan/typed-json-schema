@@ -38,7 +38,6 @@ errors:
   }
 }
 
-// tslint:disable-next-line:max-classes-per-file
 export class Validator {
   ajv: Ajv.Ajv
 

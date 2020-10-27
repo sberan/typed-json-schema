@@ -102,7 +102,7 @@ schema('array').items(schema().anyOf('string', 'number'))._T
 schema().allOf(schema('number', 'string'), 'string')._T
 
 // $ExpectType never
-schema().allOf('number', 'string')
+schema().allOf('number', 'string')._T
 
 // $ExpectType number
 schema().allOf(schema('number', 'string'), 'number')._T

@@ -6,9 +6,6 @@
     "outDir": ".",
     "strict": true,
     "noEmitOnError": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
     "skipLibCheck": true
   },
   "include": [

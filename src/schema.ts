@@ -31,7 +31,7 @@ type SchemaIntersection<Schemas extends SchemaInput[]> =
   IntersectItems<SchemaKeywordsArray<Schemas>>
 
 type Update<K extends Keywords, U extends Keywords> = {
-  'calc': Schema<{ [P in keyof (K & U)]: (K & U)[P] }>
+  'calc': Schema<IntersectItems<[K, U]>>
 }
 
 function jsonValue (input: SchemaInput) {
