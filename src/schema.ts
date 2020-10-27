@@ -51,6 +51,8 @@ function jsonPropertyValues(input: {[key: string]: SchemaInput | string[]}) {
   return properties
 }
 
+const validator = new Validator()
+
 export class Schema<K extends Keywords> {
   // represents the TypeScript type of the schema
   _T: TypeOf<K> = null as any
@@ -67,12 +69,12 @@ export class Schema<K extends Keywords> {
   }
 
   check(input: any): input is this['_T'] {
-    const result = new Validator().validateSync(this, input)
+    const result = validator.validateSync(this, input)
     return result.valid
   }
 
   parse(input: string): this['_T'] {
-    const result = new Validator().validateSync(this, JSON.parse(input))
+    const result = validator.validateSync(this, JSON.parse(input))
     if (!result.valid) {
       throw new Error(`invalid type for schema ${JSON.stringify(this.jsonSchema)}: ${input}`)
     }
