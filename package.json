@@ -29,7 +29,7 @@
     "url": "git@github.com:sberan/typed-json-schema.git"
   },
   "dependencies": {
-    "ajv": "5.2.2"
+    "ajv": "6.12.6"
   },
   "devDependencies": {
     "@types/ajv": "^1.0.0",

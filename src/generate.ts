@@ -65,9 +65,7 @@ function formatSchema(input: AnyJson, root = false) {
   is('object').check(input) && Object.keys(input).forEach(key => {
     if (key === 'type')
       return
-    let value = input[key]
-
-    result = result + '.' + key + `(${formatJson(key, value)})`
+    result = result + '.' + key + `(${formatJson(key, input[key])})`
   })
   return result
 }
