@@ -1,3 +1,14 @@
+TODO BEFORE MERGE:
+-------
+ - [ ] ability to generate code using programmatic API (handy for converting old schemas)
+ - [ ] allow objects to redefine keywords
+ - [ ] dates (Joi.date)
+ - [ ] support refs
+ - [ ] resolve refs when generating
+ - [ ] custom keywords
+ - [ ] docs!
+
+
 Typed-JSON-Schema
 ------------------
 </br><a href="https://www.npmjs.com/package/typed-json-schema"><img src="https://img.shields.io/npm/v/typed-json-schema.svg" alt="Version"></a>

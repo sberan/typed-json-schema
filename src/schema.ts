@@ -97,7 +97,7 @@ export class Schema<K extends Keywords> {
     return this.update({ default: value })
   }
 
-  example(example: string) {
+  example(example: AnyJson) {
     return this.update({ example })
   }
   
