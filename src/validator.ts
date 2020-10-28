@@ -13,6 +13,17 @@ export interface ValidatorOptions extends Ajv.Options {
   customKeywords?: CustomKeywords
 }
 
+type LegacyCompatibleSchema<T> = {
+  _T: T
+  toJSON(): any
+} | {
+  TypeOf: T
+  toJSON(): any
+}
+
+type LegacyTypeOf<T> =
+  T extends LegacyCompatibleSchema<infer I> ? I : never
+
 function addCustomKeywords (ajv: Ajv.Ajv, customKeywords: CustomKeywords) {
   customKeywords.forEach(kw => {
     if (Array.isArray(kw)) {
@@ -51,9 +62,9 @@ export class Validator {
   /**
    * @deprecated use validate instead
    */
-  validateSync <T extends Schema<any>> (schema: T, obj: any)
+  validateSync <T extends LegacyCompatibleSchema<any>> (schema: T, obj: any)
       : { valid: false, errors: ErrorObject[], result: null }
-      | { valid: true, errors: null, result: T['_T'] }  {
+      | { valid: true, errors: null, result: LegacyTypeOf<T> }  {
     const validate = this.ajv.compile(schema.toJSON() as any)
     const coercedValue: { result?: T } = { }
     const isValid = validate(obj, undefined, coercedValue, 'result')
