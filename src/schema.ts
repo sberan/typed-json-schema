@@ -191,10 +191,6 @@ export class Schema<K extends Keywords> {
     return this.update<any>({ items: items.length < 2 ? jsonValue(items[0]) : items.map(x => jsonValue(x)) })
   }
 
-  maxLength(maxLength: number) {
-    return this.update({ maxLength })
-  }
-
   maxItems(maxItems: number) {
     return this.update({ maxItems })
   }
@@ -254,6 +250,10 @@ export class Schema<K extends Keywords> {
   minLength(minLength: number) {
     return this.update({ minLength })
   }
+
+  maxLength(maxLength: number) {
+    return this.update({ maxLength })
+  }
 }
 
 export function is(): Schema<{ }> ;
@@ -280,5 +280,39 @@ export function is<K extends Keywords>(...type: (JsonTypeName |{[key: string]: S
   }
   return new Schema<any>({ type: type as string[] })
 }
+
+const root = is()
+is.title = root.title.bind(root)
+is.description = root.description.bind(root)
+is.default = root.default.bind(root)
+is.example = root.example.bind(root)
+is.const = root.const.bind(root)
+is.enum = root.enum.bind(root)
+is.oneOf = root.oneOf.bind(root)
+is.anyOf = root.anyOf.bind(root)
+is.allOf = root.allOf.bind(root)
+is.not = root.not.bind(root)
+is.properties = root.properties.bind(root)
+is.required = root.required.bind(root)
+is.additionalProperties = root.additionalProperties.bind(root)
+is.dependencies = root.dependencies.bind(root)
+is.patternProperties = root.patternProperties.bind(root)
+is.minProperties = root.minProperties.bind(root)
+is.maxProperties = root.maxProperties.bind(root)
+is.items = root.items.bind(root)
+is.maxItems = root.maxItems.bind(root)
+is.contains = root.contains.bind(root)
+is.uniqueItems = root.uniqueItems.bind(root)
+is.minItems = root.minItems.bind(root)
+is.additionalItems = root.additionalItems.bind(root)
+is.minimum = root.minimum.bind(root)
+is.maximum = root.maximum.bind(root)
+is.exclusiveMaximum = root.exclusiveMaximum.bind(root)
+is.exclusiveMinimum = root.exclusiveMinimum.bind(root)
+is.multipleOf = root.multipleOf.bind(root)
+is.format = root.format.bind(root)
+is.pattern = root.pattern.bind(root)
+is.minLength = root.minLength.bind(root)
+is.maxLength = root.maxLength.bind(root)
 
 export type is<T extends Schema<any>> = T['_T']

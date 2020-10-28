@@ -8,12 +8,12 @@ const spreadArrayKeys = ['type', 'enum', 'required', 'items', 'oneOf', 'anyOf', 
 const subSchemaKeys = ['items', 'contains', 'additionalItems', 'additionalProperties', 'not', 'oneOf', 'anyOf', 'allOf']
 const schemaMapKeys = ['properties', 'patternProperties', 'dependencies']
 
-const isSubSchema = is().oneOf(is('object'), is().enum(...JsonTypeName))
+const isSubSchema = is.oneOf(is('object'), is.enum(...JsonTypeName))
 const isStrictObject = is('object', {
-  type: is().const('object'),
+  type: is.const('object'),
   properties: 'object',
   required: is('array').items('string'),
-  additionalProperties: is().const(false)
+  additionalProperties: is.const(false)
 })
 
 function formatJson (key: string, input: AnyJsonValue, isDeepValue = false): string {
@@ -60,8 +60,9 @@ function formatSchema(input: AnyJson, root = false) {
   }
 
   let result = `is(${formatJson('type', type)})`
-
-  
+  if (result === 'is()') {
+    result = 'is'
+  }
   is('object').check(input) && Object.keys(input).forEach(key => {
     if (key === 'type')
       return

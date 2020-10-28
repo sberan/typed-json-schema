@@ -5,15 +5,17 @@ const { expect } = require('chai')
 
 function expectGen(input: () => Schema<any>, json: AnyJson) {
   const expected = input()
-  expect(expected.toJSON()).to.eql(json)
   const expectedGenText = input.toString()
-  const beginGen = expectedGenText.indexOf('.is(')
+  const beginGen = expectedGenText.indexOf('.is')
   const endGen = expectedGenText.indexOf(';')
   const expectedGen = expectedGenText
     .substring(beginGen + 1, endGen)
     .replace(/\w+\.is\(/g, 'is(')
+    .replace(/\w+\.is\./g, 'is.')
     .replace(/\n\s*\./g, '.')
     .replace(/\n\s*/g, ' ')
+
+  expect(expected.toJSON()).to.eql(json)
   expect(expectedGen).to.eql(gen(JSON.stringify(json)))
   return expected._T
 }
@@ -451,9 +453,10 @@ describe('JSON schema', () => {
 
   it('should allow metadata values', () => {
     const schemaWithMetadata = () =>
-     is().title('someTitle').description('foo')
+     is('string').title('someTitle').description('foo')
 
     expectGen(schemaWithMetadata, {
+      type: 'string',
       title: 'someTitle',
       description: 'foo'
     })
@@ -481,7 +484,7 @@ describe('JSON schema', () => {
 
   it('should allow enumerated values', () => {
     const enumSchema = () =>
-     is().enum([4, 5], '3', false, null)
+     is.enum([4, 5], '3', false, null)
 
     expectGen(enumSchema, {
       enum: [ [4, 5], '3', false, null]
@@ -498,7 +501,7 @@ describe('JSON schema', () => {
 
   it('should allow const values', () => {
     const constSchema = () =>
-     is().const('\'')
+     is.const('\'')
 
     expectGen(constSchema, {
       const: '\''
@@ -507,10 +510,10 @@ describe('JSON schema', () => {
 
   it('should combine schemas using allOf', () => {
     const s = () =>
-     is().allOf(
-      is('array').items('string'),
-      'number'
-    )
+      is.allOf(
+        is('array').items('string'),
+        'number'
+      )
 
     expectGen(s, {
       allOf: [
@@ -522,7 +525,7 @@ describe('JSON schema', () => {
 
   it('should combine schemas using anyOf', () => {
     const s = () =>
-     is().anyOf(
+     is.anyOf(
       'string',
       'number',
       is('object').properties({ a: 'string' }).required('a')
@@ -539,7 +542,7 @@ describe('JSON schema', () => {
 
   it('should combine schemas using oneOf', () => {
     const s = () =>
-     is().oneOf(
+     is.oneOf(
       'string',
       'number',
       is('array').items('string')
@@ -556,7 +559,7 @@ describe('JSON schema', () => {
 
   it('should combine schemas using not', () => {
     const s = () =>
-     is('string').not(is().enum('fizz'))
+     is('string').not(is.enum('fizz'))
 
     expectGen(s, {
       type: 'string',
