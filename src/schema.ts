@@ -315,4 +315,10 @@ is.pattern = root.pattern.bind(root)
 is.minLength = root.minLength.bind(root)
 is.maxLength = root.maxLength.bind(root)
 
+declare module './schema' {
+  interface Schema<K extends Keywords> {
+      new (...args: any[]): never;
+  }
+}
+
 export type is<T extends Schema<any>> = T['_T']
