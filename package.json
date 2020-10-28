@@ -1,6 +1,6 @@
 {
   "name": "typed-json-schema",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "",
   "main": "index",
   "typings": "index.d.ts",
@@ -27,18 +27,17 @@
     "url": "git@github.com:sberan/typed-json-schema.git"
   },
   "dependencies": {
-    "ajv": "5.2.2"
+    "ajv": "6.12.6"
   },
   "devDependencies": {
-    "@types/ajv": "^1.0.0",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^2.2.41",
-    "chai": "^4.1.0",
-    "cross-env": "^5.0.5",
-    "mocha": "^3.4.2",
-    "ts-node": "^3.3.0",
-    "tslint": "^5.7.0",
+    "@types/chai": "4.0.1",
+    "@types/mocha": "2.2.41",
+    "chai": "4.1.0",
+    "cross-env": "5.0.5",
+    "mocha": "3.4.2",
+    "ts-node": "3.3.0",
+    "tslint": "5.7.0",
     "typescript": "2.5",
-    "typings-checker": "^2.0.0"
+    "typings-checker": "2.0.0"
   }
 }

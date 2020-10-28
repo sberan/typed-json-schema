@@ -32,8 +32,6 @@ object.properties({ a: string }).required('b').TypeOf.b // $ExpectType any
 
 object.properties({ a: string }).additionalProperties(false).TypeOf.a // $ExpectType string | undefined
 
-object.properties({ a: string }).additionalProperties(false).TypeOf.b // $ExpectError Property 'b' does not exist
-
 // $ExpectType string | boolean | undefined
 object.properties({ a: string }).additionalProperties(schema.type(['string', 'boolean'])).TypeOf.b
 
